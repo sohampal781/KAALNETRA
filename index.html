@@ -1,258 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kaalnetra Security Systems - ERP & Store</title>
-  
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8">
+  <title>Kaalnetra Security Systems</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- QR Code Scanner Library -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Premium Admin Theme inherited from your template */
+    :root { --metro-blue: #0f172a; --metro-gold: #fbbf24; }
+    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+    .hidden { display: none !important; }
+  </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen">
-  
-  <!-- Navigation -->
-  <nav class="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-cyan-400">KAALNETRA SECURITY</h1>
-    <div class="space-x-2">
-      <button onclick="window.switchTab('billing')" class="px-3 py-1 bg-cyan-600 rounded text-sm hover:bg-cyan-500 transition">Billing & Warranty</button>
-      <button onclick="window.switchTab('claim')" class="px-3 py-1 bg-purple-600 rounded text-sm hover:bg-purple-500 transition">Warranty Claim</button>
+<body>
+
+  <!-- ================= LOGIN SCREEN ================= -->
+  <section id="login-screen" class="min-h-screen flex items-center justify-center bg-[#080f1e]">
+    <div class="bg-gray-800/50 backdrop-blur-md p-10 rounded-xl border-t-4 border-yellow-400 w-full max-w-md text-center text-white shadow-2xl">
+      <h2 class="text-2xl font-black mb-2 tracking-widest text-yellow-400">KAALNETRA</h2>
+      <p class="text-xs text-gray-400 mb-8 uppercase">Unified Access Portal</p>
+      
+      <!-- Admin Login -->
+      <input id="adminEmail" type="email" placeholder="Staff Email" class="w-full p-3 mb-4 bg-black/50 rounded text-white border border-gray-600 focus:border-yellow-400">
+      <input id="adminPass" type="password" placeholder="Staff Password" class="w-full p-3 mb-4 bg-black/50 rounded text-white border border-gray-600 focus:border-yellow-400">
+      <button id="btnAdminLogin" class="w-full p-3 bg-yellow-500 text-black font-black rounded mb-6 uppercase tracking-wider hover:bg-yellow-400 transition">Terminal Login</button>
+      
+      <hr class="border-gray-700 mb-6">
+      
+      <!-- Customer Login -->
+      <button id="btnGoogleLogin" class="w-full p-3 bg-white text-gray-900 font-bold rounded flex items-center justify-center gap-3 hover:bg-gray-100 transition">
+        <i class="fab fa-google text-red-500"></i> Customer Login
+      </button>
     </div>
-  </nav>
+  </section>
 
-  <!-- Main Content -->
-  <main class="max-w-4xl mx-auto p-6">
+  <!-- ================= CUSTOMER STOREFRONT ================= -->
+  <section id="customer-storefront" class="hidden min-h-screen bg-gray-100">
+    <header class="bg-gray-900 text-white p-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-yellow-400">Kaalnetra Store</h1>
+      <div class="flex gap-4 items-center">
+        <span id="customerName" class="text-sm"></span>
+        <button id="btnCustLogout" class="text-xs bg-red-600 px-3 py-1 rounded">Logout</button>
+      </div>
+    </header>
     
-    <!-- 1. Billing & Warranty Registration Section -->
-    <section id="billing-section" class="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-      <h2 class="text-lg font-semibold text-cyan-300 mb-4">1. New Billing & 6-Month Warranty Registration</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input id="customer-name" type="text" placeholder="Customer Name" class="p-2 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-cyan-400" />
-        <input id="customer-phone" type="text" placeholder="Customer Phone" class="p-2 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-cyan-400" />
-        
-        <select id="product-model" class="p-2 bg-gray-700 rounded border border-gray-600 text-white">
-          <option value="Version 1 - Basic (₹15,000)">Version 1 - Basic (₹15,000)</option>
-          <option value="Version 2 - Bypass Switch (₹20,000)">Version 2 - Bypass Switch (₹20,000)</option>
-          <option value="Version 3 - Web Access (₹21,000)">Version 3 - Web Access (₹21,000)</option>
-          <option value="Version 4 - Biometric (₹26,000)">Version 4 - Biometric (₹26,000)</option>
-          <option value="Industrial Premium (₹27,000)">Industrial Premium (₹27,000)</option>
-        </select>
-        
-        <input id="product-qr" type="text" placeholder="Scanned Product QR ID" class="p-2 bg-gray-700 rounded border border-gray-600" />
-      </div>
-
-      <div class="flex space-x-3">
-        <button onclick="window.startBillingScanner()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm border border-gray-500 transition">Scan Product QR</button>
-        <button onclick="window.processBilling()" class="bg-green-600 hover:bg-green-500 px-6 py-2 rounded font-semibold text-sm transition">Complete Bill & Register Warranty</button>
-      </div>
-      
-      <!-- QR Scanner Container -->
-      <div id="billing-reader" class="w-full max-w-sm mx-auto mt-4 hidden bg-black rounded"></div>
-    </section>
-
-    <!-- 2. Warranty Verification & Claim Section -->
-    <section id="claim-section" class="bg-gray-800 p-6 rounded-lg shadow-md hidden">
-      <h2 class="text-lg font-semibold text-purple-300 mb-4">2. Two-Step Warranty Claim Verification</h2>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Step 1: Ticket QR ID</label>
-          <input id="claim-ticket-qr" type="text" placeholder="Scan or enter Ticket ID" class="w-full p-2 bg-gray-700 rounded border border-gray-600" />
+    <main class="max-w-6xl mx-auto p-6">
+      <h2 class="text-2xl font-bold mb-6">Recommended Systems</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Amazon-style Product Card -->
+        <div class="bg-white p-4 rounded shadow hover:shadow-lg transition">
+          <div class="h-40 bg-gray-200 rounded mb-4 flex items-center justify-center"><i class="fas fa-shield-alt text-4xl text-gray-400"></i></div>
+          <h3 class="font-bold text-lg">Version 1 - Basic System</h3>
+          <p class="text-green-600 font-black text-xl my-2">₹15,000</p>
+          <ul class="text-xs text-gray-600 space-y-1 mb-4">
+            <li>✓ IR Detection</li>
+            <li>✓ Buzzer / Audio Alert</li>
+          </ul>
+          <button class="w-full bg-yellow-400 hover:bg-yellow-500 font-bold py-2 rounded rounded-full shadow text-sm">Add to Cart</button>
         </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">Step 2: Physical Device QR ID</label>
-          <input id="claim-product-qr" type="text" placeholder="Scan or enter Product QR" class="w-full p-2 bg-gray-700 rounded border border-gray-600" />
-        </div>
+        <!-- Add remaining tiers here -->
       </div>
+    </main>
+  </section>
 
-      <div class="flex space-x-3 mb-4">
-        <button onclick="window.verifyClaimMatch()" class="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded font-semibold text-sm transition">Verify Match & Check 6-Month Status</button>
+  <!-- ================= ADMIN ERP BACKEND ================= -->
+  <section id="admin-erp" class="hidden min-h-screen">
+    <header class="bg-[#0f172a] text-white p-4 border-b-4 border-yellow-400 flex justify-between items-center">
+      <h1 class="text-lg font-black tracking-widest">ERP TERMINAL</h1>
+      <button id="btnAdminLogout" class="bg-red-600 px-4 py-2 rounded text-xs font-bold">TERMINATE SESSION</button>
+    </header>
+    
+    <div class="flex bg-white border-b border-gray-200 p-2 gap-2 overflow-x-auto shadow-sm">
+      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-boxes"></i> Inventory</button>
+      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-file-invoice"></i> Billing</button>
+      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-shield-halved"></i> Warranty</button>
+      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-undo"></i> Returns</button>
+    </div>
+    
+    <main class="p-6">
+      <div class="bg-white p-6 rounded shadow border border-gray-200">
+        <h2 class="text-xl font-bold text-[#0f172a] mb-4">Master Matrix</h2>
+        <p class="text-sm text-gray-500">Scan QR codes and manage dispatch orders here.</p>
       </div>
+    </main>
+  </section>
 
-      <!-- Claim Status Output -->
-      <div id="claim-status" class="p-4 rounded hidden mt-4"></div>
-    </section>
-  </main>
-
-  <!-- Firebase & Application Logic -->
+  <!-- Firebase Logic -->
   <script type="module">
-    // 1. Firebase Module Imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      doc, 
-      setDoc, 
-      getDoc, 
-      Timestamp 
-    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-    // 2. Your Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
       authDomain: "kaalnetra-214b6.firebaseapp.com",
       projectId: "kaalnetra-214b6",
       storageBucket: "kaalnetra-214b6.firebasestorage.app",
       messagingSenderId: "974973616837",
-      appId: "1:974973616837:web:9d586455fd35a938ce66ac",
-      measurementId: "G-K4ZX5H6QR7"
+      appId: "1:974973616837:web:9d586455fd35a938ce66ac"
     };
 
-    // 3. Initialize Firebase & Firestore
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
     const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-    // ==========================================
-    // UI TAB SWITCHING LOGIC
-    // ==========================================
-    window.switchTab = function(tab) {
-      document.getElementById("billing-section").classList.toggle("hidden", tab !== "billing");
-      document.getElementById("claim-section").classList.toggle("hidden", tab !== "claim");
-      document.getElementById("claim-status").classList.add("hidden"); // Reset claim status on switch
+    const uiLogin = document.getElementById("login-screen");
+    const uiStore = document.getElementById("customer-storefront");
+    const uiAdmin = document.getElementById("admin-erp");
+
+    // Staff Login
+    document.getElementById("btnAdminLogin").onclick = () => {
+      const email = document.getElementById("adminEmail").value;
+      const pass = document.getElementById("adminPass").value;
+      signInWithEmailAndPassword(auth, email, pass).catch(e => alert(e.message));
     };
 
-    // ==========================================
-    // QR SCANNER LOGIC
-    // ==========================================
-    window.startBillingScanner = function() {
-      const readerDiv = document.getElementById("billing-reader");
-      readerDiv.classList.remove("hidden");
-      
-      const html5QrCode = new Html5Qrcode("billing-reader");
-      
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          document.getElementById("product-qr").value = decodedText;
-          html5QrCode.stop().then(() => {
-            readerDiv.classList.add("hidden");
-          });
-        },
-        (errorMessage) => {
-          // parse errors silently
-        }
-      ).catch(err => {
-        alert("Camera access denied or unavailable.");
-        readerDiv.classList.add("hidden");
-      });
+    // Customer Login
+    document.getElementById("btnGoogleLogin").onclick = () => {
+      signInWithPopup(auth, provider).catch(e => alert(e.message));
     };
 
-    // ==========================================
-    // BILLING & 6-MONTH WARRANTY LOGIC
-    // ==========================================
-    window.processBilling = async function() {
-      const name = document.getElementById("customer-name").value.trim();
-      const phone = document.getElementById("customer-phone").value.trim();
-      const model = document.getElementById("product-model").value;
-      const qrId = document.getElementById("product-qr").value.trim();
+    // Global Logout
+    const doLogout = () => signOut(auth);
+    document.getElementById("btnCustLogout").onclick = doLogout;
+    document.getElementById("btnAdminLogout").onclick = doLogout;
 
-      if (!name || !phone || !qrId) {
-        alert("Please fill in all customer details and scan the product QR code.");
+    // Routing Engine
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        uiLogin.classList.remove("hidden");
+        uiStore.classList.add("hidden");
+        uiAdmin.classList.add("hidden");
         return;
       }
 
-      // Calculate Dates
-      const now = new Date();
-      const warrantyExpiry = new Date();
-      warrantyExpiry.setMonth(warrantyExpiry.getMonth() + 6); // Add 6 months
+      // Check if user is staff (e.g., matching a specific domain or Firestore record)
+      const isStaff = user.email.endsWith("@kaalnetra.com") || user.email === "sohampal781@gmail.com";
 
-      try {
-        // 1. Permanent Sales Ledger Data
-        const saleRef = await addDoc(collection(db, "sales"), {
-          customerName: name,
-          customerPhone: phone,
-          productModel: model,
-          productQR: qrId,
-          saleDate: Timestamp.fromDate(now),
-          warrantyExpiry: Timestamp.fromDate(warrantyExpiry),
-          status: "COMPLETED"
-        });
-
-        // 2. Warranty Registry Data (Can be purged later)
-        await setDoc(doc(db, "warranty_registry", qrId), {
-          saleId: saleRef.id,
-          customerName: name,
-          customerPhone: phone,
-          productModel: model,
-          warrantyExpiry: Timestamp.fromDate(warrantyExpiry),
-          active: true
-        });
-
-        alert("✅ Sale recorded successfully! 6-Month Free Warranty is active.");
-        
-        // Clear fields
-        document.getElementById("customer-name").value = '';
-        document.getElementById("customer-phone").value = '';
-        document.getElementById("product-qr").value = '';
-        
-      } catch (error) {
-        console.error("Error saving order: ", error);
-        alert("Failed to save transaction: " + error.message);
+      uiLogin.classList.add("hidden");
+      
+      if (isStaff) {
+        uiAdmin.classList.remove("hidden");
+        uiStore.classList.add("hidden");
+      } else {
+        uiStore.classList.remove("hidden");
+        uiAdmin.classList.add("hidden");
+        document.getElementById("customerName").innerText = `Hello, ${user.displayName}`;
       }
-    };
-
-    // ==========================================
-    // WARRANTY CLAIM VERIFICATION LOGIC
-    // ==========================================
-    window.verifyClaimMatch = async function() {
-      const ticketQR = document.getElementById("claim-ticket-qr").value.trim();
-      const productQR = document.getElementById("claim-product-qr").value.trim();
-      const statusDiv = document.getElementById("claim-status");
-
-      if (!ticketQR || !productQR) {
-        alert("Please enter both the Ticket QR ID and the Product QR ID.");
-        return;
-      }
-
-      statusDiv.classList.remove("hidden", "bg-green-800", "bg-red-800");
-
-      try {
-        // Fetch product warranty by QR Code ID
-        const docRef = doc(db, "warranty_registry", productQR);
-        const docSnap = await getDoc(docRef);
-
-        if (!docSnap.exists()) {
-          statusDiv.className = "p-4 rounded bg-red-800 text-white mt-4";
-          statusDiv.innerHTML = "❌ <strong>CLAIM VOID:</strong> Product record not found or data has been deleted after 6 months.";
-          return;
-        }
-
-        const data = docSnap.data();
-        const expiryDate = data.warrantyExpiry.toDate();
-        const currentDate = new Date();
-
-        // Check if 6 months have passed
-        if (currentDate > expiryDate) {
-          statusDiv.className = "p-4 rounded bg-red-800 text-white mt-4";
-          statusDiv.innerHTML = `❌ <strong>CLAIM VOID:</strong> 6-Month Free Warranty expired on ${expiryDate.toLocaleDateString()}.`;
-          return;
-        }
-
-        // Success Output
-        statusDiv.className = "p-4 rounded bg-green-800 text-white mt-4";
-        statusDiv.innerHTML = `
-          ✅ <strong>VERIFIED MATCH</strong><br>
-          <ul class="mt-2 text-sm space-y-1">
-            <li><strong>Model:</strong> ${data.productModel}</li>
-            <li><strong>Customer:</strong> ${data.customerName}</li>
-            <li><strong>Phone:</strong> ${data.customerPhone}</li>
-            <li><strong>Valid Until:</strong> ${expiryDate.toLocaleDateString()}</li>
-          </ul>
-          <button class="mt-3 bg-green-600 px-4 py-1 rounded text-sm font-bold hover:bg-green-500 transition shadow">Proceed with Repair</button>
-        `;
-
-      } catch (err) {
-        console.error("Verification error:", err);
-        alert("Verification failed: " + err.message);
-      }
-    };
+    });
   </script>
 </body>
 </html>
