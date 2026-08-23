@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaalnetra Security Systems - ERP & Store</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- QR Code Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+  
+  <!-- Navigation -->
+  <nav class="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-cyan-400">KAALNETRA SECURITY</h1>
+    <div class="space-x-2">
+      <button onclick="window.switchTab('billing')" class="px-3 py-1 bg-cyan-600 rounded text-sm hover:bg-cyan-500 transition">Billing & Warranty</button>
+      <button onclick="window.switchTab('claim')" class="px-3 py-1 bg-purple-600 rounded text-sm hover:bg-purple-500 transition">Warranty Claim</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto p-6">
+    
+    <!-- 1. Billing & Warranty Registration Section -->
+    <section id="billing-section" class="bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+      <h2 class="text-lg font-semibold text-cyan-300 mb-4">1. New Billing & 6-Month Warranty Registration</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <input id="customer-name" type="text" placeholder="Customer Name" class="p-2 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-cyan-400" />
+        <input id="customer-phone" type="text" placeholder="Customer Phone" class="p-2 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:border-cyan-400" />
+        
+        <select id="product-model" class="p-2 bg-gray-700 rounded border border-gray-600 text-white">
+          <option value="Version 1 - Basic (₹15,000)">Version 1 - Basic (₹15,000)</option>
+          <option value="Version 2 - Bypass Switch (₹20,000)">Version 2 - Bypass Switch (₹20,000)</option>
+          <option value="Version 3 - Web Access (₹21,000)">Version 3 - Web Access (₹21,000)</option>
+          <option value="Version 4 - Biometric (₹26,000)">Version 4 - Biometric (₹26,000)</option>
+          <option value="Industrial Premium (₹27,000)">Industrial Premium (₹27,000)</option>
+        </select>
+        
+        <input id="product-qr" type="text" placeholder="Scanned Product QR ID" class="p-2 bg-gray-700 rounded border border-gray-600" />
+      </div>
+
+      <div class="flex space-x-3">
+        <button onclick="window.startBillingScanner()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm border border-gray-500 transition">Scan Product QR</button>
+        <button onclick="window.processBilling()" class="bg-green-600 hover:bg-green-500 px-6 py-2 rounded font-semibold text-sm transition">Complete Bill & Register Warranty</button>
+      </div>
+      
+      <!-- QR Scanner Container -->
+      <div id="billing-reader" class="w-full max-w-sm mx-auto mt-4 hidden bg-black rounded"></div>
+    </section>
+
+    <!-- 2. Warranty Verification & Claim Section -->
+    <section id="claim-section" class="bg-gray-800 p-6 rounded-lg shadow-md hidden">
+      <h2 class="text-lg font-semibold text-purple-300 mb-4">2. Two-Step Warranty Claim Verification</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Step 1: Ticket QR ID</label>
+          <input id="claim-ticket-qr" type="text" placeholder="Scan or enter Ticket ID" class="w-full p-2 bg-gray-700 rounded border border-gray-600" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Step 2: Physical Device QR ID</label>
+          <input id="claim-product-qr" type="text" placeholder="Scan or enter Product QR" class="w-full p-2 bg-gray-700 rounded border border-gray-600" />
+        </div>
+      </div>
+
+      <div class="flex space-x-3 mb-4">
+        <button onclick="window.verifyClaimMatch()" class="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded font-semibold text-sm transition">Verify Match & Check 6-Month Status</button>
+      </div>
+
+      <!-- Claim Status Output -->
+      <div id="claim-status" class="p-4 rounded hidden mt-4"></div>
+    </section>
+  </main>
+
+  <!-- Firebase & Application Logic -->
+  <script type="module">
+    // 1. Firebase Module Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-analytics.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      doc, 
+      setDoc, 
+      getDoc, 
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+    // 2. Your Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
+      authDomain: "kaalnetra-214b6.firebaseapp.com",
+      projectId: "kaalnetra-214b6",
+      storageBucket: "kaalnetra-214b6.firebasestorage.app",
+      messagingSenderId: "974973616837",
+      appId: "1:974973616837:web:9d586455fd35a938ce66ac",
+      measurementId: "G-K4ZX5H6QR7"
+    };
+
+    // 3. Initialize Firebase & Firestore
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // ==========================================
+    // UI TAB SWITCHING LOGIC
+    // ==========================================
+    window.switchTab = function(tab) {
+      document.getElementById("billing-section").classList.toggle("hidden", tab !== "billing");
+      document.getElementById("claim-section").classList.toggle("hidden", tab !== "claim");
+      document.getElementById("claim-status").classList.add("hidden"); // Reset claim status on switch
+    };
+
+    // ==========================================
+    // QR SCANNER LOGIC
+    // ==========================================
+    window.startBillingScanner = function() {
+      const readerDiv = document.getElementById("billing-reader");
+      readerDiv.classList.remove("hidden");
+      
+      const html5QrCode = new Html5Qrcode("billing-reader");
+      
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          document.getElementById("product-qr").value = decodedText;
+          html5QrCode.stop().then(() => {
+            readerDiv.classList.add("hidden");
+          });
+        },
+        (errorMessage) => {
+          // parse errors silently
+        }
+      ).catch(err => {
+        alert("Camera access denied or unavailable.");
+        readerDiv.classList.add("hidden");
+      });
+    };
+
+    // ==========================================
+    // BILLING & 6-MONTH WARRANTY LOGIC
+    // ==========================================
+    window.processBilling = async function() {
+      const name = document.getElementById("customer-name").value.trim();
+      const phone = document.getElementById("customer-phone").value.trim();
+      const model = document.getElementById("product-model").value;
+      const qrId = document.getElementById("product-qr").value.trim();
+
+      if (!name || !phone || !qrId) {
+        alert("Please fill in all customer details and scan the product QR code.");
+        return;
+      }
+
+      // Calculate Dates
+      const now = new Date();
+      const warrantyExpiry = new Date();
+      warrantyExpiry.setMonth(warrantyExpiry.getMonth() + 6); // Add 6 months
+
+      try {
+        // 1. Permanent Sales Ledger Data
+        const saleRef = await addDoc(collection(db, "sales"), {
+          customerName: name,
+          customerPhone: phone,
+          productModel: model,
+          productQR: qrId,
+          saleDate: Timestamp.fromDate(now),
+          warrantyExpiry: Timestamp.fromDate(warrantyExpiry),
+          status: "COMPLETED"
+        });
+
+        // 2. Warranty Registry Data (Can be purged later)
+        await setDoc(doc(db, "warranty_registry", qrId), {
+          saleId: saleRef.id,
+          customerName: name,
+          customerPhone: phone,
+          productModel: model,
+          warrantyExpiry: Timestamp.fromDate(warrantyExpiry),
+          active: true
+        });
+
+        alert("✅ Sale recorded successfully! 6-Month Free Warranty is active.");
+        
+        // Clear fields
+        document.getElementById("customer-name").value = '';
+        document.getElementById("customer-phone").value = '';
+        document.getElementById("product-qr").value = '';
+        
+      } catch (error) {
+        console.error("Error saving order: ", error);
+        alert("Failed to save transaction: " + error.message);
+      }
+    };
+
+    // ==========================================
+    // WARRANTY CLAIM VERIFICATION LOGIC
+    // ==========================================
+    window.verifyClaimMatch = async function() {
+      const ticketQR = document.getElementById("claim-ticket-qr").value.trim();
+      const productQR = document.getElementById("claim-product-qr").value.trim();
+      const statusDiv = document.getElementById("claim-status");
+
+      if (!ticketQR || !productQR) {
+        alert("Please enter both the Ticket QR ID and the Product QR ID.");
+        return;
+      }
+
+      statusDiv.classList.remove("hidden", "bg-green-800", "bg-red-800");
+
+      try {
+        // Fetch product warranty by QR Code ID
+        const docRef = doc(db, "warranty_registry", productQR);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          statusDiv.className = "p-4 rounded bg-red-800 text-white mt-4";
+          statusDiv.innerHTML = "❌ <strong>CLAIM VOID:</strong> Product record not found or data has been deleted after 6 months.";
+          return;
+        }
+
+        const data = docSnap.data();
+        const expiryDate = data.warrantyExpiry.toDate();
+        const currentDate = new Date();
+
+        // Check if 6 months have passed
+        if (currentDate > expiryDate) {
+          statusDiv.className = "p-4 rounded bg-red-800 text-white mt-4";
+          statusDiv.innerHTML = `❌ <strong>CLAIM VOID:</strong> 6-Month Free Warranty expired on ${expiryDate.toLocaleDateString()}.`;
+          return;
+        }
+
+        // Success Output
+        statusDiv.className = "p-4 rounded bg-green-800 text-white mt-4";
+        statusDiv.innerHTML = `
+          ✅ <strong>VERIFIED MATCH</strong><br>
+          <ul class="mt-2 text-sm space-y-1">
+            <li><strong>Model:</strong> ${data.productModel}</li>
+            <li><strong>Customer:</strong> ${data.customerName}</li>
+            <li><strong>Phone:</strong> ${data.customerPhone}</li>
+            <li><strong>Valid Until:</strong> ${expiryDate.toLocaleDateString()}</li>
+          </ul>
+          <button class="mt-3 bg-green-600 px-4 py-1 rounded text-sm font-bold hover:bg-green-500 transition shadow">Proceed with Repair</button>
+        `;
+
+      } catch (err) {
+        console.error("Verification error:", err);
+        alert("Verification failed: " + err.message);
+      }
+    };
+  </script>
+</body>
+</html>
