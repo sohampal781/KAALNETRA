@@ -181,11 +181,21 @@
           <button onclick="openScanner('DISPATCH')" class="bg-slate-800 text-white px-4 rounded"><i class="fas fa-camera"></i></button>
           <button onclick="addToDispatchCart()" class="bg-slate-900 text-yellow-400 px-6 font-black rounded uppercase text-xs">Add Item</button>
         </div>
-        <ul id="dispatchList" class="bg-slate-50 p-4 border border-slate-200 rounded mb-6 min-h-[60px] space-y-2"></ul>
-
-        <div class="flex items-center gap-3 mb-6 bg-emerald-50 p-4 border border-emerald-200 rounded">
-          <input type="checkbox" id="chkWar" checked class="w-5 h-5 cursor-pointer">
-          <label for="chkWar" class="text-sm font-black text-emerald-800 cursor-pointer uppercase tracking-wide">Activate 6-Month Free Warranty</label>
+        <!-- New Dispatch Cart Table -->
+        <div class="table-wrapper mb-6">
+            <table class="erp-tab w-full text-left">
+                <thead>
+                    <tr>
+                        <th class="erp-th">Tag ID</th>
+                        <th class="erp-th">Asset Name</th>
+                        <th class="erp-th text-center">Apply 6M Warranty</th>
+                        <th class="erp-th text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dispatchCartBody">
+                    <tr><td colspan="4" class="text-center italic text-slate-400 p-4">No hardware tags added yet.</td></tr>
+                </tbody>
+            </table>
         </div>
 
         <button onclick="dispatchOrder()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-lg uppercase shadow-lg">Dispatch Order & Generate Master QR</button>
@@ -287,23 +297,37 @@
       <button onclick="document.getElementById('alertModal').classList.add('hidden')" class="w-full py-3 bg-slate-900 text-white font-black uppercase rounded">Close</button>
     </div>
   </div>
+  <!-- Asset Tag Generate Modal (MRPSP Thermal Style) -->
+<div id="tagPrintModal" class="modal-overlay hidden">
+    <div class="panel" style="width:400px; text-align:center; background:white; border:4px solid var(--metro-blue); padding:10px;">
+        <h3 style="border-bottom:2px solid var(--metro-gold); padding-bottom:10px; margin-bottom:15px;">
+            <i class="fas fa-barcode"></i> OFFICIAL ASSET TAG
+        </h3>
+        
+        <div style="max-height: 60vh; overflow-y: auto; border: 1px solid #ccc; background: #f1f5f9; padding: 10px;">
+            <div id="printableTagArea" style="background:white; width: 80mm; padding: 5mm; margin: 0 auto; box-sizing: border-box; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #ddd;">
+                <div style="font-family: 'Arial Black', sans-serif; font-size:14px; border-bottom:2px solid #000; padding-bottom:3px; margin-bottom:10px; width:100%;">
+                    KAALNETRA SECURITY
+                </div>
+                <div id="tagDisplayItemName" style="font-weight:900; font-size:12px; text-transform:uppercase; margin-bottom:10px; text-align:center;">ASSET NAME</div>
+                
+                <img id="tagQrImage" src="" style="width: 50mm; height: 50mm; border: 2pt solid #000; padding: 5pt; margin-bottom:10px;">
+                <div id="tagDisplayId" style="font-family:monospace; font-weight:bold; font-size:16px; letter-spacing:1px; margin-bottom:5px;">#000000</div>
+                
+                <div style="font-size:9px; margin-top:5px; border-top:1px solid #000; padding-top:5px; width:100%;">
+                    PROPERTY OF KAALNETRA
+                </div>
+            </div>
+        </div>
 
-  <!-- Master QR Print Modal -->
-  <div id="printQrModal" class="modal-overlay hidden">
-    <div class="modal-content p-6 text-center max-w-sm border-t-4 border-yellow-400">
-      <h3 class="font-black text-lg uppercase mb-2">MASTER WARRANTY QR</h3>
-      <p class="text-xs text-slate-500 font-bold mb-4">Provide this to the customer.</p>
-      <div id="printArea" class="bg-white p-4 border-2 border-slate-900 rounded mb-4">
-        <h4 class="font-black text-lg mb-2">KAALNETRA</h4>
-        <img id="printQrImg" src="" class="w-40 h-40 mx-auto border-4 border-slate-900 p-1 rounded mb-2">
-        <div id="printQrText" class="font-mono font-black text-lg text-indigo-700 tracking-widest"></div>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="document.getElementById('printQrModal').classList.add('hidden')" class="flex-1 py-2 bg-slate-200 font-bold rounded uppercase text-xs">Close</button>
-        <button onclick="window.print()" class="flex-1 py-2 bg-emerald-600 text-white font-bold rounded uppercase text-xs">Print</button>
-      </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="erp-btn secondary" style="flex:1;" onclick="document.getElementById('tagPrintModal').classList.add('hidden')">DISMISS</button>
+            <button class="erp-btn success" style="flex:2;" onclick="window.printAssetTag()">
+                <i class="fas fa-print"></i> PRINT THERMAL TAG
+            </button>
+        </div>
     </div>
-  </div>
+</div>
 
   <!-- Camera Scanner Modal -->
   <div id="scannerModal" class="modal-overlay hidden">
@@ -664,7 +688,194 @@
       else if(scanTarget === 'DISPATCH') { document.getElementById("dispTag").value = code; window.addToDispatchCart(); }
       else if(scanTarget === 'WARRANTY') { document.getElementById("claimMaster").value = code; window.verifyMasterWarranty(); }
     }
+    // ================= PRINT THERMAL ASSET TAG =================
+window.printAssetTag = () => {
+    const printContent = document.getElementById("printableTagArea").innerHTML;
+    const win = window.open('', '', 'height=500,width=500');
+    win.document.write('<html><head><title>Asset Tag Print</title>');
+    win.document.write('<style>body{text-align:center;font-family:sans-serif;padding:10px;margin:0;} img{max-width:100%;}</style>');
+    win.document.write('</head><body>');
+    win.document.write(printContent);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 500);
+};
+// ================= 4. DISPATCH & MASTER QR ENGINE =================
+window.addTagToDispatchCart = async () => {
+    const tag = document.getElementById("dispTagInp").value.trim().toUpperCase();
+    if(!tag) return;
 
+    if(window.dispatchCartTags.find(t => t.id === tag)) return alert("Already added.");
+
+    try {
+        const snap = await get(ref(window.db, `inventory/${tag}`));
+        if(!snap.exists() || snap.val().status !== "In Stock") return alert("Invalid or Sold Tag.");
+        
+        // Added 'warranty: true' by default
+        window.dispatchCartTags.push({ id: tag, item: snap.val().item, warranty: true });
+        document.getElementById("dispTagInp").value = "";
+        window.renderDispatchCart();
+    } catch(e) { alert(e.message); }
+};
+
+window.renderDispatchCart = () => {
+    const tbody = document.getElementById("dispatchCartBody");
+    if(window.dispatchCartTags.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center italic text-slate-400 p-4">No hardware tags added yet.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = window.dispatchCartTags.map((t, i) => `
+        <tr class="erp-tr border-b border-slate-200 bg-white">
+            <td class="erp-td font-mono font-bold text-slate-800">${t.id}</td>
+            <td class="erp-td font-bold">${t.item}</td>
+            <td class="erp-td text-center">
+                <input type="checkbox" ${t.warranty ? 'checked' : ''} onchange="window.toggleItemWarranty(${i}, this.checked)" class="w-5 h-5 cursor-pointer accent-emerald-600">
+            </td>
+            <td class="erp-td text-center">
+                <button onclick="window.dispatchCartTags.splice(${i},1); window.renderDispatchCart();" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fas fa-times"></i> Remove</button>
+            </td>
+        </tr>
+    `).join("");
+};
+
+window.toggleItemWarranty = (index, isChecked) => {
+    window.dispatchCartTags[index].warranty = isChecked;
+};
+
+window.processMasterDispatch = async () => {
+    const ordId = document.getElementById("dispOrderId").value.trim().toUpperCase();
+    if(!ordId) return alert("Enter Order ID.");
+    if(window.dispatchCartTags.length === 0) return alert("Add hardware tags.");
+
+    try {
+        const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+        if(!ordSnap.exists()) return alert("Order not found.");
+
+        const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
+        const expDate = Date.now() + (6 * 30 * 24 * 60 * 60 * 1000); // 6 months in MS
+        const updates = {};
+
+        // Update tags
+        for(let t of window.dispatchCartTags) {
+            updates[`inventory/${t.id}/status`] = "Sold";
+            updates[`inventory/${t.id}/masterQrRef`] = masterId;
+            updates[`inventory/${t.id}/hasWarranty`] = t.warranty;
+        }
+
+        // Save Master Warranty
+        updates[`master_warranties/${masterId}`] = {
+            masterId: masterId, 
+            orderRef: ordId, 
+            customerName: ordSnap.val().customerName, 
+            hardwareList: window.dispatchCartTags,
+            timestamp: serverTimestamp()
+        };
+
+        // Update Order
+        updates[`web_orders/${ordId}/status`] = "Dispatched";
+        updates[`web_orders/${ordId}/masterQrId`] = masterId;
+
+        await update(ref(window.db), updates);
+
+        // TRIGGER MRPSP-STYLE BILL PRINT
+        window.printDispatchBill(ordId, masterId, ordSnap.val().customerName, window.dispatchCartTags);
+
+        // Clear UI
+        document.getElementById("dispOrderId").value = ""; 
+        window.dispatchCartTags = []; 
+        window.renderDispatchCart();
+
+    } catch(e) { alert(e.message); }
+};
+
+// ================= PRINT MRPSP-STYLE DISPATCH BILL =================
+window.printDispatchBill = (ordId, masterId, customerName, items) => {
+    let itemRows = "";
+    items.forEach((it, i) => {
+        let warrantyText = it.warranty ? "6 MONTHS FREE" : "NO WARRANTY";
+        itemRows += `
+            <tr style="border-bottom: 2pt solid #ddd;">
+                <td style="padding: 15px; font-size: 20pt; font-weight: 900; text-align: left;">${i+1}. ${it.item.toUpperCase()}</td>
+                <td style="padding: 15px; font-size: 18pt; font-family: monospace;">${it.id}</td>
+                <td style="padding: 15px; font-size: 18pt; font-weight: bold; text-align: right;">${warrantyText}</td>
+            </tr>`;
+    });
+
+    const dateStr = new Date().toLocaleDateString('en-IN');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${masterId}`;
+
+    // Create iframe for printing
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                @media print { @page { size: A4; margin: 0; } }
+                body { font-family: "Arial Black", sans-serif; color: black; background: white; margin: 0; padding: 40px; }
+                .wrapper { width: 100%; max-width: 210mm; margin: 0 auto; text-align: center; }
+                .header-line { border-bottom: 8pt solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+                .h1 { font-size: 45pt; font-weight: 900; text-transform: uppercase; line-height: 1.1; }
+                .doc-label { font-size: 30pt; border: 6pt solid #000; padding: 15px; margin: 30px auto; display: inline-block; }
+                .meta { font-size: 22pt; font-weight: 900; margin-bottom: 20px; text-align: left; text-transform: uppercase; }
+                table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+                th { border-bottom: 6pt solid black; font-size: 22pt; font-weight: 900; text-align: left; padding: 15px; }
+                .qr-box { margin-top: 40px; text-align: center; }
+                .footer-sig { margin-top: 80px; font-size: 22pt; font-weight: 900; border-top: 5pt solid black; width: 40%; text-align: left; padding-top: 10px; }
+            </style>
+        </head>
+        <body>
+            <div class="wrapper">
+                <div class="header-line">
+                    <div class="h1">KAALNETRA SECURITY SYSTEMS</div>
+                    <div style="font-size: 18pt;">THE EYE THAT NEVER SLEEPS</div>
+                </div>
+                
+                <div class="doc-label">OFFICIAL DISPATCH & WARRANTY BILL</div>
+                
+                <div class="meta">
+                    <div>ORDER REF: ${ordId}</div>
+                    <div>CUSTOMER: ${customerName}</div>
+                    <div>DATE: ${dateStr}</div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50%">ASSET DESCRIPTION</th>
+                            <th style="width:25%">TAG ID</th>
+                            <th style="width:25%; text-align:right;">WARRANTY</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemRows}</tbody>
+                </table>
+                
+                <div class="qr-box">
+                    <div style="font-size: 20pt; font-weight: bold; margin-bottom:10px;">MASTER WARRANTY QR</div>
+                    <img src="${qrUrl}" style="width: 250px; height: 250px; border: 4pt solid black; padding: 10px;">
+                    <div style="font-size: 25pt; font-family: monospace; margin-top:10px;">${masterId}</div>
+                    <div style="font-size: 14pt; font-weight: normal; margin-top:5px;">Scan for Warranty Claims & Support</div>
+                </div>
+
+                <div class="footer-sig">AUTHORIZED SIGNATORY</div>
+            </div>
+        </body>
+        </html>
+    `);
+    doc.close();
+
+    // Print after delay
+    setTimeout(() => {
+        iframe.contentWindow.print();
+        setTimeout(() => document.body.removeChild(iframe), 1000);
+    }, 800);
+};
     // Intercept Tailwind CDN Warning in Console
     const origWarn = console.warn;
     console.warn = function(msg) { if (!msg.includes('cdn.tailwindcss.com')) origWarn.apply(console, arguments); };
