@@ -1,1059 +1,618 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MRPSP | Metro Railway Platform Safety Project</title>
-<!-- Tailwind added for the Customer Storefront -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<style>
-/* --- PREMIUM ENTERPRISE METRO THEME --- */
-:root {
-  --metro-blue: #0f172a;    /* Premium Slate Navy */
-  --metro-gold: #fbbf24;    /* Vibrant Gold Accent */
-  --metro-red: #e11d48;     /* Modern Rose Red */
-  --metro-slate: #64748b;
-  --bg-color: #f8fafc;      /* Modern light background */
-  --panel-bg: #ffffff;
-  --text-main: #1e293b;
-  --border-color: #e2e8f0;
-  --success-green: #10b981;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* CRITICAL UI CONTROL */
-.hidden { display: none !important; }
-
-body { 
-    margin: 0; 
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; 
-    background: var(--bg-color); 
-    color: var(--text-main); 
-    font-size: 14px; 
-    line-height: 1.6;
-    letter-spacing: -0.01em;
-}
-
-/* HEADER - MODERN STICKY BAR */
-header {
-  background: var(--metro-blue);
-  color: white;
-  padding: 0.8rem 2rem;
-  border-bottom: 3px solid var(--metro-gold);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  position: sticky; top: 0; z-index: 1001;
-}
-
-/* BUTTONS - REFINED HD STYLE */
-button {
-  padding: 10px 20px;
-  cursor: pointer;
-  background: var(--metro-blue);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-button:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-button:active { transform: translateY(0); }
-button:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
-
-button.danger { background: var(--metro-red); }
-button.success { background: var(--success-green); }
-button.warning { background: #f59e0b; }
-button.info { background: #3b82f6; }
-button.secondary { background: #64748b; }
-
-/* INPUTS - BORDERLESS FOCUS STYLE */
-input, select, textarea {
-  background: #fff;
-  border: 1.5px solid var(--border-color);
-  color: var(--text-main);
-  padding: 12px;
-  border-radius: 8px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 12px;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--metro-gold);
-  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
-}
-
-/* --- UPDATED ADAPTIVE NAVIGATION --- */
-.nav-bar {
-    display: flex;
-    gap: 8px;
-    padding: 15px 20px;
-    background: #ffffff;
-    border-bottom: 1px solid var(--border-color);
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
-.nav-bar::-webkit-scrollbar { height: 4px; }
-.nav-bar::-webkit-scrollbar-thumb { background: var(--metro-gold); border-radius: 10px; }
-
-.nav-btn {
-    background: #f1f5f9;
-    color: var(--metro-slate);
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 11px;
-    white-space: nowrap;      
-    border: 1.5px solid transparent;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-    cursor: pointer;
-}
-.nav-btn i { font-size: 14px; }
-.nav-btn.active {
-    background: var(--metro-blue);
-    color: var(--metro-gold);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
-    border-color: var(--metro-gold);
-}
-.nav-btn:hover:not(.active) {
-    background: #e2e8f0;
-    color: var(--metro-blue);
-    border-color: #cbd5e1;
-}
-
-/* --- PANELS - BREATHABLE DATA CARDS --- */
-.panel {
-    background: var(--panel-bg);
-    padding: 24px;
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    margin-bottom: 24px;
-    box-shadow: var(--card-shadow);
-}
-.panel h3 { 
-    margin: 0 0 20px 0; 
-    color: var(--metro-blue); 
-    font-size: 1.15rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 15px;
-}
-
-/* --- TABLES - CLEAN DATA GRID --- */
-.table-wrapper { border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
-th { 
-    background: #f8fafc; 
-    color: var(--metro-slate); 
-    font-weight: 700; 
-    text-transform: uppercase; 
-    font-size: 11px; 
-    padding: 16px;
-    border-bottom: 2px solid var(--border-color);
-}
-td { padding: 16px; border-bottom: 1px solid var(--border-color); }
-tr:hover { background: #fcfcfd; }
-
-@media (max-width: 1024px) {
-    .nav-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .nav-bar::-webkit-scrollbar { display: none; }
-    .nav-btn { padding: 8px 14px; }
-    #tab-printReport .panel div[style*="display:flex"], 
-    #tab-newData .panel div[style*="display:flex"],
-    .panel div[style*="gap:10px"] {
-        display: flex !important; flex-direction: column !important; width: 100% !important;
-    }
-    select, input, textarea {
-        width: 100% !important; max-width: 100% !important; box-sizing: border-box;
-        margin-bottom: 5px !important; font-size: 16px !important;
-    }
-    .panel { padding: 12px !important; }
-    .panel h3, .panel h4 { margin-bottom: 10px !important; font-size: 1rem !important; }
-}
-
-/* MODALS - GLASSMORPHISM OVERLAYS */
-.modal-overlay { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(15, 23, 42, 0.65); 
-    backdrop-filter: blur(8px); 
-    display: flex; justify-content: center; align-items: center; 
-    z-index: 2000; 
-}
-#videoContainer { 
-    position: relative; width: 320px; height: 240px; 
-    background: #000; border-radius: 20px; 
-    overflow: hidden; border: 4px solid #fff; 
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-#cameraFeed { width: 100%; height: 100%; object-fit: cover; }
-#overlayCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-/* DASHBOARD WIDGETS */
-.finance-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-.fin-card { 
-    background: white; padding: 24px; border-radius: 16px; 
-    border-left: 6px solid #cbd5e1; box-shadow: var(--card-shadow);
-    transition: transform 0.3s ease; position: relative; overflow: hidden;
-}
-.fin-card i { position: absolute; right: 10px; bottom: 10px; font-size: 40px; opacity: 0.1; }
-.fin-card:hover { transform: translateY(-5px); }
-.amount { font-size: 26px; font-weight: 800; color: var(--metro-blue); margin: 10px 0; }
-.fin-card.income { border-left-color: var(--success-green); }
-.fin-card.expense { border-left-color: var(--metro-red); }
-
-/* BAN SYSTEM STYLES */
-.banned-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.banned-card { max-width: 500px; width: 100%; text-align: center; border-top: 10px solid #991b1b; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border-radius: 12px; }
-
-/* PRINT LOGIC */
-@media print {
-    body * { visibility: hidden !important; height: 0 !important; overflow: visible !important; }
-    #printableReportContainer, #printableReportContainer * { visibility: visible !important; height: auto !important; }
-    #printableReportContainer { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-    .no-print { display: none !important; }
-}
-
-/* --- INNOVATIVE METRO ANIMATION LOGIN --- */
-#loginSection {
-    position: relative;
-    min-height: calc(100vh - 65px); 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #080f1e;
-    overflow: hidden;
-}
-.metro-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-.metro-track { position: absolute; bottom: 30%; left: 0; width: 100%; height: 3px; background: rgba(255, 255, 255, 0.05); box-shadow: 0 5px 15px rgba(251, 191, 36, 0.1); }
-.metro-train {
-    position: absolute; bottom: calc(30% + 3px); left: -800px; width: 600px; height: 70px;
-    background: linear-gradient(to bottom, #cbd5e1, #94a3b8); border-radius: 8px 40px 0 0;
-    display: flex; align-items: center; padding-left: 20px; gap: 25px;
-    box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.5);
-    animation: trainPass 7s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-.metro-window { width: 60px; height: 30px; background: #0f172a; border-radius: 6px; box-shadow: inset 0 0 15px rgba(251, 191, 36, 0.4); }
-.metro-stripe { position: absolute; bottom: 12px; left: 0; width: 100%; height: 6px; background: var(--metro-gold); }
-.metro-headlight { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 12px; height: 20px; background: #ffffff; border-radius: 0 6px 6px 0; box-shadow: 80px 0 150px 60px rgba(251, 191, 36, 0.8), 20px 0 40px 10px rgba(255, 255, 255, 0.9); }
-.speed-line { position: absolute; height: 2px; background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent); width: 200px; animation: speedPass linear infinite; }
-.sl-1 { top: 40%; animation-duration: 2s; animation-delay: 0.5s; }
-.sl-2 { top: 60%; animation-duration: 1.5s; width: 300px; }
-.sl-3 { top: 20%; animation-duration: 3s; animation-delay: 1s; width: 150px; }
-
-@keyframes trainPass { 0% { left: -800px; } 100% { left: 120vw; } }
-@keyframes speedPass { 0% { left: 120vw; } 100% { left: -300px; } }
-
-#loginSection::before {
-    content: ''; position: absolute; width: 200%; height: 200%;
-    background-image: linear-gradient(rgba(251, 191, 36, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(251, 191, 36, 0.07) 1px, transparent 1px);
-    background-size: 50px 50px; transform: perspective(600px) rotateX(60deg) translateY(-100px) translateZ(-200px);
-    animation: gridMove 15s linear infinite; z-index: 1;
-}
-@keyframes gridMove { 0% { transform: perspective(600px) rotateX(60deg) translateY(0) translateZ(-200px); } 100% { transform: perspective(600px) rotateX(60deg) translateY(50px) translateZ(-200px); } }
-
-.login-card {
-    position: relative; z-index: 2; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid var(--metro-gold);
-    border-bottom: 4px solid var(--metro-gold); padding: 50px 40px; border-radius: 16px;
-    width: 90%; max-width: 420px; box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-    text-align: center; color: white;
-}
-.login-card .shield-icon { font-size: 56px; color: var(--metro-gold); filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.4)); margin-bottom: 5px; }
-.login-input-group { position: relative; margin-bottom: 20px; text-align: left; }
-.login-input-group i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 16px; transition: color 0.3s ease; z-index: 2; }
-.login-input-group input { width: 100%; padding: 16px 16px 16px 45px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 10px; font-size: 15px; transition: all 0.3s ease; margin-bottom: 0; box-sizing: border-box; }
-.login-input-group input::placeholder { color: #64748b; }
-.login-input-group input:focus { border-color: var(--metro-gold); background: rgba(0, 0, 0, 0.5); box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15); }
-.login-input-group input:focus + i { color: var(--metro-gold); }
-
-.btn-login {
-    width: 100%; padding: 16px; font-size: 14px; font-weight: 900;
-    background: linear-gradient(135deg, var(--metro-gold) 0%, #d97706 100%);
-    color: var(--metro-blue); border: none; border-radius: 10px; letter-spacing: 1.5px;
-    cursor: pointer; transition: all 0.3s ease; margin-top: 10px; text-transform: uppercase;
-    box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.4);
-}
-.btn-login:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(251, 191, 36, 0.6); }
-.btn-login:disabled { background: #475569; color: #94a3b8; box-shadow: none; cursor: not-allowed; }
-
-.login-footer { font-size: 11px; color: #94a3b8; margin-top: 30px; line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
-.login-footer strong { color: var(--metro-red); letter-spacing: 0.5px; }
-
-/* SWIPE BUTTONS */
-.swipe-btn-container { position: relative; width: 100%; max-width: 400px; height: 56px; background: #e2e8f0; border-radius: 28px; overflow: hidden; margin: 20px auto 0 auto; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); user-select: none; }
-.swipe-btn-track { position: absolute; top: 0; left: 0; height: 100%; width: 0; transition: width 0.1s; }
-.swipe-btn-thumb { position: absolute; top: 4px; left: 4px; height: 48px; width: 48px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: var(--metro-blue); font-size: 20px; cursor: grab; z-index: 2; transition: left 0.1s; }
-.swipe-btn-thumb:active { cursor: grabbing; }
-.swipe-btn-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #64748b; font-size: 13px; text-transform: uppercase; z-index: 1; pointer-events: none; letter-spacing: 1px; }
-.swipe-checkout-track { background: linear-gradient(90deg, #f59e0b, #d97706); }
-.swipe-return-track { background: linear-gradient(90deg, #3b82f6, var(--metro-blue)); }
-
-.checkbox-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: #fff; padding: 15px; border: 1.5px solid var(--border-color); border-radius: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 20px; }
-.checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; cursor: pointer; padding: 5px; border-radius: 4px; transition: background 0.2s; }
-.checkbox-item:hover { background: #f1f5f9; }
-
-/* Custom Google Button style */
-.btn-google {
-    width: 100%; padding: 14px; font-size: 14px; font-weight: 800; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-.btn-google:hover { background: #f8fafc; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-</style>
-</head>
-
-<body>
-<header>
-  <div style="display:flex; align-items:center">
-    <div style="width:45px;height:45px;background:var(--metro-gold);color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;margin-right:15px;border-radius:4px;flex-shrink:0; font-size: 24px;">M</div>
-    <div>
-        <h1 style="margin:0; line-height:1.2; font-size: 1.3rem; letter-spacing: 0.5px;">KAALNETRA SECURITY ERP</h1>
-        <small style="color: #cbd5e1; font-weight: 600; text-transform: uppercase; font-size: 10px;">Official Audit & Inspection Portal</small>
-    </div>
-  </div>
-
-  <div id="authContainer" class="hidden">
-    <span style="font-size:11px; margin-right:5px; opacity:0.7;">Logged in as:</span>
-    <span id="userInfo" style="margin-right:20px; font-weight:bold; color:var(--metro-gold);"></span>
-    <button class="danger" onclick="logout()" style="padding:6px 12px; font-size:11px;">TERMINATE SESSION</button>
-  </div>
-</header>
-
-<!-- ========================================== -->
-<!-- 1. LOGIN SCREEN (Modified for Customer + Admin) -->
-<!-- ========================================== -->
-<section id="loginSection">
-  <div class="metro-scene">
-      <div class="speed-line sl-1"></div><div class="speed-line sl-2"></div><div class="speed-line sl-3"></div>
-      <div class="metro-track"></div>
-      <div class="metro-train"><div class="metro-headlight"></div><div class="metro-stripe"></div><div class="metro-window"></div><div class="metro-window"></div><div class="metro-window"></div><div class="metro-window"></div></div>
-  </div>
-
-  <div class="login-card">
-    <div style="text-align:center; margin-bottom:30px;">
-        <i class="fas fa-shield-alt shield-icon"></i>
-        <h3 style="margin:10px 0 0 0; font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px; color: white;">MRPSP TERMINAL</h3>
-        <p style="color: #94a3b8; font-size: 12px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Secure Access Portal</p>
-    </div>
-
-    <!-- Admin/Staff Login -->
-    <div class="login-input-group">
-        <input id="email" type="email" placeholder="Official Email ID (user@metro.gov)">
-        <i class="fas fa-envelope"></i>
-    </div>
-    <div class="login-input-group">
-        <input id="password" type="password" placeholder="Secure Password">
-        <i class="fas fa-lock"></i>
-    </div>
-    <button class="btn-login" onclick="login()">
-        <i class="fas fa-fingerprint" style="margin-right: 8px;"></i> AUTHORIZE SESSION
-    </button>
-    
-    <div style="margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
-        <div style="height: 1px; background: rgba(255,255,255,0.2); width: 100%;"></div>
-        <span style="font-size: 11px; color: #94a3b8; font-weight: bold;">OR</span>
-        <div style="height: 1px; background: rgba(255,255,255,0.2); width: 100%;"></div>
-    </div>
-
-    <!-- CUSTOMER LOGIN INJECTED HERE -->
-    <button class="btn-google" onclick="window.loginCustomerGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px; height:18px;">
-        CUSTOMER STORE SIGN-IN
-    </button>
-    
-    <p class="login-footer"><strong>RESTRICTED NODE:</strong> Unauthorized network probing is strictly prohibited.</p>
-  </div>
-</section>
-
-<!-- ========================================== -->
-<!-- 2. CUSTOMER STOREFRONT (Amazon Style UI)   -->
-<!-- ========================================== -->
-<section id="customerScreen" class="hidden" style="background: #f1f5f9; min-height: 100vh;">
-  <div style="background: var(--metro-blue); padding: 40px 20px; text-align: center;">
-    <h2 style="color: var(--metro-gold); font-size: 32px; font-weight: 900; margin: 0;">KAALNETRA SYSTEMS</h2>
-    <p style="color: #cbd5e1; margin-top: 10px;">Intelligent Protection 24x7 with 6-Month Free Warranty</p>
-  </div>
-
-  <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;" id="customerProductCatalog">
-        <!-- JS will populate products here -->
-    </div>
-  </div>
-</section>
-
-<!-- ========================================== -->
-<!-- 3. ADMIN ERP SYSTEM (Your Original Code)   -->
-<!-- ========================================== -->
-<section id="appScreen" class="hidden">
-  <div class="nav-bar">
-    <button class="nav-btn active" onclick="switchTab('newData')" id="btnNew"><i class="fas fa-ruler-combined"></i> Field Inspection</button>
-    <button class="nav-btn" onclick="switchTab('inventory')" id="btnInventory"><i class="fas fa-boxes"></i> Asset Tracking</button>
-    <button class="nav-btn" onclick="switchTab('gallery')" id="btnGallery"><i class="fas fa-folder-open"></i> Compliance Docs</button>
-    <button class="nav-btn" onclick="switchTab('assigned')" id="btnAssign"><i class="fas fa-tasks"></i> Operation Tasks</button>
-    <button class="nav-btn" onclick="switchTab('comments')" id="btnComments"><i class="fas fa-comment-dots"></i> Station Comments</button>
-    <button class="nav-btn hidden" onclick="switchTab('adminPanel')" id="btnAdmin" style="color:var(--metro-red);"><i class="fas fa-user-shield"></i> System Oversight</button>
-    <button class="nav-btn" onclick="switchTab('dataView')" id="btnDataView"><i class="fas fa-database"></i> Master Logs</button>
-    <button class="nav-btn" onclick="switchTab('funds')" id="btnFunds"><i class="fas fa-rupee-sign"></i> Project Funds</button>
-    <button class="nav-btn" onclick="switchTab('purchase')" id="btnPurchase"><i class="fas fa-shopping-cart"></i> Procurement</button>
-    <button class="nav-btn" onclick="switchTab('printReport')" id="btnPrintReport"><i class="fas fa-print"></i> Audit Reports</button>
-    <button class="nav-btn" onclick="switchTab('directives')" id="btnDirectives"><i class="fas fa-file-contract"></i> Directives</button>
-    <button class="nav-btn" onclick="switchTab('billing')" id="btnBilling"><i class="fas fa-file-invoice-dollar"></i> Customer Billing</button>
-    <button class="nav-btn" onclick="switchTab('warranty')" id="btnWarranty"><i class="fas fa-shield-halved"></i> Warranty & Claims</button>
-    <button class="nav-btn" onclick="switchTab('attendance')" id="btnAttendance"><i class="fas fa-calendar-check"></i> Payroll & Attendance</button>
-    <button class="nav-btn" onclick="switchTab('scadaControl')" id="btnScada"><i class="fas fa-network-wired"></i> SCADA Control</button>
-    <button class="nav-btn" onclick="switchTab('delivery')" id="btnDelivery"><i class="fas fa-shipping-fast"></i> Fulfillment & Logistics</button>
-    <button class="nav-btn" onclick="switchTab('fundWorkflow')" id="btnFundWorkflow"><i class="fas fa-file-signature"></i> Office Workflows</button>
-    <span id="adminBadge" class="hidden" style="margin-left:auto; background:var(--metro-red); color:white; padding:6px 12px; border-radius:20px; font-size:10px; font-weight:bold; display:flex; align-items:center;">
-        <i class="fas fa-shield-alt" style="margin-right:5px;"></i> AUDITOR
-    </span>
-  </div>
-
-<div id="tab-newData">
-  <div class="panel">
-    <h3><i class="fas fa-map-marker-alt"></i> Select Inspection Site</h3>
-    <label style="font-weight:700; color:var(--metro-blue); font-size: 12px; text-transform: uppercase;">Step 1: Select Corridor</label>
-    <select id="lineSelect" onchange="handleLineChange()" style="border:2px solid var(--metro-blue); font-weight:600;">
-      <option value="">-- Select Line --</option>
-      <option value="Blue Line">Blue Line (North-South: Dakshineswar ↔ New Garia)</option>
-      <option value="Green Line">Green Line (East-West: Sector V ↔ Howrah Maidan)</option>
-      <option value="Purple Line">Purple Line (Joka ↔ Majerhat)</option>
-      <option value="Yellow Line">Yellow Line (Noapara ↔ Airport)</option>
-      <option value="Orange Line">Orange Line (New Garia ↔ Airport)</option>
-      <option value="Pink Line">Pink Line (Baranagar ↔ Barrackpore)</option>
-    </select>
-
-    <label style="font-weight:700; color:var(--metro-blue); margin-top:15px; display:block; font-size: 12px; text-transform: uppercase;">Step 2: Select Station</label>
-    <select id="stationSelect" onchange="handleStationChange()" disabled style="background:#f1f5f9;">
-      <option value="">-- First Select a Corridor --</option>
-    </select>
-  </div>
-
-  <div id="mainDataForm" class="hidden">
-    
-    <div id="dataExistsWarning" class="hidden" style="background:#fff7ed; color:#9a3412; padding:15px; border:1px solid #fed7aa; border-radius:6px; margin-bottom:20px; display: flex; gap: 10px; align-items: center;">
-        <i class="fas fa-exclamation-circle" style="font-size: 20px;"></i>
-        <div>
-            <strong>Existing Record Found</strong><br>
-            Primary measurement data is locked. You may append additional rake data below.
-        </div>
-    </div>
-
-    <div class="panel" id="stationDetailsPanel" style="border-left: 4px solid var(--success-green);">
-      <h3 id="formTitle">📝 Yellow Line Specification</h3>
-      <input id="inpStationName" type="hidden"> 
-      
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:20px; margin-bottom: 20px;">
-          <div>
-            <label style="font-size:11px; font-weight:bold; color:#64748b;">PLATFORM LENGTH (m)</label>
-            <input id="inpStationLength" placeholder="e.g. 180">
-          </div>
-          <div>
-            <label style="font-size:11px; font-weight:bold; color:#64748b;">YL DISTANCE (cm)</label>
-            <input id="inpYellowDist" placeholder="e.g. 85">
-          </div>
-          <div>
-            <label style="font-size:11px; font-weight:bold; color:#64748b;">YL THICKNESS (cm)</label>
-            <input id="inpYellowThick" placeholder="e.g. 10">
-          </div>
-          <div>
-            <label style="font-size:11px; font-weight:bold; color:var(--metro-blue);">IMPLEMENTATION STATUS</label>
-            <select id="inpImplementation" style="font-weight:bold; border:2px solid var(--metro-blue);">
-                <option value="">-- Select Status --</option>
-                <option value="YES">✅ COMPLIANT (YES)</option>
-                <option value="NO">❌ NON-COMPLIANT (NO)</option>
-            </select>
-          </div>
-      </div>
-      <label style="font-size:11px; font-weight:bold; color:#64748b;">INSPECTOR REMARKS</label>
-      <textarea id="inpRemarks" placeholder="Observations regarding safety compliance..." rows="3"></textarea>
-      
-      <div style="text-align:right; margin-top: 15px;">
-          <button class="secondary" id="btnSaveDraft" onclick="saveStationDetails()"><i class="fas fa-save"></i> Save Draft</button>
-      </div>
-    </div>
-
-   <div class="panel">
-    <h4><i class="fas fa-train"></i> Rake Clearance Data</h4>
-    
-    <div class="table-wrapper" style="margin-top:15px;">
-        <table style="width:100%">
-            <thead>
-                <tr>
-                    <th style="width:50px; text-align:center;">#</th>
-                    <th>Rake ID</th>
-                    <th>Rake Series</th>
-                    <th>Front Clearance (mm)</th>
-                    <th>Rear Clearance (mm)</th>
-                    <th>Time</th>
-                    <th style="text-align:center;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="distanceBody"></tbody>
-        </table>
-    </div>
-
-    <div style="margin-top:20px; display:flex; justify-content:space-between; align-items: center;">
-        <button class="info" onclick="addDistanceRow()">+ Add Measurement Row</button>
-        
-        <button onclick="submitStationData()" id="btnFinalSubmit" class="success" style="padding: 12px 24px;">
-            <i class="fas fa-check-circle"></i> SUBMIT FINAL REPORT
-        </button>
-    </div>
-   </div>
-
-  </div> 
-</div>
-
-<div id="tab-inventory" class="hidden">
-    
-    <div style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap; padding: 10px; background: #e2e8f0; border-radius: 6px;">
-        <button onclick="toggleInvMode('list')" class="info"><i class="fas fa-list"></i> View Stock</button>
-        <button onclick="toggleInvMode('add')" class="success"><i class="fas fa-plus"></i> New Asset</button>
-        <button onclick="toggleInvMode('checkout')" class="warning"><i class="fas fa-sign-out-alt"></i> Checkout</button>
-        <button onclick="toggleInvMode('return')" class="info" style="background:var(--metro-blue); border-color:var(--metro-blue);"><i class="fas fa-sign-in-alt"></i> Return</button>
-        <button onclick="toggleInvMode('history')" class="secondary"><i class="fas fa-history"></i> Audit Trail</button>
-    </div>
-<div id="inv-add" class="panel hidden" style="border-top: 4px solid var(--success-green);">
-    <h3 id="invFormTitle" style="color:var(--success-green);"><i class="fas fa-plus-circle"></i> Register New Asset</h3>
-    <input type="hidden" id="editItemKey"> 
-    
-    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:15px;">
-        <div>
-            <label style="font-size:10px; font-weight:bold; color:var(--metro-blue);">ASSET TAG STATUS</label>
-            <div style="display:flex; gap:5px;">
-                <input id="invBarcode" placeholder="Verification Required" disabled style="background:#f8fafc; font-style:italic; font-weight:bold;">
-                
-                <button id="btnVerifyScan" onclick="startVerificationScan()" class="warning hidden" style="width:45px; padding:0; background: #f59e0b;" title="Scan Printed Tag to Finalize Registration">
-                    <i class="fas fa-qrcode"></i>
-                </button>
-            </div>
-        </div>
-        <input id="invName" placeholder="Asset Name (e.g. Raspberry Pi)">
-        <input type="number" id="invRegPrice" placeholder="Purchase Price (₹)">
-    </div>
-
-    <div style="display:grid; grid-template-columns: 1.5fr 1fr 1fr; gap:15px; margin-bottom:15px;">
-        <select id="addLocSelect">
-            <option value="D2 Building - Heerok Sir Lab">D2 Building - Heerok Sir Lab</option>
-            <option value="Soham Pal Bag">Soham Pal Bag</option>
-            <option value="Other">Other (Specify...)</option>
-        </select>
-        <input id="addLocSpot" placeholder="Unit/Rack (e.g. Shelf 1)">
-        <select id="invCondition">
-            <option value="New">Condition: New</option>
-            <option value="Good" selected>Condition: Good</option>
-            <option value="Damaged">Condition: Damaged</option>
-        </select>
-    </div>
-
-   <div style="display:flex; gap:10px;">
-    <button id="btnAddStock" onclick="saveAndGenerateTag()" class="success" style="flex:2; font-weight:900;">
-        <i class="fas fa-barcode"></i> 1. GENERATE PHYSICAL TAG
-    </button>
-    
-    <button id="btnDirectUpdate" onclick="executeDirectUpdate()" class="info hidden" style="flex:2; background:#0ea5e9; font-weight:900;">
-        <i class="fas fa-save"></i> UPDATE INFO ONLY
-    </button>
-    
-    <button id="btnFinalizeSave" onclick="executeManualSave()" class="success hidden" style="flex:2; background:#10b981; font-weight:900;">
-        <i class="fas fa-check-circle"></i> 2. FINALIZE & SAVE
-    </button>
-
-    <button id="btnCancelEdit" onclick="resetInvForm()" class="secondary hidden" style="flex:1;">CANCEL</button>
-</div>
-    <p id="registrationStatusMsg" style="font-size: 11px; color: #b91c1c; font-weight: bold; margin-top: 10px;" class="hidden">
-        ⚠️ TAG PRINTED: Use the orange Scan button above to verify and Save.
-    </p>
-</div>
-<div id="tagPrintModal" class="modal-overlay hidden">
-    <div class="panel" style="width:95%; max-width:900px; text-align:center; background:white; border:4px solid var(--metro-blue); padding:10px;">
-        <h3 style="border-bottom:2px solid var(--metro-gold); padding-bottom:10px; margin-bottom:15px;">
-            <i class="fas fa-barcode"></i> Master Tag System
-        </h3>
-        
-        <div style="max-height: 60vh; overflow-y: auto; border: 1px solid #ccc; background: #f1f5f9; padding: 10px;">
-            <div id="printableTagArea" style="background:white; width: 210mm; height: 297mm; padding: 20mm; margin: 0 auto; box-sizing: border-box; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #ddd;">
-                
-                <img id="tagQrDisplay" src="" style="width: 130mm; height: 130mm; border: 2pt solid #000; padding: 10pt;">
-                
-                <div style="height: 5em;"></div> 
-
-                <div style="width: 100%; text-align: center;">
-                    <img id="tagBarDisplay" src="" style="width: 160mm; height: 65mm; object-fit: contain;">
-                </div>
-                
-                <div style="margin-top: 40pt; font-family: 'Arial Black', sans-serif; font-size: 45pt; font-weight: 900; text-transform: uppercase; border-top: 10pt solid #000; padding-top: 30pt; width: 90%; text-align: center;">
-                    PLEASE DO NOT DAMAGE THIS TAG
-                </div>
-            </div>
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="secondary" style="flex:1;" onclick="document.getElementById('tagPrintModal').classList.add('hidden')">DISMISS</button>
-            <button class="success" style="flex:2; font-weight:900;" onclick="executeTagPrint()">
-                <i class="fas fa-print"></i> PRINT HIGH-RES A4 TAG
-            </button>
-        </div>
-    </div>
-</div>
-<div id="inv-checkout" class="panel hidden" style="border-top: 4px solid #d97706;">
-    <h3 style="color:#d97706;"><i class="fas fa-sign-out-alt"></i> Batch Asset Checkout</h3>
-    
-    <div style="background: #fffbeb; padding: 20px; border-radius: 8px; border: 1px solid #fde68a; margin-bottom: 20px;">
-        <label style="font-weight:900; font-size:11px; color:#92400e; text-transform:uppercase;">1. Purpose of Usage (Applies to all scanned items)</label>
-        <input id="batchCheckoutPurpose" placeholder="e.g. Scheduled Maintenance, Testing at Esplanade" style="border: 2px solid #f59e0b; font-weight:bold; margin-top:5px;">
-        
-        <button onclick="window.startBatchInvScan('CHECKOUT')" class="warning" style="width:100%; margin-top:10px; font-weight:900; font-size: 14px; padding: 15px;">
-            <i class="fas fa-qrcode"></i> 2. SCAN ASSETS (MAX 6)
-        </button>
-    </div>
-
-    <div class="table-wrapper">
-        <table style="width:100%">
-            <thead style="background:#d97706; color:white;"><tr><th style="width:50px;">#</th><th>Asset Details</th><th style="width:80px; text-align:center;">Action</th></tr></thead>
-            <tbody id="checkoutCartBody"><tr><td colspan='3' style='text-align:center; padding:20px; color:#64748b;'>Cart empty. Scan items to begin.</td></tr></tbody>
-        </table>
-    </div>
-
-    <div id="swipeCheckoutContainer" class="swipe-btn-container hidden">
-        <div class="swipe-btn-track swipe-checkout-track" id="trackCheckout"></div>
-        <div class="swipe-btn-text" id="textCheckout">SWIPE TO CHECKOUT &rarr;</div>
-        <div class="swipe-btn-thumb" id="thumbCheckout"><i class="fas fa-chevron-right"></i></div>
-    </div>
-</div>
-
-<div id="inv-return" class="panel hidden" style="border-top: 4px solid var(--metro-blue);">
-    <h3 style="color:var(--metro-blue);"><i class="fas fa-undo"></i> Batch Asset Return</h3>
-    
-    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; border: 1px solid #bae6fd; margin-bottom: 20px;">
-        <label style="font-weight:900; font-size:11px; color:var(--metro-blue); text-transform:uppercase;">1. Return Location (Applies to all scanned items)</label>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:5px;">
-            <select id="batchReturnLocSelect" style="border: 2px solid #3b82f6; font-weight:bold; height: 45px; margin:0;">
-                <option value="D2 Building - Heerok Sir Lab">D2 Building - Heerok Sir Lab</option>
-                <option value="Other">Other (Specify in Spot)</option>
-            </select>
-            <input id="batchReturnLocSpot" placeholder="Exact Spot (e.g. Cabinet A)" style="border: 2px solid #3b82f6; font-weight:bold; height: 45px; margin:0;">
-        </div>
-
-        <button onclick="window.startBatchInvScan('RETURN')" class="info" style="width:100%; margin-top:15px; font-weight:900; background:var(--metro-blue); font-size: 14px; padding: 15px;">
-            <i class="fas fa-qrcode"></i> 2. SCAN ASSETS (MAX 6)
-        </button>
-    </div>
-
-    <div class="table-wrapper">
-        <table style="width:100%">
-            <thead style="background:var(--metro-blue); color:white;"><tr><th style="width:50px;">#</th><th>Asset Details</th><th style="width:80px; text-align:center;">Action</th></tr></thead>
-            <tbody id="returnCartBody"><tr><td colspan='3' style='text-align:center; padding:20px; color:#64748b;'>Cart empty. Scan items to begin.</td></tr></tbody>
-        </table>
-    </div>
-
-    <div id="swipeReturnContainer" class="swipe-btn-container hidden">
-        <div class="swipe-btn-track swipe-return-track" id="trackReturn"></div>
-        <div class="swipe-btn-text" id="textReturn">SWIPE TO RETURN &rarr;</div>
-        <div class="swipe-btn-thumb" id="thumbReturn"><i class="fas fa-chevron-right" style="color:var(--metro-blue)"></i></div>
-    </div>
-</div>
-<div id="inv-history" class="panel hidden">
-    <div style="text-align:center; padding:40px 20px;">
-        <h2 style="color:var(--metro-blue); margin-bottom:10px;">Asset Audit Trail</h2>
-        <p style="color:#64748b; margin-bottom:20px;">Scan barcode to retrieve complete lifecycle history.</p>
-        
-        <div style="max-width:400px; margin:0 auto; display:flex; gap:10px;">
-            <input 
-                id="auditSearchInput" 
-                placeholder="Scan or Enter Asset Tag..." 
-                style="padding:12px; font-size:16px; border:2px solid var(--metro-blue); flex-grow:1;"
-                onchange="fetchAuditHistory(this.value)"
-            >
-            <button 
-                onclick="openBarcodeScanner('AUDIT_SEARCH')" 
-                class="warning" 
-                style="padding:12px 20px; font-size:18px;"
-            >
-                <i class="fas fa-qrcode"></i>
-            </button>
-        </div>
-    </div>
-</div>
-
-<div id="inv-list" class="panel">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #e2e8f0; padding-bottom:15px; margin-bottom:15px;">
-        <div>
-            <h3 style="margin:0; border:none; padding:0;">Current Inventory</h3>
-            <small id="stockSummaryText" style="color:var(--metro-blue); font-weight:bold;">Syncing Database...</small>
-        </div>
-        
-        <div style="display:flex; gap:10px;">
-            <input type="text" id="mainStockSearch" onkeyup="filterStockTable()" placeholder="Search Assets..." style="width:250px; margin:0;">
-            <button onclick="openBarcodeScanner('SEARCH_STOCK')" class="secondary" title="Scan to Search">
-                <i class="fas fa-qrcode"></i>
-            </button>
-        </div>
-    </div>
-
-    <div class="table-wrapper" style="max-height:600px; overflow-y:auto;">
-        <table>
-            <thead style="position:sticky; top:0;">
-                <tr>
-                    <th>Tag ID</th>
-                    <th>Asset Name</th>
-                    <th>Cycle Count</th>
-                    <th>Custodian</th>
-                    <th>Location</th>
-                    <th>Purchase Price</th>
-                    <th>Status</th>
-                    <th>Controls</th>
-                </tr>
-            </thead>
-            <tbody id="inventoryBody"></tbody>
-        </table>
-    </div>
-</div>
-
-</div> 
-<div id="tab-gallery" class="hidden">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaalnetra Security Systems</title>
   
-  <div class="panel">
-    <h3><i class="fas fa-folder-open"></i> Compliance Documentation</h3>
-    
-    <div style="background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #cbd5e1; margin-bottom:20px;">
-        <label style="font-weight:bold; color:var(--metro-blue); font-size: 11px; text-transform: uppercase;">1. Select Target Site</label>
-        <div style="display:flex; gap:10px; margin-top:5px;">
-            <select id="galleryLineSelect" onchange="handleGalleryLineChange()" style="flex:1; border:2px solid var(--metro-blue);">
-              <option value="">-- Select Line --</option>
-              <option value="Blue Line">Blue Line</option>
-              <option value="Green Line">Green Line</option>
-              <option value="Purple Line">Purple Line</option>
-              <option value="Yellow Line">Yellow Line</option>
-              <option value="Orange Line">Orange Line</option>
-              <option value="Pink Line">Pink Line</option>
-            </select>
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- HTML5 QR Scanner -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-            <select id="galleryStationSelect" onchange="handleGalleryStationChange()" disabled style="flex:1; background:#f1f5f9;">
-              <option value="">-- Select Line First --</option>
-            </select>
-        </div>
+  <style>
+    .hidden { display: none !important; }
+    /* Custom Slider Styling */
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none; width: 20px; height: 20px; background: #fbbf24; border-radius: 50%; cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- ========================================== -->
+  <!-- GLOBAL HEADER                              -->
+  <!-- ========================================== -->
+  <header class="bg-[#0f172a] text-white px-6 py-4 border-b-4 border-yellow-400 flex justify-between items-center sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded text-xl shadow-lg">K</div>
+      <div>
+        <h1 class="text-base font-black tracking-widest leading-none">KAALNETRA</h1>
+        <small class="text-xs text-yellow-400 tracking-wider font-semibold uppercase">Security Systems</small>
+      </div>
+    </div>
+    
+    <!-- Customer Track Order Bar (Visible on Storefront) -->
+    <div id="storeNav" class="flex items-center gap-2 w-full max-w-md ml-8">
+      <input id="trackOrderIdInp" type="text" placeholder="Enter ORD-XXXXXX to check status" class="w-full p-2 text-xs text-black rounded outline-none focus:ring-2 focus:ring-yellow-400">
+      <button onclick="window.trackCustomerOrder()" class="bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-2 rounded text-xs font-bold transition">Track</button>
+      <button onclick="window.openStaffLogin()" class="ml-4 text-xs font-bold text-slate-400 hover:text-white uppercase transition"><i class="fas fa-user-shield"></i> Staff</button>
     </div>
 
-    <div id="galleryUploadSection" class="hidden">
-        <h4 style="margin:0 0 10px 0; color:var(--metro-blue);">2. Capture or Upload Evidence</h4>
-        <p id="uploadTargetText" style="font-weight:bold; color:var(--success-green); margin-bottom:15px;">Target: None</p>
+    <!-- Admin Nav (Visible when logged in) -->
+    <div id="adminNav" class="hidden flex items-center gap-4">
+      <span id="adminBadge" class="text-xs font-bold px-3 py-1 bg-slate-800 rounded border border-slate-600 text-yellow-400"></span>
+      <button onclick="window.staffLogout()" class="text-xs font-bold px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded uppercase shadow">Terminate Session</button>
+    </div>
+  </header>
 
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-            
-            <div class="panel" style="flex:1; min-width:300px; padding:20px; text-align:center; border:2px dashed var(--metro-blue);">
-                <h5 style="margin-top:0;"><i class="fas fa-camera"></i> Live Capture</h5>
-                
-                <div id="evidenceVideoContainer" style="background:black; width:100%; height:200px; margin-bottom:10px; border-radius:4px; display:none; overflow:hidden;">
-                    <video id="evidenceVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
-                </div>
-                
-                <img id="evidencePreview" style="max-width:100%; max-height:200px; display:none; margin:0 auto 10px auto; border:2px solid #22c55e;">
+  <!-- ========================================== -->
+  <!-- 1. CUSTOMER STOREFRONT (PUBLIC)            -->
+  <!-- ========================================== -->
+  <section id="customer-storefront" class="flex-1">
+    <div class="bg-slate-900 text-white py-12 px-6 text-center shadow-inner relative overflow-hidden">
+      <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+      <h2 class="text-3xl md:text-4xl font-black text-yellow-400 tracking-wider mb-3 relative z-10">THE EYE THAT NEVER SLEEPS</h2>
+      <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto relative z-10">Order intelligent security systems directly. Includes professional installation and 6-Month Free Warranty Coverage.</p>
+    </div>
 
-                <div id="evidenceCamControls">
-                    <button onclick="startEvidenceCamera()" class="info" style="width:100%;"><i class="fas fa-video"></i> Start Camera</button>
-                </div>
-                
-                <div id="evidenceCaptureControls" class="hidden" style="display:flex; gap:5px;">
-                    <button onclick="captureEvidencePhoto()" class="warning" style="flex:1;"><i class="fas fa-camera"></i> Click</button>
-                    <button onclick="stopEvidenceCamera()" class="danger" style="width:40px;"><i class="fas fa-times"></i></button>
-                </div>
+    <main class="max-w-6xl mx-auto p-6 mt-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="productCatalog">
+        <!-- Injected via JS -->
+      </div>
+    </main>
+  </section>
 
-                <div id="evidenceSaveControls" class="hidden" style="display:flex; gap:5px;">
-                    <button onclick="uploadCapturedEvidence()" class="success" style="flex:1;">⬆ Upload Photo</button>
-                    <button onclick="retryEvidencePhoto()" class="secondary" style="width:40px;"><i class="fas fa-redo"></i></button>
-                </div>
+  <!-- ========================================== -->
+  <!-- 2. ORGANIZATION ERP TERMINAL               -->
+  <!-- ========================================== -->
+  <section id="admin-erp" class="hidden flex-1 flex flex-col bg-slate-50">
+    <div class="bg-white px-6 py-3 border-b border-slate-200 flex gap-2 overflow-x-auto shadow-sm">
+      <button onclick="window.switchAdminTab('orders')" id="btn-tab-orders" class="admin-tab-btn px-4 py-2 bg-slate-100 text-slate-800 font-black text-xs rounded-lg transition"><i class="fas fa-shopping-cart"></i> WEB ORDERS</button>
+      <button onclick="window.switchAdminTab('inventory')" id="btn-tab-inventory" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-boxes"></i> INVENTORY</button>
+      <button onclick="window.switchAdminTab('returns')" id="btn-tab-returns" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-undo"></i> RETURNS</button>
+      <button onclick="window.switchAdminTab('billing')" id="btn-tab-billing" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-file-invoice"></i> BILLING</button>
+      <button onclick="window.switchAdminTab('warranty')" id="btn-tab-warranty" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-shield-alt"></i> WARRANTY</button>
+    </div>
+
+    <div class="max-w-7xl w-full mx-auto p-6 space-y-6 flex-1">
+      
+      <!-- 2.1 WEB ORDERS (NEW) -->
+      <div id="panel-orders" class="admin-panel space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-indigo-500">
+          <h3 class="font-black text-lg mb-4 text-indigo-900"><i class="fas fa-globe"></i> Customer Web Orders</h3>
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 uppercase">
+              <tr>
+                <th class="p-3">Order Ref</th>
+                <th class="p-3">Customer Info</th>
+                <th class="p-3">System</th>
+                <th class="p-3 text-right">Payment</th>
+                <th class="p-3 text-center">Status</th>
+                <th class="p-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminOrdersBody" class="divide-y">
+              <tr><td colspan="6" class="text-center p-6">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2.2 INVENTORY -->
+      <div id="panel-inventory" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-emerald-500">
+          <h3 class="font-black text-lg mb-4 text-emerald-800"><i class="fas fa-plus-circle"></i> Register New Stock Asset</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <input id="invItemName" type="text" placeholder="Hardware Name/Model" class="p-3 bg-slate-50 border rounded text-sm font-semibold col-span-2">
+            <input id="invCost" type="number" placeholder="Cost Price (₹)" class="p-3 bg-slate-50 border rounded text-sm font-semibold">
+            <select id="invCondition" class="p-3 bg-slate-50 border rounded text-sm font-semibold">
+              <option value="New">New</option><option value="Refurbished">Refurbished</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500">MAIN LOCATION</label>
+              <select id="invMainLocation" class="w-full p-3 mt-1 bg-slate-50 border rounded text-sm font-semibold">
+                <option value="Main Warehouse - Sector 5">Main Warehouse - Sector 5</option>
+                <option value="Testing Lab - Floor 2">Testing Lab - Floor 2</option>
+              </select>
             </div>
-
-            <div class="panel" style="flex:1; min-width:300px; padding:20px; text-align:center; border:2px dashed #cbd5e1;">
-                <h5 style="margin-top:0;"><i class="fas fa-upload"></i> File Upload</h5>
-                <p style="font-size:11px; color:#666;">Max Size: 3MB | Formats: JPG, PNG, PDF</p>
-                <p style="font-size:11px; color:#666;">Limits: PDF (3MB) | Images (10MB)</p>                
-                <input type="file" id="evidenceFile" accept="image/*,application/pdf" style="margin-bottom:15px;">
-                <button onclick="uploadFileEvidence()" class="info" style="width:100%;">⬆ Upload File</button>
+            <div>
+              <label class="text-xs font-bold text-slate-500">SPECIFIC SPOT</label>
+              <input id="invLocationSpot" type="text" placeholder="e.g. Shelf A4, Bin #12" class="w-full p-3 mt-1 bg-slate-50 border rounded text-sm font-semibold">
             </div>
+          </div>
+          <button onclick="window.registerAsset()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 px-6 rounded uppercase shadow">Generate Tag & Save Inventory</button>
         </div>
 
-        <hr style="margin:25px 0; border:0; border-top:1px solid #e2e8f0;">
-        
-        <h4 style="color:var(--metro-blue);"><i class="fas fa-images"></i> Digital Repository</h4>
-        <div id="galleryContainer" class="gallery-grid">
-            <p style="color:#666; font-style:italic;">Select a station to view documents.</p>
+        <div class="bg-white p-6 rounded-xl border shadow-sm">
+          <h3 class="font-black text-lg mb-4 text-slate-800"><i class="fas fa-database"></i> Live Inventory Matrix</h3>
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 uppercase">
+              <tr><th class="p-3">Tag ID</th><th class="p-3">Asset</th><th class="p-3">Exact Location</th><th class="p-3 text-center">Status</th></tr>
+            </thead>
+            <tbody id="inventoryTableBody" class="divide-y"></tbody>
+          </table>
         </div>
+      </div>
+
+      <!-- 2.3 RETURNS -->
+      <div id="panel-returns" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-rose-500">
+          <h3 class="font-black text-lg mb-4 text-rose-800"><i class="fas fa-undo"></i> Asset Recovery / Restock</h3>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <input id="retTagId" type="text" placeholder="Scan Tag ID to Return" class="p-3 border rounded text-sm">
+            <input id="retReason" type="text" placeholder="Return Reason (e.g. Dismantled)" class="p-3 border rounded text-sm">
+            <select id="retMainLoc" class="p-3 border rounded text-sm"><option value="Main Warehouse">Main Warehouse</option></select>
+            <input id="retSpot" type="text" placeholder="Restock Spot (e.g. Bin 5)" class="p-3 border rounded text-sm">
+          </div>
+          <button onclick="window.processReturn()" class="w-full bg-rose-600 text-white font-black py-3 rounded uppercase">Confirm Recovery</button>
+        </div>
+      </div>
+
+      <!-- 2.4 BILLING -->
+      <div id="panel-billing" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-cyan-500">
+          <h3 class="font-black text-lg mb-4 text-cyan-800"><i class="fas fa-file-invoice"></i> Dispatch & Warranty Binding</h3>
+          <p class="text-xs text-slate-500 mb-4">Use this to clear an order and bind the physical asset tag to the 6-Month Warranty.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <input id="billOrderId" type="text" placeholder="Customer Order Ref (ORD-XXXXXX)" class="p-3 border rounded text-sm font-mono font-bold">
+            <input id="billProductTag" type="text" placeholder="Scan Physical Hardware Tag (KN-XXXXXX)" class="p-3 border-2 border-yellow-400 rounded text-sm font-mono font-bold text-blue-800">
+          </div>
+          <button onclick="window.processBilling()" class="w-full bg-cyan-600 text-white font-black py-3 rounded uppercase">Mark Dispatched & Activate Warranty</button>
+        </div>
+      </div>
+
+      <!-- 2.5 WARRANTY -->
+      <div id="panel-warranty" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border shadow-sm border-t-4 border-t-purple-600">
+          <h3 class="font-black text-lg mb-4 text-purple-900"><i class="fas fa-shield-alt"></i> Technician Warranty Check</h3>
+          <div class="flex gap-2 mb-4">
+            <input id="claimTag" type="text" placeholder="Scan Physical Hardware Tag" class="w-full p-3 border rounded text-sm font-mono font-bold">
+            <button onclick="window.checkWarranty()" class="bg-purple-600 text-white px-6 font-black rounded uppercase">Verify</button>
+          </div>
+          <div id="claimResult" class="hidden p-4 rounded text-sm font-bold"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- Customer Order Modal -->
+  <div id="orderModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden my-auto">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-black uppercase tracking-wider">Complete Secure Order</h3>
+        <button onclick="window.closeOrderModal()" class="text-rose-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+      </div>
+      
+      <div class="p-6">
+        <div class="mb-4 pb-4 border-b border-slate-200">
+          <h4 id="orderProdName" class="font-black text-lg text-slate-800"></h4>
+          <p class="text-sm font-bold text-emerald-600">Total Price: ₹<span id="orderProdPrice"></span></p>
+        </div>
+
+        <div class="space-y-3 mb-6">
+          <input id="ordName" type="text" placeholder="Full Name" class="w-full p-2.5 bg-slate-50 border rounded text-sm">
+          <textarea id="ordAddress" placeholder="Complete Installation Address" rows="2" class="w-full p-2.5 bg-slate-50 border rounded text-sm"></textarea>
+          <div class="grid grid-cols-2 gap-3">
+            <input id="ordPhone" type="text" placeholder="Contact Number" class="w-full p-2.5 bg-slate-50 border rounded text-sm">
+            <input id="ordAltEmail" type="email" placeholder="Alternate Email" class="w-full p-2.5 bg-slate-50 border rounded text-sm">
+          </div>
+        </div>
+
+        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 mb-6">
+          <label class="block text-xs font-black text-yellow-800 uppercase mb-2">Advance Payment Slider</label>
+          <input id="ordSlider" type="range" class="w-full h-2 bg-yellow-300 rounded-lg appearance-none cursor-pointer mb-2" oninput="window.updateSliderUI()">
+          
+          <div class="flex justify-between text-sm font-bold">
+            <span class="text-slate-600">Pay Now: <span id="valPayNow" class="text-emerald-700 font-black"></span></span>
+            <span class="text-slate-600">Pay After Install: <span id="valPayLater" class="text-rose-600 font-black"></span></span>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-yellow-200 text-center">
+            <p class="text-xs text-slate-600 font-bold mb-2">Scan QR to pay the Advance Amount</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=kaalnetra@bank" class="w-24 h-24 mx-auto rounded border-2 border-slate-300 mb-3">
+            <input id="ordTxn" type="text" maxlength="5" placeholder="Enter LAST 5 DIGITS of Txn ID" class="w-full p-2.5 border-2 border-yellow-400 rounded text-center font-mono font-black tracking-widest text-lg outline-none">
+          </div>
+        </div>
+
+        <button onclick="window.submitCustomerOrder()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-yellow-400 font-black uppercase rounded-lg shadow-lg transition">
+          Confirm Order & Generate Request
+        </button>
+      </div>
     </div>
   </div>
-</div>
-<!-- Keep all your other tabs (Admin Panel, Funds, Directives, SCADA, etc.) EXACTLY the same from here down... -->
 
-<!-- Due to message length limits, imagine the rest of your EXACT original HTML code for tabs 'assigned', 'comments', 'adminPanel', 'dataView', 'funds', 'purchase', 'printReport', 'directives', 'billing', 'warranty', 'attendance', 'delivery', 'scadaControl', 'fundWorkflow', and all modals is pasted right here -->
-
-</section>
-
-<!-- ========================================== -->
-<!-- UNIVERSAL MODALS -->
-<!-- ========================================== -->
-<div id="barcodeModal" class="modal-overlay hidden">
-    <div class="panel" style="width:360px; max-width:95%; text-align:center; background:#0f172a; border:2px solid var(--metro-gold); padding: 20px;">
-        <h3 style="color:white; margin-bottom:15px; border-bottom-color: #334155;"><i class="fas fa-qrcode"></i> Scan Asset Tag</h3>
-        <div id="reader" style="border-radius: 8px; overflow: hidden;"></div>
-        <button class="danger" onclick="closeBarcodeScanner()" style="margin-top:20px; width:100%;">CANCEL SCAN</button>
+  <!-- Staff Login Modal -->
+  <div id="staffLoginModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl max-w-sm w-full shadow-2xl border-t-4 border-indigo-600 text-center">
+      <i class="fas fa-user-shield text-4xl text-indigo-600 mb-4"></i>
+      <h3 class="font-black text-xl mb-6">STAFF TERMINAL</h3>
+      <input id="staffEmail" type="email" placeholder="Staff Email ID" class="w-full p-3 mb-3 border rounded text-sm bg-slate-50 focus:border-indigo-600 outline-none">
+      <input id="staffPass" type="password" placeholder="Master Password" class="w-full p-3 mb-6 border rounded text-sm bg-slate-50 focus:border-indigo-600 outline-none">
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('staffLoginModal').classList.add('hidden')" class="flex-1 py-3 bg-slate-200 text-slate-700 font-bold rounded">Cancel</button>
+        <button onclick="window.loginStaff()" class="flex-1 py-3 bg-indigo-600 text-white font-black uppercase rounded shadow">Login</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<div id="nameModal" class="modal-overlay hidden">
-    <div class="panel" style="width:350px; max-width:90%; text-align:center;">
-        <h3><i class="fas fa-user-edit"></i> Profile Setup</h3>
-        <p style="color:#475569; margin-bottom:20px;">Please enter your official name as per records.</p>
-        <input id="officialNameInput" placeholder="Full Name (e.g. Rahul Roy)">
-        <button onclick="saveOfficialName()" class="success" style="width:100%;">Save & Continue</button>
+  <!-- Order Status Modal -->
+  <div id="statusModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
+      <div id="statusIcon" class="text-5xl mb-4"></div>
+      <h3 id="statusTitle" class="font-black text-2xl mb-2"></h3>
+      <p id="statusDesc" class="text-sm text-slate-600 mb-6"></p>
+      <div class="bg-slate-50 border rounded-lg p-4 mb-6 text-left text-xs font-bold text-slate-700 leading-relaxed" id="statusDetails"></div>
+      <button onclick="document.getElementById('statusModal').classList.add('hidden')" class="w-full py-3 bg-slate-900 text-white font-black rounded uppercase">Close</button>
     </div>
-</div>
+  </div>
 
-<!-- ========================================== -->
-<!-- 4. FIREBASE LOGIC & CUSTOMER ROUTING       -->
-<!-- ========================================== -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, query, orderByChild, equalTo, update, push, remove, serverTimestamp, onValue, off, limitToLast, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  <!-- FIREBASE ENGINE & LOGIC -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
-  authDomain: "kaalnetra-214b6.firebaseapp.com",
-  projectId: "kaalnetra-214b6",
-  storageBucket: "kaalnetra-214b6.firebasestorage.app",
-  messagingSenderId: "974973616837",
-  appId: "1:974973616837:web:9d586455fd35a938ce66ac"
-};
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
+      authDomain: "kaalnetra-214b6.firebaseapp.com",
+      projectId: "kaalnetra-214b6",
+      storageBucket: "kaalnetra-214b6.firebasestorage.app",
+      messagingSenderId: "974973616837",
+      appId: "1:974973616837:web:9d586455fd35a938ce66ac"
+    };
 
-const app = initializeApp(firebaseConfig);
-window.db = getDatabase(app); 
-window.auth = getAuth(app); 
-const googleProvider = new GoogleAuthProvider();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-// ===========================================
-// ADMIN EMAILS - CHANGE THIS TO YOUR EMAIL!
-// ===========================================
-const ADMIN_EMAILS = [
-    "soham@metro.project", 
-    "sohampal781@gmail.com",
-    "YOUR_EMAIL_HERE@gmail.com"  // <-- IMPORTANT: ADD YOUR GOOGLE EMAIL HERE
-];
-
-let currentUser;
-let isAdmin = false;
-
-// 1. LOGIN FUNCTIONS
-window.login = () => {
-    const emailField = document.getElementById("email");
-    const passField = document.getElementById("password");
-    if(!emailField.value || !passField.value) return alert("Please enter credentials.");
-
-    signInWithEmailAndPassword(window.auth, emailField.value, passField.value)
-    .catch(e => alert("Login Failed: " + e.message));
-};
-
-window.loginCustomerGoogle = () => {
-    signInWithPopup(window.auth, googleProvider)
-    .catch(e => alert("Google Login Failed: " + e.message));
-};
-
-window.logout = async () => {
-    if(!currentUser) return;
-    try {
-        await update(ref(window.db, `status/${currentUser.uid}`), {
-            state: 'offline', last_changed: serverTimestamp()
-        });
-        await signOut(window.auth);
-        window.location.reload(); 
-    } catch (e) {
-        console.error("Logout Error", e);
-        signOut(window.auth);
-        window.location.reload();
-    }
-};
-
-// 2. AUTH STATE ROUTING
-onAuthStateChanged(window.auth, async (user) => {
-    if (!user) {
-        document.querySelector("header").style.display = "flex";
-        document.getElementById("loginSection").classList.remove("hidden");
-        document.getElementById("appScreen").classList.add("hidden");
-        document.getElementById("customerScreen").classList.add("hidden");
-        document.getElementById("authContainer").classList.add("hidden");
-        return;
-    }
-
-    currentUser = user;
-    const userEmail = (user.email || "").toLowerCase();
-    isAdmin = ADMIN_EMAILS.some(e => e.toLowerCase() === userEmail);
-
-    document.getElementById("loginSection").classList.add("hidden");
-    document.getElementById("authContainer").classList.remove("hidden");
-
-    if (isAdmin) {
-        // --- ADMIN / ERP VIEW ---
-        document.getElementById("appScreen").classList.remove("hidden");
-        document.getElementById("customerScreen").classList.add("hidden");
-        
-        // Ensure user profile exists
-        const userRef = ref(window.db, `users/${user.uid}`);
-        get(userRef).then((snap) => {
-            const u = snap.val();
-            if (!u || !u.name) {
-                document.getElementById("nameModal").classList.remove("hidden");
-            } else {
-                document.getElementById("userInfo").innerText = u.name;
-                document.getElementById("adminBadge").classList.remove("hidden");
-                document.getElementById("btnAdmin").classList.remove("hidden");
-                switchTab('newData'); // Load default ERP tab
-            }
-        });
-    } else {
-        // --- CUSTOMER STOREFRONT VIEW ---
-        document.getElementById("appScreen").classList.add("hidden");
-        document.getElementById("customerScreen").classList.remove("hidden");
-        document.getElementById("userInfo").innerText = `CUSTOMER: ${user.displayName || user.email}`;
-        renderCustomerCatalog();
-    }
-});
-
-// 3. CUSTOMER STORE RENDERER
-function renderCustomerCatalog() {
-    const products = [
-        {name: "Version 1 - Basic System", price: 15000, desc: "IR Detection, Audio Buzzer, Basic Security Unit"},
-        {name: "Version 2 - Bypass Switch", price: 20000, desc: "Dual Sensors, Permanent Bypass Switch"},
-        {name: "Industrial Premium System", price: 27000, desc: "High-Power Siren, 24/7 Heavy Duty Grid"}
+    // ==============================================================
+    // 1. PRODUCTS & STOREFRONT
+    // ==============================================================
+    const PRODUCTS = [
+      { id: "v1", name: "Version 1 - Basic Safety System", price: 15000, desc: "IR Detection, Audio Buzzer, Basic Security Unit" },
+      { id: "v2", name: "Version 2 - Bypass Switch", price: 20000, desc: "Dual Sensors, Permanent Bypass Switch" },
+      { id: "v3", name: "Version 3 - Web Access System", price: 21000, desc: "Smartphone/Web Dashboard, Real-time Logging" },
+      { id: "v4", name: "Version 4 - Biometric System", price: 26000, desc: "Fingerprint Access Control, Allow-One Entry" },
+      { id: "v5", name: "Industrial Premium System", price: 27000, desc: "Dual-level Access, High-Power Siren, Heavy Duty" }
     ];
-    const cat = document.getElementById("customerProductCatalog");
-    cat.innerHTML = products.map(p => `
-        <div style="background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-                <div style="height: 140px; background: var(--metro-blue); border-radius: 8px; display:flex; align-items:center; justify-content:center; margin-bottom: 20px;">
-                    <i class="fas fa-shield-halved" style="font-size: 40px; color: var(--metro-gold);"></i>
-                </div>
-                <h3 style="font-size: 18px; font-weight: 900; color: var(--metro-blue); margin:0 0 5px 0;">${p.name}</h3>
-                <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">${p.desc}</p>
-                <div style="font-size: 24px; font-weight: 900; color: #10b981; margin-bottom: 20px;">₹${p.price.toLocaleString('en-IN')}</div>
+
+    let currentOrderProduct = null;
+
+    function renderCatalog() {
+      const cat = document.getElementById("productCatalog");
+      cat.innerHTML = PRODUCTS.map(p => `
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow hover:shadow-lg transition flex flex-col justify-between">
+          <div>
+            <div class="h-32 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center text-4xl mb-4 border border-slate-200">
+              <i class="fas fa-video"></i>
             </div>
-            <button onclick="alert('Order Placed for ${p.name}! Admin will dispatch.')" style="width: 100%; padding: 12px; background: var(--metro-gold); color: #000; font-weight: 900; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase;">
-                Add to Cart
-            </button>
+            <h4 class="font-black text-lg text-slate-900 mb-1 leading-tight">${p.name}</h4>
+            <p class="text-xs text-slate-500 mb-4">${p.desc}</p>
+            <div class="text-2xl font-black text-emerald-600 mb-6">₹${p.price.toLocaleString('en-IN')}</div>
+          </div>
+          <button onclick="window.openOrderModal('${p.id}')" class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-black rounded-lg text-xs uppercase tracking-widest shadow transition">
+            Order & Install
+          </button>
         </div>
-    `).join("");
-}
+      `).join("");
+    }
 
-// =========================================================================
-// PASTE THE REST OF YOUR ORIGINAL JAVASCRIPT LOGIC BELOW THIS LINE
-// Keep your switchTab, Html5QrcodeScanner logic, SCADA rules, etc.
-// =========================================================================
+    renderCatalog();
 
-window.switchTab = (t) => {
-    // Hide all tabs safely
-    const allTabs = ['newData', 'inventory', 'gallery', 'assigned', 'adminPanel', 'dataView', 'printReport', 'funds', 'purchase', 'comments', 'directives', 'billing', 'warranty', 'attendance', 'delivery', 'scadaControl', 'fundWorkflow'];
-    allTabs.forEach(x => {
-        const el = document.getElementById(`tab-${x}`);
-        if(el) el.classList.add("hidden"); 
-    });
+    // ==============================================================
+    // 2. CUSTOMER ORDERING LOGIC
+    // ==============================================================
+    window.openOrderModal = (id) => {
+      const prod = PRODUCTS.find(p => p.id === id);
+      currentOrderProduct = prod;
 
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById("orderProdName").innerText = prod.name;
+      document.getElementById("orderProdPrice").innerText = prod.price.toLocaleString('en-IN');
+      
+      const slider = document.getElementById("ordSlider");
+      slider.min = 0;
+      slider.max = prod.price;
+      slider.step = 500;
+      slider.value = prod.price * 0.1; // Default 10% advance
 
-    const targetTab = document.getElementById(`tab-${t}`);
-    if(targetTab) targetTab.classList.remove("hidden");
+      window.updateSliderUI();
+      document.getElementById("orderModal").classList.remove("hidden");
+    };
 
-    const activeBtn = document.getElementById('btn' + t.charAt(0).toUpperCase() + t.slice(1));
-    if(activeBtn) activeBtn.classList.add("active");
+    window.closeOrderModal = () => document.getElementById("orderModal").classList.add("hidden");
 
-    if (t === 'inventory') window.loadInventory();
-};
+    window.updateSliderUI = () => {
+      if(!currentOrderProduct) return;
+      const adv = parseInt(document.getElementById("ordSlider").value);
+      const bal = currentOrderProduct.price - adv;
+      document.getElementById("valPayNow").innerText = `₹${adv.toLocaleString('en-IN')}`;
+      document.getElementById("valPayLater").innerText = `₹${bal.toLocaleString('en-IN')}`;
+    };
 
-window.saveOfficialName = async () => {
-    const nameInput = document.getElementById("officialNameInput");
-    const name = nameInput.value.replace(/[.#$\[\]]/g, "").trim();  
-    if(name.length < 3) return alert("Please enter a valid name.");
+    window.submitCustomerOrder = async () => {
+      const name = document.getElementById("ordName").value.trim();
+      const address = document.getElementById("ordAddress").value.trim();
+      const phone = document.getElementById("ordPhone").value.trim();
+      const email = document.getElementById("ordAltEmail").value.trim();
+      const txn = document.getElementById("ordTxn").value.trim();
+      const adv = parseInt(document.getElementById("ordSlider").value);
 
-    try {
-        await set(ref(window.db, `users/${currentUser.uid}`), {
-            name: name,
-            email: currentUser.email,
-            banned: false,
-            createdAt: serverTimestamp()
+      if(!name || !address || !phone) return alert("Please fill all contact details.");
+      if(adv > 0 && txn.length !== 5) return alert("Please enter exactly the LAST 5 DIGITS of your transaction ID.");
+
+      const orderRefId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+      
+      try {
+        await setDoc(doc(db, "orders", orderRefId), {
+          orderId: orderRefId,
+          productName: currentOrderProduct.name,
+          totalPrice: currentOrderProduct.price,
+          advancePaid: adv,
+          balanceDue: currentOrderProduct.price - adv,
+          customerName: name,
+          address, phone, email,
+          txnIdLast5: txn,
+          status: "Pending Verification",
+          trackingId: null, // Assigned later by Admin
+          createdAt: serverTimestamp()
         });
-        document.getElementById("nameModal").classList.add("hidden");
-        document.getElementById("userInfo").innerText = name;
-        switchTab('newData');
-    } catch(e) { alert("Error: " + e.message); }
-};
 
-window.loadInventory = () => {
-    const b = document.getElementById("inventoryBody");
-    if (!b) return;
+        window.closeOrderModal();
+        
+        // Show Success Modal
+        document.getElementById("statusIcon").innerHTML = '<i class="fas fa-check-circle text-emerald-500"></i>';
+        document.getElementById("statusTitle").innerText = "Order Request Received!";
+        document.getElementById("statusDesc").innerText = "Please wait for admin verification. It may take up to 48 hours to confirm payment and dispatch.";
+        document.getElementById("statusDetails").innerHTML = `
+          <strong>Save this Reference ID to track status:</strong><br>
+          <span class="text-xl text-blue-600 font-mono tracking-widest">${orderRefId}</span>
+        `;
+        document.getElementById("statusModal").classList.remove("hidden");
 
-    onValue(ref(window.db, "inventory"), (snap) => {
-        b.innerHTML = "";
-        let total = 0, available = 0;
+      } catch(e) { alert("Order Failed: " + e.message); }
+    };
 
-        if (!snap.exists()) {
-            b.innerHTML = "<tr><td colspan='8' style='text-align:center; padding:20px;'>No assets found in database.</td></tr>";
-            return;
+    window.trackCustomerOrder = async () => {
+      const id = document.getElementById("trackOrderIdInp").value.trim().toUpperCase();
+      if(!id) return alert("Enter your ORD-XXXXXX number.");
+
+      try {
+        const snap = await getDoc(doc(db, "orders", id));
+        if(!snap.exists()) return alert("Order ID not found in system.");
+        
+        const data = snap.data();
+        let icon = '<i class="fas fa-clock text-yellow-500"></i>';
+        let color = "text-yellow-600";
+        
+        if(data.status === "Verified & Processing") { icon = '<i class="fas fa-cog text-blue-500"></i>'; color = "text-blue-600"; }
+        if(data.status === "Dispatched") { icon = '<i class="fas fa-truck text-emerald-500"></i>'; color = "text-emerald-600"; }
+
+        document.getElementById("statusIcon").innerHTML = icon;
+        document.getElementById("statusTitle").innerText = "Order Status";
+        document.getElementById("statusDesc").innerHTML = `Current Status: <strong class="${color}">${data.status}</strong>`;
+        
+        let details = `
+          Product: ${data.productName}<br>
+          Advance Verified: ₹${data.advancePaid.toLocaleString('en-IN')}<br>
+          Pending Balance: ₹${data.balanceDue.toLocaleString('en-IN')}<br>
+        `;
+        if(data.trackingId) {
+          details += `<br><strong class="text-purple-700">Official Tracking / Hardware ID: ${data.trackingId}</strong>`;
         }
 
-        snap.forEach((c) => {
-            const v = c.val();
-            const k = c.key;
-            const isSold = (v.status === "Sold Out");
+        document.getElementById("statusDetails").innerHTML = details;
+        document.getElementById("statusModal").classList.remove("hidden");
+      } catch(e) { alert(e.message); }
+    };
 
-            let statusStyle = isSold ? "background:#000; color:#fff;" : "background:#dcfce7; color:#166534;";
-            let displayStatus = isSold ? "Sold Out" : "In Stock";
+    // ==============================================================
+    // 3. STAFF AUTH & ERP NAVIGATION
+    // ==============================================================
+    window.openStaffLogin = () => document.getElementById("staffLoginModal").classList.remove("hidden");
 
-            if (!isSold) { total++; available++; }
+    window.loginStaff = () => {
+      const e = document.getElementById("staffEmail").value;
+      const p = document.getElementById("staffPass").value;
+      signInWithEmailAndPassword(auth, e, p).then(() => {
+        document.getElementById("staffLoginModal").classList.add("hidden");
+      }).catch(err => alert("Login Failed: " + err.message));
+    };
 
-            const row = `
-            <tr class="stock-row" style="${isSold ? 'background:#f8fafc; color:#64748b;' : ''}">
-                <td style="font-family:monospace; font-weight:bold;">${v.barcode || '--'}</td>
-                <td style="font-weight:bold;">${v.item}</td>
-                <td style="text-align:center;">${v.usageCount || 0}</td>
-                <td style="font-weight:bold;">${v.holder || 'Store'}</td>
-                <td style="font-size:11px; font-weight:bold;">${v.location || 'Main Lab'}</td>
-                <td style="text-align:right; font-weight:900;">₹ ${parseFloat(v.purchasePrice || 0).toFixed(2)}</td>
-                <td style="text-align:center;">
-                    <span style="${statusStyle} padding:4px 10px; border-radius:12px; font-size:10px; font-weight:bold; text-transform:uppercase;">
-                        ${displayStatus}
-                    </span>
-                </td>
-                <td style="text-align:center;">
-                    <button class="danger" onclick="delInv('${k}')" style="padding:2px 6px; font-size:10px;">DEL</button>
-                </td>
-            </tr>`;
-            b.innerHTML += row;
-        });
+    window.staffLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      const sf = document.getElementById("customer-storefront");
+      const erp = document.getElementById("admin-erp");
+      const sNav = document.getElementById("storeNav");
+      const aNav = document.getElementById("adminNav");
+
+      if (user) {
+        // Logged in as Admin
+        sf.classList.add("hidden");
+        sNav.classList.add("hidden");
+        erp.classList.remove("hidden");
+        aNav.classList.remove("hidden");
+        document.getElementById("adminBadge").innerText = user.email;
+        
+        window.switchAdminTab('orders');
+        startAdminSync(); // Load ERP data
+      } else {
+        // Logged out (Public Customer View)
+        erp.classList.add("hidden");
+        aNav.classList.add("hidden");
+        sf.classList.remove("hidden");
+        sNav.classList.remove("hidden");
+      }
     });
-};
 
-window.delInv = (k) => remove(ref(window.db, `inventory/${k}`));
+    window.switchAdminTab = (tabName) => {
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.admin-tab-btn').forEach(b => {
+        b.classList.remove('bg-slate-100', 'text-slate-800');
+        b.classList.add('bg-slate-50', 'text-slate-500');
+      });
+      document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+      activeBtn.classList.remove('bg-slate-50', 'text-slate-500');
+      activeBtn.classList.add('bg-slate-100', 'text-slate-800');
+    };
 
-</script>
+    // ==============================================================
+    // 4. ADMIN ERP LOGIC
+    // ==============================================================
+    function startAdminSync() {
+      // Sync Web Orders
+      onSnapshot(query(collection(db, "orders"), orderBy("createdAt", "desc")), snap => {
+        const tbody = document.getElementById("adminOrdersBody");
+        tbody.innerHTML = "";
+        if(snap.empty) return tbody.innerHTML = "<tr><td colspan='6' class='p-6 text-center'>No orders found.</td></tr>";
+
+        snap.forEach(docSnap => {
+          const v = docSnap.data();
+          let btn = "";
+          if(v.status === "Pending Verification") {
+            btn = `<button onclick="window.verifyOrder('${v.orderId}')" class="bg-indigo-600 text-white px-3 py-1 rounded text-[10px] font-bold">VERIFY TXN</button>`;
+          }
+          tbody.innerHTML += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="p-3 font-mono font-bold text-indigo-700">${v.orderId}</td>
+              <td class="p-3"><b>${v.customerName}</b><br><span class="text-[10px] text-slate-500">${v.phone}</span></td>
+              <td class="p-3 text-[10px] font-bold text-slate-600">${v.productName}</td>
+              <td class="p-3 text-right">Adv: <span class="text-emerald-600 font-bold">₹${v.advancePaid}</span><br><span class="text-[10px] text-slate-400">Txn: *${v.txnIdLast5}</span></td>
+              <td class="p-3 text-center"><span class="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold">${v.status}</span></td>
+              <td class="p-3 text-center">${btn}</td>
+            </tr>
+          `;
+        });
+      });
+
+      // Sync Inventory
+      onSnapshot(collection(db, "inventory"), snap => {
+        const tbody = document.getElementById("inventoryTableBody");
+        tbody.innerHTML = "";
+        snap.forEach(docSnap => {
+          const v = docSnap.data();
+          let color = v.status === "Sold" ? "text-rose-600" : "text-emerald-600";
+          tbody.innerHTML += `
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-3 font-mono font-bold">${v.tagId}</td>
+              <td class="p-3 font-bold">${v.item}</td>
+              <td class="p-3 text-xs text-slate-600">${v.location}</td>
+              <td class="p-3 text-center font-bold ${color}">${v.status}</td>
+            </tr>`;
+        });
+      });
+    }
+
+    window.verifyOrder = async (id) => {
+      if(confirm(`Mark payment verified for order ${id}?`)) {
+        await updateDoc(doc(db, "orders", id), { status: "Verified & Processing" });
+      }
+    };
+
+    // INVENTORY
+    window.registerAsset = async () => {
+      const name = document.getElementById("invItemName").value.trim();
+      const loc = document.getElementById("invMainLocation").value + " [" + document.getElementById("invLocationSpot").value.trim() + "]";
+      if (!name) return alert("Item name required.");
+
+      const tagId = "KN-" + Math.floor(100000 + Math.random() * 900000);
+      await setDoc(doc(db, "inventory", tagId), {
+        tagId, item: name, location: loc, status: "In Stock", addedAt: serverTimestamp()
+      });
+      alert("✅ Asset Generated & Saved! Tag ID: " + tagId);
+    };
+
+    // RETURNS
+    window.processReturn = async () => {
+      const tag = document.getElementById("retTagId").value.trim();
+      const loc = document.getElementById("retMainLoc").value + " [" + document.getElementById("retSpot").value.trim() + "]";
+      try {
+        await updateDoc(doc(db, "inventory", tag), { status: "In Stock", location: loc });
+        alert(`✅ Restocked tag ${tag}`);
+      } catch (e) { alert("Error: Check Tag ID. " + e.message); }
+    };
+
+    // BILLING & DISPATCH
+    window.processBilling = async () => {
+      const ordId = document.getElementById("billOrderId").value.trim().toUpperCase();
+      const tagId = document.getElementById("billProductTag").value.trim().toUpperCase();
+
+      if(!ordId || !tagId) return alert("Need Order ID and Hardware Tag.");
+
+      try {
+        const orderRef = doc(db, "orders", ordId);
+        const orderSnap = await getDoc(orderRef);
+        if(!orderSnap.exists()) return alert("Order not found.");
+
+        const invRef = doc(db, "inventory", tagId);
+        const invSnap = await getDoc(invRef);
+        if(!invSnap.exists() || invSnap.data().status !== "In Stock") return alert("Invalid or already sold Tag ID.");
+
+        // 6 Month Logic
+        const now = new Date();
+        const exp = new Date(); exp.setMonth(exp.getMonth() + 6);
+
+        // Update Order
+        await updateDoc(orderRef, { status: "Dispatched", trackingId: tagId });
+        
+        // Update Inventory
+        await updateDoc(invRef, { status: "Sold" });
+
+        // Save Warranty
+        await setDoc(doc(db, "warranty_registry", tagId), {
+          orderId: ordId,
+          productName: orderSnap.data().productName,
+          customerName: orderSnap.data().customerName,
+          active: true,
+          expiryDate: Timestamp.fromDate(exp)
+        });
+
+        alert("✅ Dispatched! Warranty Active for 6 Months on Tag: " + tagId);
+        document.getElementById("billOrderId").value = "";
+        document.getElementById("billProductTag").value = "";
+      } catch(e) { alert("Billing Error: " + e.message); }
+    };
+
+    // WARRANTY
+    window.checkWarranty = async () => {
+      const tag = document.getElementById("claimTag").value.trim().toUpperCase();
+      const resBox = document.getElementById("claimResult");
+      if(!tag) return;
+
+      try {
+        const snap = await getDoc(doc(db, "warranty_registry", tag));
+        resBox.classList.remove("hidden", "bg-emerald-100", "bg-rose-100", "text-emerald-900", "text-rose-900");
+
+        if(!snap.exists()) {
+          resBox.className = "p-4 mt-4 bg-rose-100 text-rose-900 border border-rose-300 rounded block";
+          resBox.innerText = "❌ NO WARRANTY FOUND FOR THIS TAG.";
+          return;
+        }
+
+        const data = snap.data();
+        const exp = data.expiryDate.toDate();
+
+        if(new Date() > exp) {
+          resBox.className = "p-4 mt-4 bg-rose-100 text-rose-900 border border-rose-300 rounded block";
+          resBox.innerHTML = `❌ WARRANTY EXPIRED ON ${exp.toLocaleDateString('en-IN')}`;
+        } else {
+          resBox.className = "p-4 mt-4 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded block";
+          resBox.innerHTML = `✅ WARRANTY ACTIVE.<br>Valid Until: ${exp.toLocaleDateString('en-IN')}<br>Cust: ${data.customerName}<br>Item: ${data.productName}`;
+        }
+      } catch(e) { alert(e.message); }
+    };
+
+  </script>
 </body>
 </html>
