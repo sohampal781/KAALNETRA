@@ -1,143 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Kaalnetra Security Systems</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kaalnetra Security Systems | Unified Portal</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- QR Code Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
   <style>
-    /* Premium Admin Theme inherited from your template */
-    :root { --metro-blue: #0f172a; --metro-gold: #fbbf24; }
-    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+    :root {
+      --navy-dark: #0f172a;
+      --gold-accent: #fbbf24;
+      --panel-border: #e2e8f0;
+    }
     .hidden { display: none !important; }
+    @media print {
+      body * { visibility: hidden !important; }
+      #printableContainer, #printableContainer * { visibility: visible !important; }
+      #printableContainer { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
-<body>
+<body class="bg-gray-100 text-slate-800 min-h-screen flex flex-col font-sans">
 
-  <!-- ================= LOGIN SCREEN ================= -->
-  <section id="login-screen" class="min-h-screen flex items-center justify-center bg-[#080f1e]">
-    <div class="bg-gray-800/50 backdrop-blur-md p-10 rounded-xl border-t-4 border-yellow-400 w-full max-w-md text-center text-white shadow-2xl">
-      <h2 class="text-2xl font-black mb-2 tracking-widest text-yellow-400">KAALNETRA</h2>
-      <p class="text-xs text-gray-400 mb-8 uppercase">Unified Access Portal</p>
+  <!-- ========================================== -->
+  <!-- 1. GLOBAL HEADER & AUTH STATE              -->
+  <!-- ========================================== -->
+  <header class="bg-[#0f172a] text-white px-6 py-3 border-b-4 border-yellow-400 flex justify-between items-center sticky top-0 z-50 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded text-xl">K</div>
+      <div>
+        <h1 class="text-base font-black tracking-widest leading-none">KAALNETRA SECURITY</h1>
+        <small class="text-xs text-yellow-400 tracking-wider font-semibold uppercase">The Eye That Never Sleeps</small>
+      </div>
+    </div>
+    
+    <div id="authNav" class="hidden flex items-center gap-4">
+      <span id="userBadge" class="text-xs font-bold px-3 py-1 bg-slate-800 rounded-full border border-slate-700 text-yellow-300"></span>
+      <button onclick="window.appLogout()" class="text-xs font-bold px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded uppercase tracking-wider transition">
+        <i class="fas fa-sign-out-alt mr-1"></i> Terminate Session
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 2. DUAL-LOGIN ROUTING SCREEN               -->
+  <!-- ========================================== -->
+  <section id="login-screen" class="min-h-[calc(100vh-65px)] flex items-center justify-center bg-[#080f1e] p-4">
+    <div class="bg-slate-900/80 backdrop-blur-md p-8 md:p-10 rounded-2xl border-t-4 border-yellow-400 w-full max-w-md shadow-2xl text-center border border-slate-700">
+      <div class="w-16 h-16 bg-yellow-400/10 text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-400/30 text-2xl">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <h2 class="text-xl font-black text-white tracking-widest mb-1">SYSTEM ACCESS</h2>
+      <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider">Select Authentication Channel</p>
       
-      <!-- Admin Login -->
-      <input id="adminEmail" type="email" placeholder="Staff Email" class="w-full p-3 mb-4 bg-black/50 rounded text-white border border-gray-600 focus:border-yellow-400">
-      <input id="adminPass" type="password" placeholder="Staff Password" class="w-full p-3 mb-4 bg-black/50 rounded text-white border border-gray-600 focus:border-yellow-400">
-      <button id="btnAdminLogin" class="w-full p-3 bg-yellow-500 text-black font-black rounded mb-6 uppercase tracking-wider hover:bg-yellow-400 transition">Terminal Login</button>
-      
-      <hr class="border-gray-700 mb-6">
-      
-      <!-- Customer Login -->
-      <button id="btnGoogleLogin" class="w-full p-3 bg-white text-gray-900 font-bold rounded flex items-center justify-center gap-3 hover:bg-gray-100 transition">
-        <i class="fab fa-google text-red-500"></i> Customer Login
+      <!-- Staff Email Login -->
+      <div class="space-y-3 mb-6">
+        <input id="staffEmail" type="email" placeholder="Staff Email (admin@kaalnetra.com)" class="w-full p-3 bg-black/40 text-white rounded-lg border border-slate-700 text-sm focus:border-yellow-400 focus:outline-none" />
+        <input id="staffPass" type="password" placeholder="Staff Master Password" class="w-full p-3 bg-black/40 text-white rounded-lg border border-slate-700 text-sm focus:border-yellow-400 focus:outline-none" />
+        <button onclick="window.loginStaff()" class="w-full p-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-xs uppercase tracking-widest rounded-lg transition shadow-lg">
+          <i class="fas fa-terminal mr-1"></i> Authorize Staff Terminal
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3 mb-6">
+        <div class="flex-1 h-px bg-slate-700"></div>
+        <span class="text-xs text-slate-500 uppercase font-bold">OR CUSTOMER</span>
+        <div class="flex-1 h-px bg-slate-700"></div>
+      </div>
+
+      <!-- Customer Google Auth -->
+      <button onclick="window.loginCustomerGoogle()" class="w-full p-3 bg-white hover:bg-gray-100 text-slate-800 font-bold text-sm rounded-lg flex items-center justify-center gap-3 shadow transition">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+        <span>Sign in with Google Account</span>
       </button>
     </div>
   </section>
 
-  <!-- ================= CUSTOMER STOREFRONT ================= -->
-  <section id="customer-storefront" class="hidden min-h-screen bg-gray-100">
-    <header class="bg-gray-900 text-white p-4 flex justify-between items-center">
-      <h1 class="text-xl font-bold text-yellow-400">Kaalnetra Store</h1>
-      <div class="flex gap-4 items-center">
-        <span id="customerName" class="text-sm"></span>
-        <button id="btnCustLogout" class="text-xs bg-red-600 px-3 py-1 rounded">Logout</button>
+  <!-- ========================================== -->
+  <!-- 3. CUSTOMER STOREFRONT (Amazon-Style UI)   -->
+  <!-- ========================================== -->
+  <section id="customer-storefront" class="hidden min-h-[calc(100vh-65px)] bg-gray-50 flex-1">
+    <!-- Store Promo Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white py-8 px-6 text-center shadow-inner">
+      <h2 class="text-2xl md:text-3xl font-black text-yellow-400 tracking-wide mb-2">SMART HOME & INDUSTRIAL SAFETY SYSTEMS</h2>
+      <p class="text-sm text-slate-300 max-w-2xl mx-auto">Equipped with 24x7 Intelligent IR Intrusion Detection, Audio/Visual Alert Systems, and complete 6 Months Free Warranty Coverage.</p>
+    </div>
+
+    <!-- Products Grid -->
+    <main class="max-w-7xl mx-auto p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-black text-slate-900 tracking-tight">Available Systems</h3>
+        <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">50% Launch Discount Applied</span>
       </div>
-    </header>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="customerProductCatalog">
+        <!-- Products populated dynamically via JS -->
+      </div>
+    </main>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. ORGANIZATION ERP DASHBOARD              -->
+  <!-- ========================================== -->
+  <section id="admin-erp" class="hidden flex-1 flex flex-col bg-slate-50 min-h-[calc(100vh-65px)]">
     
-    <main class="max-w-6xl mx-auto p-6">
-      <h2 class="text-2xl font-bold mb-6">Recommended Systems</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Amazon-style Product Card -->
-        <div class="bg-white p-4 rounded shadow hover:shadow-lg transition">
-          <div class="h-40 bg-gray-200 rounded mb-4 flex items-center justify-center"><i class="fas fa-shield-alt text-4xl text-gray-400"></i></div>
-          <h3 class="font-bold text-lg">Version 1 - Basic System</h3>
-          <p class="text-green-600 font-black text-xl my-2">₹15,000</p>
-          <ul class="text-xs text-gray-600 space-y-1 mb-4">
-            <li>✓ IR Detection</li>
-            <li>✓ Buzzer / Audio Alert</li>
-          </ul>
-          <button class="w-full bg-yellow-400 hover:bg-yellow-500 font-bold py-2 rounded rounded-full shadow text-sm">Add to Cart</button>
+    <!-- Top Navigation Bar (Matches image_494f23.png) -->
+    <div class="bg-white px-6 py-3 border-b border-slate-200 flex gap-2 overflow-x-auto shadow-sm">
+      <button onclick="window.switchAdminTab('inventory')" id="btn-tab-inventory" class="admin-tab-btn px-4 py-2 bg-slate-100 text-slate-800 font-black text-xs rounded-lg flex items-center gap-2 transition">
+        <i class="fas fa-boxes"></i> INVENTORY
+      </button>
+      <button onclick="window.switchAdminTab('returns')" id="btn-tab-returns" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-black text-xs rounded-lg flex items-center gap-2 transition">
+        <i class="fas fa-undo"></i> RETURNS
+      </button>
+      <button onclick="window.switchAdminTab('billing')" id="btn-tab-billing" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-black text-xs rounded-lg flex items-center gap-2 transition">
+        <i class="fas fa-file-invoice"></i> BILLING
+      </button>
+      <button onclick="window.switchAdminTab('warranty')" id="btn-tab-warranty" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-black text-xs rounded-lg flex items-center gap-2 transition">
+        <i class="fas fa-shield-alt"></i> WARRANTY
+      </button>
+    </div>
+
+    <!-- Workspaces Container -->
+    <div class="max-w-7xl w-full mx-auto p-6 space-y-6 flex-1">
+
+      <!-- ================= 4.1 INVENTORY PANEL ================= -->
+      <div id="panel-inventory" class="admin-panel space-y-6">
+        <!-- Register New Asset Card -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-yellow-400">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-black text-slate-900 tracking-wide uppercase"><i class="fas fa-box-open text-yellow-500 mr-2"></i> Register New Stock Asset</h3>
+            <span class="text-xs text-slate-400 font-bold">Physical Tag Synchronization</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">ASSET NAME / MODEL</label>
+              <select id="invItemName" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
+                <option value="Version 1 - Basic Safety Alert System">Version 1 - Basic System</option>
+                <option value="Version 2 - Safety System with Bypass Switch">Version 2 - Bypass Switch</option>
+                <option value="Version 3 - Smart Phone Web Access System">Version 3 - Web Access</option>
+                <option value="Version 4 - Biometric Smart Access System">Version 4 - Biometric</option>
+                <option value="Industrial / Commercial Premium System">Industrial Premium System</option>
+                <option value="IR Sensor Assembly Unit">IR Sensor Assembly Unit</option>
+                <option value="Main Control Unit PCB">Main Control Unit PCB</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">PURCHASE / MFG COST (₹)</label>
+              <input id="invCost" type="number" placeholder="Cost Price" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">CONDITION</label>
+              <select id="invCondition" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
+                <option value="New">Brand New / Factory Calibrated</option>
+                <option value="Refurbished">Refurbished / Tested</option>
+                <option value="Damaged">Damaged / Needs Repair</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Location Hierarchy Inputs -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">PRIMARY LOCATION</label>
+              <select id="invMainLocation" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
+                <option value="Main Warehouse - Sector 5">Main Warehouse - Sector 5</option>
+                <option value="Testing & Assembly Lab">Testing & Assembly Lab</option>
+                <option value="Howrah Dispatch Hub">Howrah Dispatch Hub</option>
+                <option value="Technician Kit Bag">Technician Kit Bag</option>
+                <option value="Other">Other / Custom</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">EXACT SPOT / RACK / UNIT (REQUIRED)</label>
+              <input id="invLocationSpot" type="text" placeholder="e.g. Shelf A4, Bin #12, Rack 3" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button onclick="window.generateAndPrintTag()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition shadow flex items-center gap-2">
+              <i class="fas fa-barcode"></i> 1. Generate & Print Master Tag
+            </button>
+            <button onclick="window.openScanner('VERIFY_NEW_ASSET')" class="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-xs uppercase tracking-wider rounded-lg transition shadow flex items-center gap-2">
+              <i class="fas fa-qrcode"></i> 2. Scan Tag to Finalize Save
+            </button>
+          </div>
         </div>
-        <!-- Add remaining tiers here -->
+
+        <!-- Current Inventory Grid -->
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 border-b border-slate-100 pb-4">
+            <div>
+              <h3 class="text-base font-black text-slate-900 tracking-wide uppercase"><i class="fas fa-list text-slate-600 mr-2"></i> Active Inventory Matrix</h3>
+              <small id="invSummaryText" class="text-xs font-bold text-emerald-700">Syncing database...</small>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+              <input id="invSearchInput" onkeyup="window.filterInventoryTable()" type="text" placeholder="Search Tag, Model, Location..." class="p-2 border border-slate-300 rounded-lg text-xs w-full md:w-64" />
+              <button onclick="window.openScanner('SEARCH_INV')" class="px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold"><i class="fas fa-qrcode"></i></button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700 uppercase font-black">
+                <tr>
+                  <th class="p-3">Tag ID</th>
+                  <th class="p-3">Asset Description</th>
+                  <th class="p-3">Location & Specific Spot</th>
+                  <th class="p-3 text-right">Cost (₹)</th>
+                  <th class="p-3 text-center">Status</th>
+                  <th class="p-3 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                <tr><td colspan="6" class="p-6 text-center text-slate-400">Loading master catalog...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </main>
+
+      <!-- ================= 4.2 RETURNS & RECOVERY PANEL ================= -->
+      <div id="panel-returns" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-rose-500">
+          <h3 class="text-base font-black text-slate-900 tracking-wide uppercase mb-2"><i class="fas fa-undo text-rose-500 mr-2"></i> Asset Recovery & Returns Hub</h3>
+          <p class="text-xs text-slate-500 mb-6">Restock returned hardware from customer claims or field assignments into active warehouse inventory.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">SCAN / ENTER ASSET TAG ID</label>
+              <div class="flex gap-2">
+                <input id="returnTagId" type="text" placeholder="Scan or enter Tag ID..." class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+                <button onclick="window.openScanner('RETURN_TAG')" class="px-4 bg-slate-800 text-white font-bold rounded-lg text-xs"><i class="fas fa-qrcode"></i></button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">REVERT REASON / RETURN CONDITION</label>
+              <input id="returnReason" type="text" placeholder="e.g. Warranty Replacement, Fault Cleared, Site Dismantle" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">RESTOCK MAIN LOCATION</label>
+              <select id="returnMainLoc" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
+                <option value="Main Warehouse - Sector 5">Main Warehouse - Sector 5</option>
+                <option value="Testing & Assembly Lab">Testing & Assembly Lab</option>
+                <option value="Howrah Dispatch Hub">Howrah Dispatch Hub</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">RESTOCK EXACT SPOT</label>
+              <input id="returnSpot" type="text" placeholder="e.g. Returned Bin #3, Testing Rack B" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+          </div>
+
+          <button onclick="window.executeReturnStock()" class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-widest rounded-lg transition shadow">
+            Confirm Asset Recovery & Restore to In-Stock
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 4.3 BILLING & INVOICING PANEL ================= -->
+      <div id="panel-billing" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-cyan-500">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-black text-slate-900 tracking-wide uppercase"><i class="fas fa-file-invoice-dollar text-cyan-600 mr-2"></i> Official Billing & 6-Month Free Warranty</h3>
+            <span class="text-xs bg-cyan-100 text-cyan-800 font-bold px-3 py-1 rounded-full">Auto 6-Month Protection Included</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">CUSTOMER FULL NAME</label>
+              <input id="billCustName" type="text" placeholder="Full Official Name" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">CUSTOMER PHONE NUMBER</label>
+              <input id="billCustPhone" type="text" placeholder="10-digit Mobile Number" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">INSTALLATION SITE ADDRESS</label>
+              <input id="billCustAddress" type="text" placeholder="Delivery/Site Address" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">PRODUCT VERSION</label>
+              <select id="billProductModel" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold">
+                <option value="Version 1 - Basic Safety Alert System|15000">Version 1 - Basic Alert System (₹15,000)</option>
+                <option value="Version 2 - Safety System with Bypass Switch|20000">Version 2 - Bypass Switch (₹20,000)</option>
+                <option value="Version 3 - Smart Phone Web Access System|21000">Version 3 - Web Access System (₹21,000)</option>
+                <option value="Version 4 - Biometric Smart Access System|26000">Version 4 - Biometric System (₹26,000)</option>
+                <option value="Industrial / Commercial Premium System|27000">Industrial Premium System (₹27,000)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">SCANNED PHYSICAL ASSET TAG ID</label>
+              <div class="flex gap-2">
+                <input id="billProductTag" type="text" placeholder="Scan Tag attached to hardware..." class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold" />
+                <button onclick="window.openScanner('BILLING_TAG')" class="px-4 bg-slate-800 text-white font-bold rounded-lg text-xs"><i class="fas fa-qrcode"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="window.processBillingAndWarranty()" class="w-full py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-xs uppercase tracking-widest rounded-lg transition shadow">
+            <i class="fas fa-receipt mr-1"></i> Generate Invoice & Bind 6-Month Free Warranty
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= 4.4 WARRANTY & CLAIMS PANEL ================= -->
+      <div id="panel-warranty" class="admin-panel hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-purple-600">
+          <h3 class="text-base font-black text-slate-900 tracking-wide uppercase mb-2"><i class="fas fa-shield-alt text-purple-600 mr-2"></i> Two-Step Warranty Claim Verification</h3>
+          <p class="text-xs text-slate-500 mb-6">Anti-Fraud Protocol: Match customer support ticket QR against the physical hardware QR tag to verify 6-month validity.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Step 1: Digital Ticket QR</span>
+              <div class="flex gap-2">
+                <input id="claimTicketInput" type="text" placeholder="Scan or enter Ticket ID..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold" />
+                <button onclick="window.openScanner('CLAIM_TICKET')" class="px-4 bg-purple-600 text-white font-bold rounded-lg text-xs"><i class="fas fa-qrcode"></i></button>
+              </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <span class="text-xs font-black text-slate-500 uppercase tracking-wider">Step 2: Physical Device QR</span>
+              <div class="flex gap-2">
+                <input id="claimProductInput" type="text" placeholder="Scan hardware QR tag..." class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold" />
+                <button onclick="window.openScanner('CLAIM_PRODUCT')" class="px-4 bg-slate-800 text-white font-bold rounded-lg text-xs"><i class="fas fa-qrcode"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="window.verifyWarrantyClaim()" class="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-black text-xs uppercase tracking-widest rounded-lg transition shadow">
+            Verify Match & 6-Month Status
+          </button>
+
+          <!-- Claim Verification Status Box -->
+          <div id="claimResultBox" class="hidden p-6 rounded-xl text-sm font-medium mt-4"></div>
+        </div>
+      </div>
+
+    </div>
   </section>
 
-  <!-- ================= ADMIN ERP BACKEND ================= -->
-  <section id="admin-erp" class="hidden min-h-screen">
-    <header class="bg-[#0f172a] text-white p-4 border-b-4 border-yellow-400 flex justify-between items-center">
-      <h1 class="text-lg font-black tracking-widest">ERP TERMINAL</h1>
-      <button id="btnAdminLogout" class="bg-red-600 px-4 py-2 rounded text-xs font-bold">TERMINATE SESSION</button>
-    </header>
-    
-    <!-- Admin Navigation Tab Bar (Matches image_494f23.png) -->
-<div class="bg-white px-6 py-4 flex gap-3 overflow-x-auto">
-  <!-- INVENTORY BUTTON -->
-  <button onclick="switchAdminTab('inventory')" id="btn-tab-inventory" class="admin-tab-btn px-4 py-2 bg-slate-100 text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
-    <i class="fas fa-boxes"></i> INVENTORY
-  </button>
-  
-  <!-- RETURNS BUTTON -->
-  <button onclick="switchAdminTab('returns')" id="btn-tab-returns" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
-    <i class="fas fa-undo"></i> RETURNS
-  </button>
-  
-  <!-- BILLING BUTTON -->
-  <button onclick="switchAdminTab('billing')" id="btn-tab-billing" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
-    <i class="fas fa-file-invoice"></i> BILLING
-  </button>
+  <!-- ========================================== -->
+  <!-- 5. UNIVERSAL MODALS                        -->
+  <!-- ========================================== -->
 
-  <!-- WARRANTY BUTTON -->
-  <button onclick="switchAdminTab('warranty')" id="btn-tab-warranty" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
-    <i class="fas fa-shield-alt"></i> WARRANTY
-  </button>
-</div>
-
-<!-- Dynamic Workspaces -->
-<main class="p-6 bg-slate-50 min-h-screen">
-  
-  <!-- 1. INVENTORY PANEL (Master Matrix) -->
-  <div id="panel-inventory" class="admin-panel bg-white p-6 rounded shadow-sm border border-gray-200">
-    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Master Matrix</h2>
-    <p class="text-sm text-gray-500">Scan QR codes and manage dispatch orders here.</p>
-    
-    <!-- You can manually paste your HTML5-QRCode Scanner logic here -->
+  <!-- QR Scanner Modal -->
+  <div id="scannerModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl">
+      <h3 class="font-black text-slate-900 mb-2 uppercase text-sm" id="scannerTitle">Scanner Active</h3>
+      <div id="qrReader" class="w-full bg-black rounded-lg overflow-hidden mb-4"></div>
+      <button onclick="window.closeScanner()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg text-xs uppercase">Close Camera</button>
+    </div>
   </div>
 
-  <!-- 2. RETURNS PANEL -->
-  <div id="panel-returns" class="admin-panel hidden bg-white p-6 rounded shadow-sm border border-gray-200">
-    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Asset Recovery & Returns</h2>
-    <p class="text-sm text-gray-500">Process returned hardware and update database stock.</p>
-  </div>
-
-  <!-- 3. BILLING PANEL -->
-  <div id="panel-billing" class="admin-panel hidden bg-white p-6 rounded shadow-sm border border-gray-200">
-    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Official Billing</h2>
-    <p class="text-sm text-gray-500">Generate invoices and bind products to the 6-month free warranty.</p>
-  </div>
-
-  <!-- 4. WARRANTY PANEL -->
-  <div id="panel-warranty" class="admin-panel hidden bg-white p-6 rounded shadow-sm border border-gray-200">
-    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Warranty Claims Engine</h2>
-    <p class="text-sm text-gray-500">Scan customer claim tickets and verify against physical hardware QR.</p>
-  </div>
-
-</main>
-    
-    <main class="p-6">
-      <div class="bg-white p-6 rounded shadow border border-gray-200">
-        <h2 class="text-xl font-bold text-[#0f172a] mb-4">Master Matrix</h2>
-        <p class="text-sm text-gray-500">Scan QR codes and manage dispatch orders here.</p>
+  <!-- A4 Printable Master Tag Modal -->
+  <div id="tagPrintModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full text-center shadow-2xl">
+      <h3 class="font-black text-slate-900 mb-4 text-sm uppercase">Master Asset Tag Preview</h3>
+      
+      <div id="printableTagArea" class="bg-white p-6 border-2 border-slate-900 rounded-xl mb-4 text-center">
+        <h4 class="font-black text-lg text-slate-900 mb-1">KAALNETRA SECURITY</h4>
+        <p id="tagItemTitle" class="text-xs font-bold text-slate-600 uppercase mb-4"></p>
+        
+        <img id="tagQrDisplay" src="" class="w-40 h-40 mx-auto border-2 border-black p-2 rounded mb-4" alt="QR" />
+        <img id="tagBarDisplay" src="" class="w-64 h-16 mx-auto object-contain mb-2" alt="Barcode" />
+        
+        <div id="tagIdDisplay" class="font-mono font-bold text-lg text-slate-900 tracking-widest"></div>
+        <div id="tagLocDisplay" class="text-[10px] font-bold text-slate-500 uppercase mt-2"></div>
       </div>
-    </main>
-  </section>
 
-  <!-- Firebase Logic -->
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('tagPrintModal').classList.add('hidden')" class="flex-1 py-2.5 bg-slate-200 text-slate-800 font-bold rounded-lg text-xs uppercase">Cancel</button>
+        <button onclick="window.printMasterTag()" class="flex-1 py-2.5 bg-emerald-600 text-white font-bold rounded-lg text-xs uppercase">Print Tag</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Invoice Frame Container -->
+  <div id="printableContainer" class="hidden"></div>
+
+  <!-- ========================================== -->
+  <!-- 6. APPLICATION LOGIC & FIREBASE SDK        -->
+  <!-- ========================================== -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      GoogleAuthProvider, 
+      signInWithPopup, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      setDoc, 
+      getDoc, 
+      getDocs, 
+      updateDoc, 
+      query, 
+      orderBy, 
+      onSnapshot, 
+      serverTimestamp, 
+      Timestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
       authDomain: "kaalnetra-214b6.firebaseapp.com",
@@ -150,75 +433,529 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+    const googleProvider = new GoogleAuthProvider();
 
-    const uiLogin = document.getElementById("login-screen");
-    const uiStore = document.getElementById("customer-storefront");
-    const uiAdmin = document.getElementById("admin-erp");
+    // Global State
+    let currentUser = null;
+    let isAdmin = false;
+    let html5QrScanner = null;
+    let scannerActiveTarget = null;
+    let pendingGeneratedTag = null;
 
-    // Staff Login
-    document.getElementById("btnAdminLogin").onclick = () => {
-      const email = document.getElementById("adminEmail").value;
-      const pass = document.getElementById("adminPass").value;
-      signInWithEmailAndPassword(auth, email, pass).catch(e => alert(e.message));
+    const STAFF_EMAILS = ["sohampal781@gmail.com", "admin@kaalnetra.com", "priti@kaalnetra.com"];
+
+    const PRODUCTS = [
+      { id: "v1", name: "Version 1 - Basic Alert System", price: 15000, desc: "IR Detection, Audio Buzzer, Basic Security Unit" },
+      { id: "v2", name: "Version 2 - Bypass Switch", price: 20000, desc: "Dual Sensors, Permanent Bypass Switch, LED Indicator" },
+      { id: "v3", name: "Version 3 - Web Access System", price: 21000, desc: "Remote Smartphone/Web Dashboard, Real-time Logging" },
+      { id: "v4", name: "Version 4 - Biometric System", price: 26000, desc: "Fingerprint Access Control, Allow-One Entry, Advanced Logs" },
+      { id: "v5", name: "Industrial Premium System", price: 27000, desc: "Dual-level Access, High-Power Siren, 24/7 Heavy Duty Grid" }
+    ];
+
+    // ==========================================
+    // AUTHENTICATION & ROUTING
+    // ==========================================
+    window.loginStaff = async () => {
+      const email = document.getElementById("staffEmail").value.trim();
+      const pass = document.getElementById("staffPass").value;
+      if (!email || !pass) return alert("Please enter staff credentials.");
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (err) {
+        alert("Staff Auth Failed: " + err.message);
+      }
     };
 
-    // Customer Login
-    document.getElementById("btnGoogleLogin").onclick = () => {
-      signInWithPopup(auth, provider).catch(e => alert(e.message));
+    window.loginCustomerGoogle = async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (err) {
+        alert("Google Sign-In Error: " + err.message);
+      }
     };
 
-    // Global Logout
-    const doLogout = () => signOut(auth);
-    document.getElementById("btnCustLogout").onclick = doLogout;
-    document.getElementById("btnAdminLogout").onclick = doLogout;
+    window.appLogout = () => signOut(auth);
 
-    // Routing Engine
-    onAuthStateChanged(auth, async (user) => {
+    onAuthStateChanged(auth, (user) => {
+      const uiLogin = document.getElementById("login-screen");
+      const uiCustomer = document.getElementById("customer-storefront");
+      const uiAdmin = document.getElementById("admin-erp");
+      const authNav = document.getElementById("authNav");
+      const userBadge = document.getElementById("userBadge");
+
       if (!user) {
+        currentUser = null;
+        isAdmin = false;
         uiLogin.classList.remove("hidden");
-        uiStore.classList.add("hidden");
+        uiCustomer.classList.add("hidden");
         uiAdmin.classList.add("hidden");
+        authNav.classList.add("hidden");
         return;
       }
 
-      // Check if user is staff (e.g., matching a specific domain or Firestore record)
-      const isStaff = user.email.endsWith("@kaalnetra.com") || user.email === "sohampal781@gmail.com";
-
+      currentUser = user;
+      isAdmin = STAFF_EMAILS.some(e => e.toLowerCase() === (user.email || "").toLowerCase());
+      authNav.classList.remove("hidden");
       uiLogin.classList.add("hidden");
-      
-      if (isStaff) {
+
+      if (isAdmin) {
+        userBadge.innerText = `STAFF: ${user.email}`;
         uiAdmin.classList.remove("hidden");
-        uiStore.classList.add("hidden");
+        uiCustomer.classList.add("hidden");
+        window.switchAdminTab('inventory');
+        initInventoryListener();
       } else {
-        uiStore.classList.remove("hidden");
+        userBadge.innerText = `CUSTOMER: ${user.displayName || user.email}`;
+        uiCustomer.classList.remove("hidden");
         uiAdmin.classList.add("hidden");
-        document.getElementById("customerName").innerText = `Hello, ${user.displayName}`;
+        renderCustomerCatalog();
       }
     });
-    // Attach to window so the HTML onclick="" attributes can trigger it
-window.switchAdminTab = function(tabName) {
-  
-  // 1. Hide all panels
-  const allPanels = document.querySelectorAll('.admin-panel');
-  allPanels.forEach(panel => panel.classList.add('hidden'));
-  
-  // 2. Reset all buttons to the inactive, faded style
-  const allButtons = document.querySelectorAll('.admin-tab-btn');
-  allButtons.forEach(btn => {
-    btn.classList.remove('bg-slate-100', 'text-slate-800');
-    btn.classList.add('bg-slate-50', 'text-slate-500');
-  });
 
-  // 3. Show the specific panel the user clicked
-  document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+    // ==========================================
+    // STOREFRONT LOGIC (Amazon Style)
+    // ==========================================
+    function renderCustomerCatalog() {
+      const container = document.getElementById("customerProductCatalog");
+      container.innerHTML = PRODUCTS.map(p => `
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="h-36 bg-slate-900 text-yellow-400 rounded-xl flex items-center justify-center text-4xl mb-4">
+              <i class="fas fa-shield-halved"></i>
+            </div>
+            <h4 class="font-bold text-base text-slate-900 mb-1">${p.name}</h4>
+            <p class="text-xs text-slate-500 mb-3">${p.desc}</p>
+            <div class="text-2xl font-black text-slate-900 mb-4">₹${p.price.toLocaleString('en-IN')}</div>
+          </div>
+          <button onclick="window.placeCustomerOrder('${p.id}', '${p.name}', ${p.price})" class="w-full py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-black rounded-xl text-xs uppercase tracking-wider transition shadow">
+            Order System (Include 6M Free Warranty)
+          </button>
+        </div>
+      `).join("");
+    }
 
-  // 4. Highlight the active button
-  const activeBtn = document.getElementById(`btn-tab-${tabName}`);
-  activeBtn.classList.remove('bg-slate-50', 'text-slate-500');
-  activeBtn.classList.add('bg-slate-100', 'text-slate-800');
-  
-};
+    window.placeCustomerOrder = async (productId, productName, price) => {
+      if (!confirm(`Place order for ${productName} (₹${price.toLocaleString('en-IN')})?`)) return;
+      try {
+        const orderRef = doc(collection(db, "orders"));
+        await setDoc(orderRef, {
+          orderId: orderRef.id,
+          productId,
+          productName,
+          price,
+          customerUid: currentUser.uid,
+          customerName: currentUser.displayName || "Customer",
+          customerEmail: currentUser.email,
+          status: "PENDING_DISPATCH",
+          createdAt: serverTimestamp()
+        });
+        alert("✅ Order placed successfully! Staff will verify and dispatch your unit.");
+      } catch (e) {
+        alert("Order Error: " + e.message);
+      }
+    };
+
+    // ==========================================
+    // ADMIN TAB CONTROLLER
+    // ==========================================
+    window.switchAdminTab = (tabName) => {
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.remove('bg-slate-100', 'text-slate-800');
+        btn.classList.add('bg-slate-50', 'text-slate-500');
+      });
+
+      const activePanel = document.getElementById(`panel-${tabName}`);
+      const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-50', 'text-slate-500');
+        activeBtn.classList.add('bg-slate-100', 'text-slate-800');
+      }
+    };
+
+    // ==========================================
+    // INVENTORY MODULE
+    // ==========================================
+    window.generateAndPrintTag = () => {
+      const item = document.getElementById("invItemName").value;
+      const cost = parseFloat(document.getElementById("invCost").value) || 0;
+      const condition = document.getElementById("invCondition").value;
+      const mainLoc = document.getElementById("invMainLocation").value;
+      const spot = document.getElementById("invLocationSpot").value.trim();
+
+      if (!spot) return alert("Please specify the exact spot/shelf/unit.");
+
+      const numericId = "KN-" + Math.floor(100000 + Math.random() * 900000);
+      const fullLocation = `${mainLoc} [${spot}]`;
+
+      pendingGeneratedTag = {
+        barcode: numericId,
+        item,
+        cost,
+        condition,
+        location: fullLocation,
+        status: "Pending Verification",
+        createdAt: new Date().toISOString()
+      };
+
+      document.getElementById("tagItemTitle").innerText = item;
+      document.getElementById("tagIdDisplay").innerText = numericId;
+      document.getElementById("tagLocDisplay").innerText = fullLocation;
+      
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${numericId}`;
+      const barUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${numericId}&scale=2&includetext=false`;
+
+      document.getElementById("tagQrDisplay").src = qrUrl;
+      document.getElementById("tagBarDisplay").src = barUrl;
+      document.getElementById("tagPrintModal").classList.remove("hidden");
+    };
+
+    window.printMasterTag = () => {
+      window.print();
+    };
+
+    function initInventoryListener() {
+      const invRef = collection(db, "inventory");
+      onSnapshot(invRef, (snap) => {
+        const tbody = document.getElementById("inventoryTableBody");
+        const summary = document.getElementById("invSummaryText");
+        tbody.innerHTML = "";
+
+        let total = 0, inStock = 0;
+        if (snap.empty) {
+          tbody.innerHTML = "<tr><td colspan='6' class='p-6 text-center text-slate-400'>No inventory items registered.</td></tr>";
+          summary.innerText = "Total Assets: 0 | In-Stock: 0";
+          return;
+        }
+
+        snap.forEach(docSnap => {
+          const v = docSnap.data();
+          total++;
+          if (v.status === "In Stock") inStock++;
+
+          let statusBadge = "bg-emerald-100 text-emerald-800";
+          if (v.status === "Checked Out") statusBadge = "bg-amber-100 text-amber-800";
+          if (v.status === "Sold") statusBadge = "bg-purple-100 text-purple-800";
+
+          tbody.innerHTML += `
+            <tr class="inv-row hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="p-3 font-mono font-bold text-slate-900">${v.barcode}</td>
+              <td class="p-3 font-bold">${v.item}</td>
+              <td class="p-3 text-slate-600">${v.location || 'N/A'}</td>
+              <td class="p-3 text-right font-mono font-bold">₹${(v.cost || 0).toLocaleString('en-IN')}</td>
+              <td class="p-3 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${statusBadge}">${v.status}</span></td>
+              <td class="p-3 text-center">
+                <button onclick="window.deleteInventoryItem('${docSnap.id}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          `;
+        });
+
+        summary.innerText = `Total Registered: ${total} | In-Stock: ${inStock}`;
+      });
+    }
+
+    window.filterInventoryTable = () => {
+      const queryText = document.getElementById("invSearchInput").value.toLowerCase();
+      document.querySelectorAll(".inv-row").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(queryText) ? "" : "none";
+      });
+    };
+
+    window.deleteInventoryItem = async (id) => {
+      if (!confirm("Permanently remove this asset from inventory?")) return;
+      try {
+        await updateDoc(doc(db, "inventory", id), { status: "Archived" });
+      } catch (e) {
+        alert("Delete failed: " + e.message);
+      }
+    };
+
+    // ==========================================
+    // RETURNS MODULE
+    // ==========================================
+    window.executeReturnStock = async () => {
+      const tag = document.getElementById("returnTagId").value.trim();
+      const reason = document.getElementById("returnReason").value.trim();
+      const mainLoc = document.getElementById("returnMainLoc").value;
+      const spot = document.getElementById("returnSpot").value.trim();
+
+      if (!tag || !spot) return alert("Please specify Tag ID and exact restock spot.");
+
+      try {
+        const invDoc = doc(db, "inventory", tag);
+        const docSnap = await getDoc(invDoc);
+
+        if (!docSnap.exists()) return alert("Asset Tag not found in database.");
+
+        const fullLoc = `${mainLoc} [${spot}]`;
+        await updateDoc(invDoc, {
+          status: "In Stock",
+          location: fullLoc,
+          lastReturnReason: reason,
+          lastReturnedAt: serverTimestamp()
+        });
+
+        alert(`✅ Asset ${tag} restocked successfully at ${fullLoc}`);
+        document.getElementById("returnTagId").value = "";
+        document.getElementById("returnReason").value = "";
+        document.getElementById("returnSpot").value = "";
+        window.switchAdminTab('inventory');
+      } catch (e) {
+        alert("Return error: " + e.message);
+      }
+    };
+
+    // ==========================================
+    // BILLING & 6-MONTH FREE WARRANTY MODULE
+    // ==========================================
+    window.processBillingAndWarranty = async () => {
+      const name = document.getElementById("billCustName").value.trim();
+      const phone = document.getElementById("billCustPhone").value.trim();
+      const address = document.getElementById("billCustAddress").value.trim();
+      const [model, priceStr] = document.getElementById("billProductModel").value.split("|");
+      const tag = document.getElementById("billProductTag").value.trim();
+
+      if (!name || !phone || !tag) return alert("Fill in customer details and scan the product tag.");
+
+      const price = parseFloat(priceStr);
+      const now = new Date();
+      const warrantyExpiry = new Date();
+      warrantyExpiry.setMonth(warrantyExpiry.getMonth() + 6); // Add 6-Month Free Warranty
+
+      const invoiceId = "INV-KN-" + Math.floor(100000 + Math.random() * 900000);
+
+      try {
+        // 1. Permanent Sales Record
+        await setDoc(doc(db, "sales", invoiceId), {
+          invoiceId,
+          customerName: name,
+          customerPhone: phone,
+          customerAddress: address,
+          productModel: model,
+          productTag: tag,
+          salePrice: price,
+          saleDate: Timestamp.fromDate(now),
+          warrantyExpiry: Timestamp.fromDate(warrantyExpiry),
+          billedBy: currentUser.email
+        });
+
+        // 2. Active 6-Month Warranty Registry
+        await setDoc(doc(db, "warranty_registry", tag), {
+          invoiceId,
+          customerName: name,
+          customerPhone: phone,
+          productModel: model,
+          productTag: tag,
+          active: true,
+          warrantyStart: Timestamp.fromDate(now),
+          warrantyExpiry: Timestamp.fromDate(warrantyExpiry)
+        });
+
+        // 3. Mark asset as Sold in Inventory
+        const invRef = doc(db, "inventory", tag);
+        const invSnap = await getDoc(invRef);
+        if (invSnap.exists()) {
+          await updateDoc(invRef, { status: "Sold", assignedTo: name, invoiceId });
+        }
+
+        alert(`✅ Invoice ${invoiceId} created! 6 Months Free Warranty bound to Tag: ${tag}`);
+        
+        // Render Dispatch Invoice Form
+        renderPrintableInvoice(invoiceId, name, phone, address, model, tag, price, now, warrantyExpiry);
+
+        document.getElementById("billCustName").value = "";
+        document.getElementById("billCustPhone").value = "";
+        document.getElementById("billCustAddress").value = "";
+        document.getElementById("billProductTag").value = "";
+
+      } catch (err) {
+        alert("Billing Error: " + err.message);
+      }
+    };
+
+    function renderPrintableInvoice(invId, name, phone, addr, model, tag, price, date, expiry) {
+      const container = document.getElementById("printableContainer");
+      container.innerHTML = `
+        <div class="p-8 max-w-3xl mx-auto bg-white border border-slate-900 text-slate-900 font-sans">
+          <div class="flex justify-between items-start border-b-2 border-black pb-4 mb-4">
+            <div>
+              <h2 class="text-2xl font-black">KAALNETRA SECURITY SYSTEMS</h2>
+              <p class="text-xs">"The Eye That Never Sleeps" | Official Dispatch Invoice</p>
+            </div>
+            <div class="text-right">
+              <span class="text-lg font-black font-mono">${invId}</span><br>
+              <span class="text-xs">Date: ${date.toLocaleDateString('en-IN')}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 text-xs mb-6">
+            <div>
+              <strong>BILLED TO:</strong><br>${name}<br>${phone}<br>${addr}
+            </div>
+            <div class="text-right">
+              <strong>WARRANTY CERTIFICATE:</strong><br>
+              <span class="text-emerald-700 font-black">6 MONTHS COMPLIMENTARY COVERAGE</span><br>
+              Valid Until: <strong>${expiry.toLocaleDateString('en-IN')}</strong>
+            </div>
+          </div>
+
+          <table class="w-full text-xs border-collapse mb-6">
+            <thead class="border-y-2 border-black font-black">
+              <tr>
+                <th class="p-2 text-left">ITEM & SYSTEM SPECIFICATION</th>
+                <th class="p-2 text-left">HARDWARE TAG</th>
+                <th class="p-2 text-right">AMOUNT (₹)</th>
+              </tr>
+            </thead>
+            <tbody class="border-b border-black">
+              <tr>
+                <td class="p-2">${model}</td>
+                <td class="p-2 font-mono">${tag}</td>
+                <td class="p-2 text-right font-bold">₹${price.toLocaleString('en-IN')}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="text-right text-base font-black mb-8">
+            TOTAL PAID: ₹${price.toLocaleString('en-IN')}
+          </div>
+
+          <div class="border-t border-slate-400 pt-4 text-[10px] text-center text-slate-500">
+            For support or warranty claims, scan your unique hardware tag in our support matrix.
+          </div>
+        </div>
+      `;
+      window.print();
+    }
+
+    // ==========================================
+    // WARRANTY VERIFICATION & CLAIMS ENGINE
+    // ==========================================
+    window.verifyWarrantyClaim = async () => {
+      const ticketId = document.getElementById("claimTicketInput").value.trim();
+      const productTag = document.getElementById("claimProductInput").value.trim();
+      const resultBox = document.getElementById("claimResultBox");
+
+      if (!productTag) return alert("Please scan or enter the physical product QR code.");
+
+      resultBox.classList.remove("hidden", "bg-emerald-100", "bg-rose-100", "text-emerald-900", "text-rose-900");
+
+      try {
+        const warSnap = await getDoc(doc(db, "warranty_registry", productTag));
+
+        if (!warSnap.exists()) {
+          resultBox.className = "p-6 rounded-xl text-xs font-bold mt-4 bg-rose-100 text-rose-900 border border-rose-300";
+          resultBox.innerHTML = `
+            <div class="flex items-center gap-2 text-sm font-black mb-1"><i class="fas fa-ban"></i> CLAIM REJECTED / VOID</div>
+            No active 6-month free warranty record found for Tag: <strong>${productTag}</strong> (Data deleted post 6-month lifecycle or unregistered).
+          `;
+          return;
+        }
+
+        const data = warSnap.data();
+        const expiryDate = data.warrantyExpiry.toDate();
+        const now = new Date();
+
+        if (now > expiryDate) {
+          resultBox.className = "p-6 rounded-xl text-xs font-bold mt-4 bg-rose-100 text-rose-900 border border-rose-300";
+          resultBox.innerHTML = `
+            <div class="flex items-center gap-2 text-sm font-black mb-1"><i class="fas fa-calendar-times"></i> WARRANTY EXPIRED</div>
+            The 6-Month Free Warranty expired on <strong>${expiryDate.toLocaleDateString('en-IN')}</strong>. Repairs require standard billing.
+          `;
+          return;
+        }
+
+        // Match Verified
+        resultBox.className = "p-6 rounded-xl text-xs font-bold mt-4 bg-emerald-100 text-emerald-900 border border-emerald-300";
+        resultBox.innerHTML = `
+          <div class="flex items-center gap-2 text-sm font-black mb-2 text-emerald-800"><i class="fas fa-check-circle"></i> VERIFIED MATCH: 6-MONTH FREE WARRANTY ACTIVE</div>
+          <div class="grid grid-cols-2 gap-2 text-slate-700">
+            <div><strong>Model:</strong> ${data.productModel}</div>
+            <div><strong>Customer:</strong> ${data.customerName} (${data.customerPhone})</div>
+            <div><strong>Original Invoice:</strong> ${data.invoiceId}</div>
+            <div><strong>Coverage Valid Until:</strong> ${expiryDate.toLocaleDateString('en-IN')}</div>
+          </div>
+          <button onclick="alert('Work authorized under free warranty!')" class="mt-4 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded-lg shadow">
+            Start Free Diagnostic / Repair
+          </button>
+        `;
+
+      } catch (e) {
+        alert("Verification error: " + e.message);
+      }
+    };
+
+    // ==========================================
+    // QR SCANNER CONTROLLER
+    // ==========================================
+    window.openScanner = (targetMode) => {
+      scannerActiveTarget = targetMode;
+      document.getElementById("scannerModal").classList.remove("hidden");
+      
+      if (!html5QrScanner) {
+        html5QrScanner = new Html5Qrcode("qrReader");
+      }
+
+      html5QrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decodedText) => {
+          handleScanSuccess(decodedText);
+          window.closeScanner();
+        },
+        (error) => {}
+      ).catch(e => {
+        alert("Camera error: " + e.message);
+        window.closeScanner();
+      });
+    };
+
+    window.closeScanner = () => {
+      if (html5QrScanner) {
+        html5QrScanner.stop().then(() => {
+          document.getElementById("scannerModal").classList.add("hidden");
+        }).catch(() => {
+          document.getElementById("scannerModal").classList.add("hidden");
+        });
+      } else {
+        document.getElementById("scannerModal").classList.add("hidden");
+      }
+    };
+
+    async function handleScanSuccess(scannedCode) {
+      const code = scannedCode.trim();
+
+      if (scannerActiveTarget === 'VERIFY_NEW_ASSET') {
+        if (!pendingGeneratedTag || pendingGeneratedTag.barcode !== code) {
+          return alert(`Mismatch error: Expected ${pendingGeneratedTag?.barcode}, scanned ${code}`);
+        }
+        await setDoc(doc(db, "inventory", code), {
+          ...pendingGeneratedTag,
+          status: "In Stock"
+        });
+        alert(`✅ Asset ${code} verified and officially saved in inventory.`);
+        document.getElementById("tagPrintModal").classList.add("hidden");
+        pendingGeneratedTag = null;
+      } 
+      else if (scannerActiveTarget === 'SEARCH_INV') {
+        document.getElementById("invSearchInput").value = code;
+        window.filterInventoryTable();
+      }
+      else if (scannerActiveTarget === 'RETURN_TAG') {
+        document.getElementById("returnTagId").value = code;
+      }
+      else if (scannerActiveTarget === 'BILLING_TAG') {
+        document.getElementById("billProductTag").value = code;
+      }
+      else if (scannerActiveTarget === 'CLAIM_TICKET') {
+        document.getElementById("claimTicketInput").value = code;
+      }
+      else if (scannerActiveTarget === 'CLAIM_PRODUCT') {
+        document.getElementById("claimProductInput").value = code;
+      }
+    }
   </script>
 </body>
 </html>
