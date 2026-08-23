@@ -709,44 +709,147 @@ window.printAssetTag = () => {
     win.focus();
     setTimeout(() => { win.print(); win.close(); }, 500);
 };
-// ================= 4. DISPATCH & MASTER QR ENGINE =================
+// ================= 4. DISPATCH, TABLE & PRINT ENGINE =================
 window.addTagToDispatchCart = async () => {
     const tag = document.getElementById("dispTagInp").value.trim().toUpperCase();
     if(!tag) return;
-
-    if(window.dispatchCartTags.find(t => t.id === tag)) return alert("Already added.");
+    if(dispatchCart.find(t => t.id === tag)) return alert("Already added.");
 
     try {
         const snap = await get(ref(window.db, `inventory/${tag}`));
         if(!snap.exists() || snap.val().status !== "In Stock") return alert("Invalid or Sold Tag.");
         
-        // Added 'warranty: true' by default
-        window.dispatchCartTags.push({ id: tag, item: snap.val().item, warranty: true });
+        // Add to cart with warranty TRUE by default
+        dispatchCart.push({ id: tag, item: snap.val().item, warranty: true });
         document.getElementById("dispTagInp").value = "";
-        window.renderDispatchCart();
+        renderDispatch();
     } catch(e) { alert(e.message); }
 };
 
-window.renderDispatchCart = () => {
+window.renderDispatch = () => {
     const tbody = document.getElementById("dispatchCartBody");
-    if(window.dispatchCartTags.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center italic text-slate-400 p-4">No hardware tags added yet.</td></tr>`;
+    if(dispatchCart.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center italic text-slate-400 p-4">No tags added yet.</td></tr>`;
         return;
     }
-    tbody.innerHTML = window.dispatchCartTags.map((t, i) => `
+    
+    tbody.innerHTML = dispatchCart.map((t, i) => `
         <tr class="erp-tr border-b border-slate-200 bg-white">
             <td class="erp-td font-mono font-bold text-slate-800">${t.id}</td>
             <td class="erp-td font-bold">${t.item}</td>
             <td class="erp-td text-center">
-                <input type="checkbox" ${t.warranty ? 'checked' : ''} onchange="window.toggleItemWarranty(${i}, this.checked)" class="w-5 h-5 cursor-pointer accent-emerald-600">
+                <input type="checkbox" ${t.warranty ? 'checked' : ''} onchange="dispatchCart[${i}].warranty = this.checked" style="width:18px; height:18px; cursor:pointer;">
             </td>
             <td class="erp-td text-center">
-                <button onclick="window.dispatchCartTags.splice(${i},1); window.renderDispatchCart();" class="text-rose-500 hover:text-rose-700 font-bold"><i class="fas fa-times"></i> Remove</button>
+                <button onclick="dispatchCart.splice(${i},1); renderDispatch();" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;"><i class="fas fa-times"></i> Remove</button>
             </td>
         </tr>
     `).join("");
+};// MRPSP-STYLE THERMAL TAG PRINT
+window.printAssetTag = () => {
+    const printContent = document.getElementById("printableTagArea").innerHTML;
+    const win = window.open('', '', 'height=500,width=500');
+    win.document.write('<html><head><title>Asset Tag Print</title><style>body{text-align:center;font-family:sans-serif;padding:10px;margin:0;} img{max-width:100%;}</style></head><body>');
+    win.document.write(printContent);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 500);
 };
 
+// MRPSP-STYLE DISPATCH BILL PRINT
+window.printDispatchBill = (ordId, masterId, customerName, items) => {
+    let itemRows = "";
+    items.forEach((it, i) => {
+        let wText = it.warranty ? "6M FREE" : "NONE";
+        itemRows += `
+            <tr style="border-bottom: 2pt solid #ddd;">
+                <td style="padding: 10px; font-size: 16pt; font-weight: 900; text-align: left;">${i+1}. ${it.item.toUpperCase()}</td>
+                <td style="padding: 10px; font-size: 14pt; font-family: monospace;">${it.id}</td>
+                <td style="padding: 10px; font-size: 14pt; font-weight: bold; text-align: right;">${wText}</td>
+            </tr>`;
+    });
+
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${masterId}`;
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+        <!DOCTYPE html><html><head><style>
+            @media print { @page { size: A4; margin: 0; } }
+            body { font-family: "Arial Black", sans-serif; color: black; background: white; margin: 0; padding: 40px; text-align: center;}
+            .wrapper { width: 100%; max-width: 210mm; margin: 0 auto; }
+            .header-line { border-bottom: 8pt solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+            .h1 { font-size: 40pt; font-weight: 900; line-height: 1.1; }
+            .doc-label { font-size: 25pt; border: 4pt solid #000; padding: 15px; margin: 20px auto; display: inline-block; }
+            .meta { font-size: 20pt; font-weight: 900; margin-bottom: 20px; text-align: left; }
+            table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+            th { border-bottom: 4pt solid black; font-size: 18pt; font-weight: 900; text-align: left; padding: 10px; }
+            .qr-box { margin-top: 40px; }
+            .footer-sig { margin-top: 80px; font-size: 20pt; font-weight: 900; border-top: 4pt solid black; width: 40%; text-align: left; padding-top: 10px; }
+        </style></head><body>
+            <div class="wrapper">
+                <div class="header-line"><div class="h1">KAALNETRA SECURITY</div><div style="font-size:16pt;">THE EYE THAT NEVER SLEEPS</div></div>
+                <div class="doc-label">OFFICIAL DISPATCH & WARRANTY BILL</div>
+                <div class="meta"><div>ORDER REF: ${ordId}</div><div>CUSTOMER: ${customerName}</div><div>DATE: ${new Date().toLocaleDateString('en-IN')}</div></div>
+                <table>
+                    <thead><tr><th style="width:50%">ASSET DESCRIPTION</th><th style="width:25%">TAG ID</th><th style="width:25%; text-align:right;">WARRANTY</th></tr></thead>
+                    <tbody>${itemRows}</tbody>
+                </table>
+                <div class="qr-box">
+                    <div style="font-size:18pt; font-weight:bold; margin-bottom:10px;">MASTER WARRANTY QR</div>
+                    <img src="${qrUrl}" style="width:200px; height:200px; border:4pt solid black; padding:10px;">
+                    <div style="font-size:20pt; font-family:monospace; margin-top:10px;">${masterId}</div>
+                </div>
+                <div class="footer-sig">AUTHORIZED SIGNATORY</div>
+            </div>
+        </body></html>
+    `);
+    doc.close();
+    setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 800);
+};
+window.submitPublicOrder = async () => {
+    const name = document.getElementById("ordName").value.trim();
+    const address = document.getElementById("ordAddress").value.trim();
+    const phone = document.getElementById("ordPhone").value.trim();
+    const txn = document.getElementById("ordTxn").value.trim();
+    const adv = parseInt(document.getElementById("ordSlider").value);
+
+    if(!name || !address || !phone) return alert("Fill required contact details.");
+    if(adv > 0 && txn.length !== 5) return alert("Enter exactly the LAST 5 DIGITS of your Txn ID.");
+
+    const ordId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+    const btn = document.activeElement;
+    const oldText = btn.innerText;
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+
+    try {
+        // Adding a 5 second timeout to prevent hanging if DB URL is wrong
+        const setPromise = set(ref(window.db, `web_orders/${ordId}`), {
+            orderId: ordId, productName: currentOrderProduct.name, totalPrice: currentOrderProduct.price,
+            advancePaid: adv, balanceDue: currentOrderProduct.price - adv, customerName: name,
+            address: address, phone: phone, txnIdLast5: txn, status: "Pending Verification", timestamp: serverTimestamp()
+        });
+        
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Database connection timed out. Check Firebase URL.")), 5000));
+        await Promise.race([setPromise, timeoutPromise]);
+        
+        document.getElementById("publicOrderModal").classList.add("hidden");
+        showAlert("Order Received!", `Tracking ID:<br><b class="text-xl text-blue-600 font-mono">${ordId}</b>`, '<i class="fas fa-check-circle text-emerald-500"></i>');
+        
+        document.getElementById("ordName").value = ""; document.getElementById("ordAddress").value = "";
+        document.getElementById("ordPhone").value = ""; document.getElementById("ordTxn").value = "";
+    } catch(e) { 
+        alert("Error: " + e.message); 
+    } finally {
+        btn.innerText = oldText;
+        btn.disabled = false;
+    }
+};
 window.toggleItemWarranty = (index, isChecked) => {
     window.dispatchCartTags[index].warranty = isChecked;
 };
