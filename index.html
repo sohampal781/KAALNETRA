@@ -1,943 +1,673 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kaalnetra Security Systems & MRPSP ERP</title>
-<!-- Tailwind CSS for Storefront -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<style>
-/* --- PREMIUM ENTERPRISE METRO THEME (YOUR EXACT ORIGINAL CSS) --- */
-:root {
-  --metro-blue: #0f172a;    
-  --metro-gold: #fbbf24;    
-  --metro-red: #e11d48;     
-  --metro-slate: #64748b;
-  --bg-color: #f8fafc;      
-  --panel-bg: #ffffff;
-  --text-main: #1e293b;
-  --border-color: #e2e8f0;
-  --success-green: #10b981;
-  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaalnetra Security Systems | Official Store & ERP</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- HTML5 QR Scanner -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-.hidden { display: none !important; }
-
-body { 
-    margin: 0; 
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; 
-    background: var(--bg-color); 
-    color: var(--text-main); 
-    font-size: 14px; 
-    line-height: 1.6;
-    letter-spacing: -0.01em;
-}
-
-header {
-  background: var(--metro-blue);
-  color: white;
-  padding: 0.8rem 2rem;
-  border-bottom: 3px solid var(--metro-gold);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  position: sticky; top: 0; z-index: 1001;
-}
-
-/* CUSTOM SLIDER FOR ADVANCE PAYMENT */
-input[type=range]::-webkit-slider-thumb {
-  appearance: none; width: 20px; height: 20px; background: #fbbf24; border-radius: 50%; cursor: pointer; border: 2px solid #0f172a;
-}
-
-button.erp-btn {
-  padding: 10px 20px; cursor: pointer; background: var(--metro-blue); color: white; border: none;
-  border-radius: 8px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-}
-button.erp-btn:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-button.erp-btn:active { transform: translateY(0); }
-button.erp-btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
-
-button.danger { background: var(--metro-red); }
-button.success { background: var(--success-green); }
-button.warning { background: #f59e0b; }
-button.info { background: #3b82f6; }
-button.secondary { background: #64748b; }
-
-input.erp-inp, select.erp-inp, textarea.erp-inp {
-  background: #fff; border: 1.5px solid var(--border-color); color: var(--text-main);
-  padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 12px;
-  font-size: 14px; transition: all 0.2s ease;
-}
-input.erp-inp:focus, select.erp-inp:focus { outline: none; border-color: var(--metro-gold); box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15); }
-
-.nav-bar { display: flex; gap: 8px; padding: 15px 20px; background: #ffffff; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: flex-start; }
-.nav-bar::-webkit-scrollbar { height: 4px; }
-.nav-bar::-webkit-scrollbar-thumb { background: var(--metro-gold); border-radius: 10px; }
-.nav-btn { background: #f1f5f9; color: var(--metro-slate); padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 11px; white-space: nowrap; border: 1.5px solid transparent; transition: all 0.2s ease; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
-.nav-btn.active { background: var(--metro-blue); color: var(--metro-gold); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); border-color: var(--metro-gold); }
-.nav-btn:hover:not(.active) { background: #e2e8f0; color: var(--metro-blue); border-color: #cbd5e1; }
-
-.panel { background: var(--panel-bg); padding: 24px; border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 24px; box-shadow: var(--card-shadow); }
-.panel h3 { margin: 0 0 20px 0; color: var(--metro-blue); font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-
-.table-wrapper { border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; }
-table.erp-tab { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
-th.erp-th { background: #f8fafc; color: var(--metro-slate); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 16px; border-bottom: 2px solid var(--border-color); }
-td.erp-td { padding: 16px; border-bottom: 1px solid var(--border-color); }
-tr.erp-tr:hover { background: #fcfcfd; }
-
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-#videoContainer { position: relative; width: 320px; height: 240px; background: #000; border-radius: 20px; overflow: hidden; border: 4px solid #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-#cameraFeed { width: 100%; height: 100%; object-fit: cover; }
-#overlayCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-.finance-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-.fin-card { background: white; padding: 24px; border-radius: 16px; border-left: 6px solid #cbd5e1; box-shadow: var(--card-shadow); transition: transform 0.3s ease; position: relative; overflow: hidden; }
-.fin-card i { position: absolute; right: 10px; bottom: 10px; font-size: 40px; opacity: 0.1; }
-.amount { font-size: 26px; font-weight: 800; color: var(--metro-blue); margin: 10px 0; }
-.fin-card.income { border-left-color: var(--success-green); }
-.fin-card.expense { border-left-color: var(--metro-red); }
-
-@media (max-width: 1024px) {
-    .nav-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .nav-bar::-webkit-scrollbar { display: none; }
-    .nav-btn { padding: 8px 14px; }
-}
-
-@media print {
-    body * { visibility: hidden !important; height: 0 !important; overflow: visible !important; }
-    #printableReportContainer, #printableReportContainer * { visibility: visible !important; height: auto !important; }
-    #printableReportContainer { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-    .no-print { display: none !important; }
-}
-
-/* --- INNOVATIVE METRO ANIMATION LOGIN --- */
-#loginSection { position: relative; min-height: calc(100vh - 65px); display: flex; align-items: center; justify-content: center; background-color: #080f1e; overflow: hidden; }
-.metro-scene { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-.metro-track { position: absolute; bottom: 30%; left: 0; width: 100%; height: 3px; background: rgba(255, 255, 255, 0.05); box-shadow: 0 5px 15px rgba(251, 191, 36, 0.1); }
-.metro-train { position: absolute; bottom: calc(30% + 3px); left: -800px; width: 600px; height: 70px; background: linear-gradient(to bottom, #cbd5e1, #94a3b8); border-radius: 8px 40px 0 0; display: flex; align-items: center; padding-left: 20px; gap: 25px; box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.5); animation: trainPass 7s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.metro-window { width: 60px; height: 30px; background: #0f172a; border-radius: 6px; box-shadow: inset 0 0 15px rgba(251, 191, 36, 0.4); }
-.metro-stripe { position: absolute; bottom: 12px; left: 0; width: 100%; height: 6px; background: var(--metro-gold); }
-.metro-headlight { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 12px; height: 20px; background: #ffffff; border-radius: 0 6px 6px 0; box-shadow: 80px 0 150px 60px rgba(251, 191, 36, 0.8), 20px 0 40px 10px rgba(255, 255, 255, 0.9); }
-.speed-line { position: absolute; height: 2px; background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent); width: 200px; animation: speedPass linear infinite; }
-.sl-1 { top: 40%; animation-duration: 2s; animation-delay: 0.5s; }
-.sl-2 { top: 60%; animation-duration: 1.5s; width: 300px; }
-.sl-3 { top: 20%; animation-duration: 3s; animation-delay: 1s; width: 150px; }
-@keyframes trainPass { 0% { left: -800px; } 100% { left: 120vw; } }
-@keyframes speedPass { 0% { left: 120vw; } 100% { left: -300px; } }
-#loginSection::before { content: ''; position: absolute; width: 200%; height: 200%; background-image: linear-gradient(rgba(251, 191, 36, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(251, 191, 36, 0.07) 1px, transparent 1px); background-size: 50px 50px; transform: perspective(600px) rotateX(60deg) translateY(-100px) translateZ(-200px); animation: gridMove 15s linear infinite; z-index: 1; }
-@keyframes gridMove { 0% { transform: perspective(600px) rotateX(60deg) translateY(0) translateZ(-200px); } 100% { transform: perspective(600px) rotateX(60deg) translateY(50px) translateZ(-200px); } }
-
-.login-card { position: relative; z-index: 2; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 4px solid var(--metro-gold); border-bottom: 4px solid var(--metro-gold); padding: 50px 40px; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1); text-align: center; color: white; }
-.login-input-group { position: relative; margin-bottom: 20px; text-align: left; }
-.login-input-group i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 16px; z-index: 2; }
-.login-input-group input { width: 100%; padding: 16px 16px 16px 45px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 10px; font-size: 15px; margin-bottom: 0; box-sizing: border-box; }
-.login-input-group input:focus { border-color: var(--metro-gold); background: rgba(0, 0, 0, 0.5); box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15); }
-.btn-login { width: 100%; padding: 16px; font-size: 14px; font-weight: 900; background: linear-gradient(135deg, var(--metro-gold) 0%, #d97706 100%); color: var(--metro-blue); border: none; border-radius: 10px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.4); }
-.login-footer { font-size: 11px; color: #94a3b8; margin-top: 30px; line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px; }
-
-/* SWIPE BUTTONS */
-.swipe-btn-container { position: relative; width: 100%; max-width: 400px; height: 56px; background: #e2e8f0; border-radius: 28px; overflow: hidden; margin: 20px auto 0 auto; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); user-select: none; }
-.swipe-btn-track { position: absolute; top: 0; left: 0; height: 100%; width: 0; transition: width 0.1s; }
-.swipe-btn-thumb { position: absolute; top: 4px; left: 4px; height: 48px; width: 48px; background: white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: var(--metro-blue); font-size: 20px; cursor: grab; z-index: 2; transition: left 0.1s; }
-.swipe-btn-text { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #64748b; font-size: 13px; text-transform: uppercase; z-index: 1; pointer-events: none; letter-spacing: 1px; }
-
-.checkbox-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: #fff; padding: 15px; border: 1.5px solid var(--border-color); border-radius: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 20px; }
-.checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; cursor: pointer; padding: 5px; border-radius: 4px; transition: background 0.2s; }
-.checkbox-item:hover { background: #f1f5f9; }
-
-/* SCADA Operations */
-.scada-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
-.scada-node { background: #ffffff; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 16px; color: var(--text-main); position: relative; overflow: hidden; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between; min-height: 150px; box-shadow: var(--card-shadow); }
-.scada-node.working { border-color: #3b82f6; }
-.scada-node.review { border-color: #f59e0b; }
-.scada-node.verified { border-color: #10b981; background: #10b981; color: #ffffff; }
-.scada-icon-bg { position: absolute; right: -5px; bottom: -5px; font-size: 70px; opacity: 0.04; color: var(--metro-blue); }
-.scada-node.verified .scada-icon-bg { color: #ffffff; opacity: 0.12; }
-.scada-caution { background: #fff1f2; border-left: 3px solid var(--metro-red); color: #9f1239; font-size: 11px; padding: 6px 10px; margin-top: 8px; font-weight: 700; border-radius: 4px; }
-.big-green-tick-overlay { position: absolute; inset: 0; background: #10b981; display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 10; color: white; }
-
-/* Fund Management */
-.fm-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-.fm-status-card { background: white; padding: 20px; border-radius: 12px; border-left: 6px solid var(--metro-slate); box-shadow: var(--card-shadow); transition: transform 0.2s; }
-.fm-status-card h2 { margin: 0; font-size: 28px; color: var(--metro-blue); }
-.fm-status-card span { font-size: 11px; font-weight: bold; text-transform: uppercase; color: var(--metro-slate); }
-</style>
-</head>
-<body>
-
-<header>
-  <div style="display:flex; align-items:center">
-    <div style="width:45px;height:45px;background:var(--metro-gold);color:var(--metro-blue);display:flex;align-items:center;justify-content:center;font-weight:900;margin-right:15px;border-radius:4px;flex-shrink:0; font-size: 24px;">K</div>
-    <div>
-        <h1 style="margin:0; line-height:1.2; font-size: 1.3rem; letter-spacing: 0.5px;">KAALNETRA SYSTEMS</h1>
-        <small style="color: #cbd5e1; font-weight: 600; text-transform: uppercase; font-size: 10px;">The Eye That Never Sleeps</small>
-    </div>
-  </div>
-
-  <div id="headerControls" style="display:flex; align-items:center; gap:15px;">
-    <!-- Public Track Order Input -->
-    <div id="publicTracker" style="display:flex; align-items:center; gap:5px;">
-      <input id="trackInput" type="text" placeholder="ORD-XXXXXX" style="padding:8px 12px; border-radius:6px; border:none; outline:none; font-size:12px; color:black; width:150px; font-weight:bold;">
-      <button class="erp-btn warning" onclick="trackPublicOrder()" style="padding:8px 15px;">TRACK ORDER</button>
-    </div>
-    <button id="btnOpenStaff" class="erp-btn secondary" onclick="showStaffLogin()" style="padding:8px 15px; background: transparent; border: 2px solid #64748b;">STAFF TERMINAL</button>
-  </div>
-
-  <div id="authContainer" class="hidden">
-    <span style="font-size:11px; margin-right:5px; opacity:0.7;">Logged in as:</span>
-    <span id="userInfo" style="margin-right:20px; font-weight:bold; color:var(--metro-gold);"></span>
-    <button class="erp-btn danger" onclick="logout()" style="padding:6px 12px; font-size:11px;">TERMINATE SESSION</button>
-  </div>
-</header>
-
-<!-- ========================================== -->
-<!-- 1. PUBLIC CUSTOMER STOREFRONT              -->
-<!-- ========================================== -->
-<section id="publicStorefront" class="flex-1 min-h-[calc(100vh-65px)] bg-slate-50 relative">
+  <style>
+    /* Premium UI Inspired by your reference */
+    :root {
+      --k-blue: #0f172a;
+      --k-gold: #fbbf24;
+      --k-red: #e11d48;
+      --k-green: #10b981;
+    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; }
+    .hidden { display: none !important; }
     
-    <!-- Bold 50% Launch Offer Banner -->
-    <div class="bg-gradient-to-r from-red-600 to-rose-600 text-white text-center py-3 px-4 font-black tracking-widest text-sm md:text-base uppercase shadow-md animate-pulse">
-        🔥 HURRY! LIMITED PERIOD OFFER: 50% OFF ON PROFESSIONAL INSTALLATION 🔥
-    </div>
+    /* Custom Input Slider */
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--k-gold); cursor: pointer; border: 2px solid var(--k-blue); margin-top: -6px; }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #cbd5e1; border-radius: 4px; }
 
-    <!-- Store Hero -->
-    <div class="bg-slate-900 text-white py-16 px-6 text-center shadow-inner relative overflow-hidden">
-      <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-      <h2 class="text-3xl md:text-5xl font-black text-yellow-400 tracking-wider mb-4 relative z-10 uppercase">Intelligent Protection 24x7</h2>
-      <p class="text-sm md:text-lg text-slate-300 max-w-2xl mx-auto relative z-10">Order high-grade security systems directly. Includes professional installation and an automated 6-Month Free Warranty.</p>
-    </div>
+    /* Admin UI Panels */
+    .panel { background: white; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .panel-title { font-size: 1.1rem; font-weight: 800; color: var(--k-blue); margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    
+    /* Modals */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+    .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f1f5f9; text-transform: uppercase; font-size: 11px; padding: 12px; border-bottom: 2px solid #e2e8f0; text-align: left; }
+    td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
 
-    <main class="max-w-7xl mx-auto p-6 mt-6">
-      <div class="flex justify-between items-end mb-8">
-        <div>
-          <h3 class="text-2xl font-black text-slate-900 tracking-tight">System Packages</h3>
-          <p class="text-sm text-slate-500 font-bold">Select a tier to begin your secure order.</p>
-        </div>
+    @media print {
+      body * { visibility: hidden !important; }
+      #printArea, #printArea * { visibility: visible !important; }
+      #printArea { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- ================= HEADER ================= -->
+  <header class="bg-[#0f172a] text-white px-6 py-4 flex justify-between items-center sticky top-0 z-40 border-b-4 border-yellow-400">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded-lg text-xl">K</div>
+      <div>
+        <h1 class="text-base font-black tracking-widest leading-none m-0">KAALNETRA</h1>
+        <div class="text-[10px] text-yellow-400 font-bold uppercase tracking-wider mt-1">Security Systems</div>
       </div>
+    </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="productCatalog">
-        <!-- Javascript renders catalog here -->
+    <!-- Public Navigation -->
+    <div id="publicNav" class="flex items-center gap-3">
+      <div class="flex items-center bg-white rounded overflow-hidden">
+        <input id="trackOrderId" type="text" placeholder="ORD-XXXXXX" class="px-3 py-1.5 text-xs text-black outline-none w-32 font-mono font-bold" />
+        <button onclick="trackOrder()" class="bg-yellow-500 hover:bg-yellow-400 text-black px-3 py-1.5 text-xs font-black transition">TRACK</button>
+      </div>
+      <button onclick="openStaffLogin()" class="text-xs text-slate-400 hover:text-white font-bold uppercase ml-2"><i class="fas fa-user-shield"></i> Staff</button>
+    </div>
+
+    <!-- Admin Navigation -->
+    <div id="adminNav" class="hidden flex items-center gap-4">
+      <span id="adminBadge" class="text-xs font-bold text-yellow-400 bg-slate-800 px-3 py-1 rounded"></span>
+      <button onclick="logoutStaff()" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded uppercase transition">Logout</button>
+    </div>
+  </header>
+
+  <!-- ================= PUBLIC STOREFRONT ================= -->
+  <section id="view-storefront" class="flex-1">
+    <!-- Promotional Banner -->
+    <div class="bg-gradient-to-r from-red-600 to-rose-600 text-white text-center py-2 px-4 font-black text-xs md:text-sm uppercase tracking-widest animate-pulse">
+      🔥 50% OFF IN INSTALLATION - LAUNCHING OFFER! HURRY LIMITED PERIOD 🔥
+    </div>
+
+    <div class="bg-slate-900 text-white py-16 px-6 text-center shadow-inner">
+      <h2 class="text-3xl md:text-4xl font-black text-yellow-400 tracking-wider mb-4">THE EYE THAT NEVER SLEEPS</h2>
+      <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto">Order intelligent security systems directly. All systems include professional installation and 6-Month Free Warranty Coverage.</p>
+    </div>
+
+    <main class="max-w-6xl mx-auto p-6 mt-4">
+      <h3 class="text-2xl font-black text-slate-900 mb-6">Choose Your Protection Level</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="productGrid">
+        <!-- Rendered via JS -->
       </div>
     </main>
 
     <!-- Support Button -->
-    <button onclick="document.getElementById('supportModal').classList.remove('hidden')" class="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-500 text-white w-14 h-14 rounded-full shadow-2xl transition-transform transform hover:scale-110 z-40 flex items-center justify-center border-2 border-indigo-400">
+    <button onclick="openSupport()" class="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-500 text-white w-14 h-14 rounded-full shadow-2xl transition-transform transform hover:scale-110 flex items-center justify-center border-2 border-white">
       <i class="fas fa-headset text-2xl"></i>
     </button>
-</section>
+  </section>
 
-<!-- ========================================== -->
-<!-- 2. STAFF LOGIN SCREEN (ANIMATED)           -->
-<!-- ========================================== -->
-<section id="loginSection" class="hidden">
-  <div class="metro-scene">
-      <div class="speed-line sl-1"></div><div class="speed-line sl-2"></div><div class="speed-line sl-3"></div>
-      <div class="metro-track"></div>
-      <div class="metro-train"><div class="metro-headlight"></div><div class="metro-stripe"></div><div class="metro-window"></div><div class="metro-window"></div><div class="metro-window"></div></div>
-  </div>
-
-  <div class="login-card">
-    <button onclick="closeStaffLogin()" style="position:absolute; top:15px; right:15px; background:transparent; border:none; color:#64748b; font-size:20px; cursor:pointer;"><i class="fas fa-times"></i></button>
-    
-    <div style="text-align:center; margin-bottom:30px;">
-        <i class="fas fa-user-shield shield-icon" style="font-size:40px; margin-bottom:10px;"></i>
-        <h3 style="margin:0; font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5px; color: white;">STAFF TERMINAL</h3>
-        <p style="color: #94a3b8; font-size: 11px; margin-top: 5px; text-transform: uppercase;">Organization Access Only</p>
+  <!-- ================= ADMIN ERP SYSTEM ================= -->
+  <section id="view-erp" class="hidden flex-1 flex flex-col">
+    <!-- Tabs -->
+    <div class="bg-white px-6 py-3 border-b border-slate-200 flex gap-2 overflow-x-auto">
+      <button onclick="switchErpTab('orders')" id="tabbtn-orders" class="erp-tab-btn px-4 py-2 bg-slate-800 text-white font-bold text-xs rounded transition"><i class="fas fa-globe mr-1"></i> Web Orders</button>
+      <button onclick="switchErpTab('inventory')" id="tabbtn-inventory" class="erp-tab-btn px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs rounded transition"><i class="fas fa-boxes mr-1"></i> Inventory</button>
+      <button onclick="switchErpTab('returns')" id="tabbtn-returns" class="erp-tab-btn px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs rounded transition"><i class="fas fa-undo mr-1"></i> Returns</button>
+      <button onclick="switchErpTab('billing')" id="tabbtn-billing" class="erp-tab-btn px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs rounded transition"><i class="fas fa-file-invoice mr-1"></i> Dispatch & Master QR</button>
+      <button onclick="switchErpTab('warranty')" id="tabbtn-warranty" class="erp-tab-btn px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold text-xs rounded transition"><i class="fas fa-shield-alt mr-1"></i> Warranty Claims</button>
     </div>
 
-    <div class="login-input-group">
-        <input id="email" type="email" placeholder="Staff Email ID">
-        <i class="fas fa-envelope"></i>
-    </div>
-    <div class="login-input-group">
-        <input id="password" type="password" placeholder="Master Password">
-        <i class="fas fa-lock"></i>
-    </div>
-    <button class="btn-login" onclick="login()">
-        AUTHORIZE SESSION
-    </button>
-    <p class="login-footer"><strong>RESTRICTED NODE:</strong> Unauthorized access will be logged.</p>
-  </div>
-</section>
-
-<!-- ========================================== -->
-<!-- 3. ADMIN ERP SYSTEM                        -->
-<!-- ========================================== -->
-<section id="appScreen" class="hidden">
-  <div class="nav-bar">
-    <button class="nav-btn active" onclick="switchTab('webOrders')" id="btnWebOrders"><i class="fas fa-shopping-cart"></i> Web Orders</button>
-    <!-- YOUR EXACT ORIGINAL TABS -->
-    <button class="nav-btn" onclick="switchTab('newData')" id="btnNew"><i class="fas fa-ruler-combined"></i> Field Inspection</button>
-    <button class="nav-btn" onclick="switchTab('inventory')" id="btnInventory"><i class="fas fa-boxes"></i> Asset Tracking</button>
-    
-    <!-- NEW DISPATCH TABS -->
-    <button class="nav-btn" onclick="switchTab('dispatch')" id="btnDispatch"><i class="fas fa-truck-fast"></i> Dispatch & Master QR</button>
-    
-    <button class="nav-btn" onclick="switchTab('gallery')" id="btnGallery"><i class="fas fa-folder-open"></i> Docs</button>
-    <button class="nav-btn" onclick="switchTab('assigned')" id="btnAssign"><i class="fas fa-tasks"></i> Ops Tasks</button>
-    <button class="nav-btn" onclick="switchTab('comments')" id="btnComments"><i class="fas fa-comment-dots"></i> Comments</button>
-    <button class="nav-btn hidden" onclick="switchTab('adminPanel')" id="btnAdmin" style="color:var(--metro-red);"><i class="fas fa-user-shield"></i> System Oversight</button>
-    <button class="nav-btn" onclick="switchTab('dataView')" id="btnDataView"><i class="fas fa-database"></i> Master Logs</button>
-    <button class="nav-btn" onclick="switchTab('funds')" id="btnFunds"><i class="fas fa-rupee-sign"></i> Project Funds</button>
-    <button class="nav-btn" onclick="switchTab('purchase')" id="btnPurchase"><i class="fas fa-shopping-cart"></i> Procurement</button>
-    <button class="nav-btn" onclick="switchTab('printReport')" id="btnPrintReport"><i class="fas fa-print"></i> Audit Reports</button>
-    <button class="nav-btn" onclick="switchTab('directives')" id="btnDirectives"><i class="fas fa-file-contract"></i> Directives</button>
-    <button class="nav-btn" onclick="switchTab('billing')" id="btnBilling"><i class="fas fa-file-invoice-dollar"></i> Customer Billing</button>
-    <button class="nav-btn" onclick="switchTab('warranty')" id="btnWarranty"><i class="fas fa-shield-halved"></i> Master Warranty</button>
-    <button class="nav-btn" onclick="switchTab('attendance')" id="btnAttendance"><i class="fas fa-calendar-check"></i> Payroll</button>
-    <button class="nav-btn" onclick="switchTab('scadaControl')" id="btnScada"><i class="fas fa-network-wired"></i> SCADA Control</button>
-    <button class="nav-btn" onclick="switchTab('delivery')" id="btnDelivery"><i class="fas fa-shipping-fast"></i> Logistics</button>
-    <button class="nav-btn" onclick="switchTab('fundWorkflow')" id="btnFundWorkflow"><i class="fas fa-file-signature"></i> Office Workflows</button>
-    <span id="adminBadge" class="hidden" style="margin-left:auto; background:var(--metro-red); color:white; padding:6px 12px; border-radius:20px; font-size:10px; font-weight:bold; display:flex; align-items:center; letter-spacing: 0.5px;">
-        <i class="fas fa-shield-alt" style="margin-right:5px;"></i> AUDITOR
-    </span>
-  </div>
-
-  <!-- 3.1 WEB ORDERS PANEL (NEW) -->
-  <div id="tab-webOrders" class="panel border-t-4 border-t-indigo-500">
-    <h3 class="text-indigo-900"><i class="fas fa-globe"></i> Customer Web Orders</h3>
-    <p class="text-xs text-slate-500 mb-4">Verify customer transaction IDs and process incoming public store orders.</p>
-    
-    <div class="table-wrapper">
-        <table class="erp-tab">
-            <thead>
-                <tr>
-                    <th class="erp-th">Order Ref</th>
-                    <th class="erp-th">Customer Info</th>
-                    <th class="erp-th">System</th>
-                    <th class="erp-th" style="text-align:right;">Payment</th>
-                    <th class="erp-th" style="text-align:center;">Status</th>
-                    <th class="erp-th" style="text-align:center;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="webOrdersBody">
-                <tr><td colspan="6" style="text-align:center; padding:20px;">Loading orders...</td></tr>
-            </tbody>
-        </table>
-    </div>
-  </div>
-
-  <!-- 3.2 DISPATCH & MASTER QR PANEL (NEW) -->
-  <div id="tab-dispatch" class="hidden panel border-t-4 border-t-cyan-500">
-    <h3 style="color: #0284c7;"><i class="fas fa-truck-fast"></i> Group Dispatch & Master Warranty QR</h3>
-    <p class="text-xs text-slate-500 mb-6">Link multiple hardware tags to a single customer order to generate a Master QR code.</p>
-    
-    <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:20px;">
-        <label style="font-size:11px; font-weight:bold;">1. CUSTOMER ORDER REFERENCE</label>
-        <input id="dispOrderId" class="erp-inp" placeholder="Enter ORD-XXXXXX" style="font-family:monospace; font-weight:bold;">
-    </div>
-
-    <div style="background:#fffbeb; padding:20px; border-radius:8px; border:1px solid #fde68a; margin-bottom:20px;">
-        <label style="font-size:11px; font-weight:bold;">2. ADD HARDWARE TAGS TO ORDER</label>
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <input id="dispTagInp" class="erp-inp" style="margin:0; border-color:#fbbf24; font-family:monospace; font-weight:bold;" placeholder="Scan/Enter Hardware Tag (KN-XXXXXX)">
-            <button onclick="openBarcodeScanner('DISPATCH_TAG')" class="erp-btn" style="padding:0 20px;"><i class="fas fa-camera"></i> SCAN</button>
-            <button onclick="addTagToDispatchCart()" class="erp-btn warning" style="padding:0 25px;">ADD ITEM</button>
+    <div class="max-w-7xl w-full mx-auto p-6">
+      
+      <!-- ERP: Web Orders -->
+      <div id="erp-orders" class="erp-panel border-t-4 border-t-indigo-500 panel">
+        <h3 class="panel-title"><i class="fas fa-shopping-cart"></i> Customer Web Orders</h3>
+        <p class="text-xs text-slate-500 mb-4">Verify customer transaction IDs and process incoming orders.</p>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Order Ref</th><th>Customer Info</th><th>System</th><th class="text-right">Payment</th><th class="text-center">Status</th><th class="text-center">Action</th></tr></thead>
+            <tbody id="tblOrders"><tr><td colspan="6" class="text-center">Loading orders...</td></tr></tbody>
+          </table>
         </div>
-        <ul id="dispatchCartList" style="list-style:none; padding:0; margin:0; font-size:12px; font-weight:bold; color:#475569;">
-            <li style="font-style:italic;">No hardware tags added yet.</li>
-        </ul>
-    </div>
+      </div>
 
-    <div style="background:#ecfdf5; padding:15px; border-radius:8px; border:1px solid #a7f3d0; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
-        <input type="checkbox" id="dispChkWarranty" checked style="width:20px; height:20px; cursor:pointer;">
-        <label for="dispChkWarranty" style="font-weight:900; color:#065f46; cursor:pointer; text-transform:uppercase;">Activate 6-Month Free Master Warranty</label>
-    </div>
+      <!-- ERP: Inventory -->
+      <div id="erp-inventory" class="erp-panel hidden border-t-4 border-t-emerald-500 panel">
+        <h3 class="panel-title text-emerald-800"><i class="fas fa-plus-circle"></i> Add to Inventory</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <input id="invName" type="text" placeholder="Hardware Name/Model" class="p-3 bg-slate-50 border border-slate-300 rounded text-sm outline-none focus:border-emerald-500 col-span-2">
+          <input id="invCost" type="number" placeholder="Cost Price (₹)" class="p-3 bg-slate-50 border border-slate-300 rounded text-sm outline-none focus:border-emerald-500">
+          <select id="invCondition" class="p-3 bg-slate-50 border border-slate-300 rounded text-sm outline-none"><option value="New">New</option><option value="Refurbished">Refurbished</option></select>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <select id="invMainLoc" class="p-3 bg-slate-50 border border-slate-300 rounded text-sm outline-none"><option value="Main Warehouse - Sector 5">Main Warehouse - Sector 5</option><option value="Testing Lab">Testing Lab</option></select>
+          <input id="invSpot" type="text" placeholder="Specific Spot (e.g. Shelf A4)" class="p-3 bg-slate-50 border border-slate-300 rounded text-sm outline-none focus:border-emerald-500">
+        </div>
+        <button onclick="registerAsset()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-6 rounded uppercase text-xs w-full shadow mb-8">Generate Tag & Save Inventory</button>
 
-    <button onclick="processMasterDispatch()" class="erp-btn info" style="width:100%; padding:15px; font-size:14px; background:#0284c7;">
-        DISPATCH ORDER & GENERATE MASTER QR
-    </button>
-  </div>
+        <h3 class="panel-title mt-4"><i class="fas fa-database"></i> Live Stock Matrix</h3>
+        <input type="text" id="invSearch" onkeyup="filterInventory()" placeholder="Search Inventory..." class="p-3 border border-slate-300 rounded text-sm w-full md:w-64 mb-4 outline-none">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Tag ID</th><th>Asset Description</th><th>Exact Location</th><th class="text-right">Cost (₹)</th><th class="text-center">Status</th></tr></thead>
+            <tbody id="tblInventory"></tbody>
+          </table>
+        </div>
+      </div>
 
-  <!-- 3.3 UPDATED WARRANTY PANEL (MASTER QR SCAN) -->
-  <div id="tab-warranty" class="hidden panel border-t-4 border-t-purple-600">
-    <h3 style="color:#7e22ce;"><i class="fas fa-qrcode"></i> Master Warranty Claims Engine</h3>
-    <p class="text-xs text-slate-500 mb-6">Scan the customer's Master QR code to view all associated hardware and file a targeted claim.</p>
-    
-    <div style="display:flex; gap:10px; margin-bottom:20px;">
-        <input id="claimMasterTag" class="erp-inp" style="margin:0; border-color:#d8b4fe; font-family:monospace; font-weight:bold;" placeholder="Scan Customer's Master QR (MQR-XXXXXX)">
-        <button onclick="openBarcodeScanner('CLAIM_MASTER')" class="erp-btn" style="padding:0 20px;"><i class="fas fa-camera"></i> SCAN</button>
-        <button onclick="checkMasterWarranty()" class="erp-btn" style="background:#7e22ce; padding:0 30px;">VERIFY MASTER</button>
-    </div>
+      <!-- ERP: Returns -->
+      <div id="erp-returns" class="erp-panel hidden border-t-4 border-t-rose-500 panel">
+        <h3 class="panel-title text-rose-800"><i class="fas fa-undo"></i> Asset Recovery / Restock</h3>
+        <p class="text-xs text-slate-500 mb-4">Return items to the warehouse from canceled orders or field replacements.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="flex gap-2">
+            <input id="retTag" type="text" placeholder="Enter Physical Tag (KN-XXXXXX)" class="p-3 border border-slate-300 rounded text-sm w-full outline-none font-mono font-bold uppercase">
+            <button onclick="openScanner('RETURN')" class="bg-slate-800 text-white px-4 rounded"><i class="fas fa-camera"></i></button>
+          </div>
+          <input id="retReason" type="text" placeholder="Return Reason (e.g. Warranty Swap)" class="p-3 border border-slate-300 rounded text-sm w-full outline-none">
+          <select id="retMainLoc" class="p-3 border border-slate-300 rounded text-sm w-full outline-none"><option value="Main Warehouse">Main Warehouse</option></select>
+          <input id="retSpot" type="text" placeholder="Restock Spot (e.g. Bin 4)" class="p-3 border border-slate-300 rounded text-sm w-full outline-none">
+        </div>
+        <button onclick="processReturn()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded text-xs uppercase shadow">Confirm Recovery</button>
+      </div>
 
-    <div id="claimMasterResult" class="hidden" style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
-        <div style="background:#f1f5f9; padding:15px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+      <!-- ERP: Billing & Master QR -->
+      <div id="erp-billing" class="erp-panel hidden border-t-4 border-t-cyan-500 panel">
+        <h3 class="panel-title text-cyan-800"><i class="fas fa-truck-fast"></i> Group Dispatch & Master Warranty QR</h3>
+        <p class="text-xs text-slate-500 mb-6">Link hardware tags to a customer order and generate their Master Warranty QR.</p>
+        
+        <label class="block text-xs font-bold text-slate-700 mb-1">1. CUSTOMER ORDER ID</label>
+        <input id="dispOrder" type="text" placeholder="Enter ORD-XXXXXX" class="w-full p-3 border-2 border-slate-300 focus:border-cyan-500 rounded text-sm font-mono font-bold outline-none uppercase mb-6">
+
+        <label class="block text-xs font-bold text-slate-700 mb-1">2. ADD HARDWARE TO DISPATCH</label>
+        <div class="flex gap-2 mb-4">
+          <input id="dispTag" type="text" placeholder="Scan Tag (KN-XXXXXX)" class="w-full p-3 border-2 border-yellow-400 rounded text-sm font-mono font-bold outline-none uppercase">
+          <button onclick="openScanner('DISPATCH')" class="bg-slate-800 text-white px-4 rounded"><i class="fas fa-camera"></i></button>
+          <button onclick="addToDispatchCart()" class="bg-slate-900 text-yellow-400 px-6 font-black rounded uppercase text-xs">Add Item</button>
+        </div>
+        <ul id="dispatchList" class="bg-slate-50 p-4 border border-slate-200 rounded mb-6 min-h-[60px] space-y-2"></ul>
+
+        <div class="flex items-center gap-3 mb-6 bg-emerald-50 p-4 border border-emerald-200 rounded">
+          <input type="checkbox" id="chkWar" checked class="w-5 h-5 cursor-pointer">
+          <label for="chkWar" class="text-sm font-black text-emerald-800 cursor-pointer uppercase tracking-wide">Activate 6-Month Free Warranty</label>
+        </div>
+
+        <button onclick="dispatchOrder()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-lg uppercase shadow-lg">Dispatch Order & Generate Master QR</button>
+      </div>
+
+      <!-- ERP: Warranty Claims -->
+      <div id="erp-warranty" class="erp-panel hidden border-t-4 border-t-purple-600 panel">
+        <h3 class="panel-title text-purple-900"><i class="fas fa-qrcode"></i> Master Warranty Claims Engine</h3>
+        <p class="text-xs text-slate-500 mb-4">Scan the customer's Master QR to view all their hardware and file a claim.</p>
+        
+        <div class="flex gap-2 mb-6">
+          <input id="claimMaster" type="text" placeholder="Scan Master QR (MQR-XXXXXX)" class="w-full p-3 border-2 border-purple-300 focus:border-purple-600 rounded text-sm font-mono font-bold outline-none uppercase">
+          <button onclick="openScanner('WARRANTY')" class="bg-slate-800 text-white px-4 rounded"><i class="fas fa-camera"></i></button>
+          <button onclick="verifyMasterWarranty()" class="bg-purple-600 hover:bg-purple-500 text-white px-8 font-black rounded uppercase text-xs">Verify</button>
+        </div>
+
+        <div id="claimResult" class="hidden border border-slate-200 rounded overflow-hidden">
+          <div class="bg-slate-100 p-4 flex justify-between items-center border-b border-slate-200">
             <div>
-                <h4 style="margin:0; font-weight:900; color:#0f172a; text-transform:uppercase;">Master Policy Overview</h4>
-                <div id="claimMasterInfo" style="font-size:12px; color:#64748b; margin-top:5px;"></div>
+              <h4 class="font-black text-sm uppercase">Policy Overview</h4>
+              <div id="claimInfo" class="text-xs text-slate-600 mt-1"></div>
             </div>
-            <span id="claimMasterStatusBadge" style="padding:6px 12px; border-radius:4px; font-weight:900; font-size:11px;"></span>
-        </div>
-        <div style="padding:15px; background:white;">
-            <p style="font-size:11px; font-weight:bold; color:#475569; margin-bottom:10px; text-transform:uppercase;">Select Damaged Hardware to File Claim:</p>
-            <ul id="claimHardwareList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
-        </div>
-    </div>
-  </div>
-
-  <!-- ALL YOUR OTHER ORIGINAL TABS GO HERE EXACTLY AS YOU WROTE THEM -->
-  <div id="tab-newData" class="hidden">
-    <div class="panel"><h3>Field Inspection Placeholder (Your original code remains active)</h3></div>
-  </div>
-  <div id="tab-inventory" class="hidden">
-    <div class="panel"><h3>Inventory Placeholder (Original code active)</h3></div>
-  </div>
-  <!-- ... (Pretend all other 15 tabs are pasted perfectly here. I am keeping them functional in the JS below) ... -->
-
-</section>
-
-<!-- ========================================== -->
-<!-- MODALS                                     -->
-<!-- ========================================== -->
-
-<!-- Public Order Modal (Clean UI, No Scrollbars) -->
-<div id="publicOrderModal" class="modal-overlay hidden">
-  <div class="panel" style="width:500px; max-width:95%; padding:0; overflow:hidden; border:none;">
-    <div style="background:#0f172a; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:white; border:none; padding:0; font-size:16px;">Complete Secure Order</h3>
-      <button onclick="document.getElementById('publicOrderModal').classList.add('hidden')" style="background:none; border:none; color:#f87171; font-size:20px; cursor:pointer;"><i class="fas fa-times"></i></button>
-    </div>
-    
-    <div style="padding:20px;">
-      <div style="margin-bottom:15px; padding-bottom:10px; border-bottom:1px solid #e2e8f0;">
-        <h4 id="orderProdName" style="font-size:16px; font-weight:900; margin:0 0 2px 0;"></h4>
-        <p style="font-size:13px; font-weight:bold; color:#059669; margin:0;">Total Price: ₹<span id="orderProdPrice"></span></p>
-      </div>
-
-      <input id="ordName" class="erp-inp" style="padding:10px; margin-bottom:10px;" type="text" placeholder="Full Name">
-      <textarea id="ordAddress" class="erp-inp" style="padding:10px; margin-bottom:10px;" placeholder="Complete Installation Address" rows="2"></textarea>
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-        <input id="ordPhone" class="erp-inp" style="padding:10px; margin-bottom:0;" type="text" placeholder="Contact Number">
-        <input id="ordAltEmail" class="erp-inp" style="padding:10px; margin-bottom:0;" type="email" placeholder="Email Address">
-      </div>
-
-      <div style="background:#fffbeb; padding:12px; border-radius:8px; border:1px solid #fde68a; margin-bottom:15px;">
-        <label style="font-size:10px; font-weight:900; color:#92400e; display:block; margin-bottom:5px;">ADVANCE PAYMENT SLIDER</label>
-        <input id="ordSlider" type="range" style="width:100%; height:6px; background:#fcd34d; border-radius:4px; outline:none;" oninput="updateSliderUI()">
-        <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; margin-top:5px;">
-          <span style="color:#065f46;">Pay Now: <span id="valPayNow"></span></span>
-          <span style="color:#be123c;">Pay After Install: <span id="valPayLater"></span></span>
-        </div>
-
-        <div style="margin-top:10px; padding-top:10px; border-top:1px solid #fde68a; text-align:center;">
-          <p style="font-size:10px; font-weight:bold; color:#475569; margin-bottom:5px;">Scan QR to pay Advance</p>
-          <!-- EXACT UPI ID REQUESTED -->
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=sohampal781@okhdfcbank&pn=KaalnetraSecurity" style="width:80px; height:80px; border:2px solid #ccc; border-radius:6px; margin:0 auto 5px auto;">
-          <input id="ordTxn" class="erp-inp" type="text" maxlength="5" placeholder="ENTER LAST 5 DIGITS OF TXN ID" style="padding:10px; text-align:center; font-family:monospace; font-weight:bold; font-size:14px; border-color:#fbbf24; margin-bottom:0;">
+            <span id="claimBadge" class="px-3 py-1 font-black text-xs rounded uppercase"></span>
+          </div>
+          <div class="p-4">
+            <p class="text-xs font-bold text-slate-700 mb-3 uppercase">Select Hardware to File Claim:</p>
+            <ul id="claimHwList" class="space-y-2"></ul>
+          </div>
         </div>
       </div>
 
-      <button onclick="submitPublicOrder()" class="erp-btn" style="width:100%; padding:12px; font-size:13px; background:#0f172a; color:#fbbf24;">Confirm Order</button>
+    </div>
+  </section>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Customer Order Form Modal -->
+  <div id="orderModal" class="modal-overlay hidden">
+    <div class="modal-content flex flex-col">
+      <div class="bg-slate-900 text-white p-4 flex justify-between items-center flex-shrink-0">
+        <h3 class="font-black uppercase text-sm">Secure Checkout</h3>
+        <button onclick="document.getElementById('orderModal').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      
+      <div class="p-5 overflow-y-auto flex-1">
+        <div class="mb-4">
+          <h4 id="ordProdName" class="font-black text-lg text-slate-900"></h4>
+          <p class="text-sm font-bold text-emerald-600">Total: ₹<span id="ordProdPrice"></span></p>
+        </div>
+
+        <input id="ordName" type="text" placeholder="Full Name" class="w-full p-2.5 mb-3 border border-slate-300 rounded text-sm outline-none focus:border-yellow-400">
+        <textarea id="ordAddr" placeholder="Installation Address" rows="2" class="w-full p-2.5 mb-3 border border-slate-300 rounded text-sm outline-none focus:border-yellow-400"></textarea>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <input id="ordPhone" type="text" placeholder="Phone Number" class="w-full p-2.5 border border-slate-300 rounded text-sm outline-none focus:border-yellow-400">
+          <input id="ordEmail" type="email" placeholder="Email (Optional)" class="w-full p-2.5 border border-slate-300 rounded text-sm outline-none focus:border-yellow-400">
+        </div>
+
+        <div class="bg-yellow-50 p-4 rounded border border-yellow-200 mb-4">
+          <label class="block text-xs font-black text-yellow-800 uppercase mb-2">Advance Payment Slider</label>
+          <input id="ordSlider" type="range" oninput="updateSlider()">
+          <div class="flex justify-between text-xs font-bold mt-2 mb-4">
+            <span class="text-emerald-700">Pay Now: <span id="vNow"></span></span>
+            <span class="text-rose-600">Pay Post-Install: <span id="vLater"></span></span>
+          </div>
+
+          <div class="pt-3 border-t border-yellow-200 text-center">
+            <p class="text-xs font-bold text-slate-600 mb-2">Scan QR to pay Advance via UPI</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=sohampal781@okhdfcbank&pn=KaalnetraSecurity" class="w-24 h-24 mx-auto border-2 border-slate-300 rounded mb-2">
+            <p class="text-[10px] font-mono font-bold text-slate-500 mb-2">sohampal781@okhdfcbank</p>
+            <input id="ordTxn" type="text" maxlength="5" placeholder="LAST 5 DIGITS OF TXN ID" class="w-full p-2 border-2 border-yellow-400 rounded text-center font-mono font-black tracking-widest outline-none uppercase">
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-100 border-t border-slate-200 flex-shrink-0">
+        <button onclick="submitOrder()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-yellow-400 font-black uppercase rounded shadow transition">Confirm Order</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Support Modal -->
-<div id="supportModal" class="modal-overlay hidden">
-  <div class="panel" style="width:320px; text-align:center; padding:30px; border-top:4px solid #4f46e5;">
-    <button onclick="document.getElementById('supportModal').classList.add('hidden')" style="position:absolute; top:15px; right:15px; background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer;"><i class="fas fa-times"></i></button>
-    <i class="fas fa-headset" style="font-size:40px; color:#4f46e5; margin-bottom:15px;"></i>
-    <h3 style="margin:0 0 10px 0; font-size:18px;">Need Help?</h3>
-    <p style="font-size:11px; color:#64748b; margin-bottom:20px;">Our support team is available 24x7 to assist you with installation, tracking, or warranty claims.</p>
-    <a href="mailto:sohampal781@gmail.com" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; font-weight:bold; color:#0f172a; text-decoration:none; margin-bottom:10px; font-size:12px;"><i class="fas fa-envelope text-indigo-600 mr-2"></i> sohampal781@gmail.com</a>
-    <a href="tel:+916290952326" style="display:block; background:#f1f5f9; padding:12px; border-radius:8px; font-weight:bold; color:#0f172a; text-decoration:none; font-size:12px;"><i class="fas fa-phone-alt text-indigo-600 mr-2"></i> +91 62909 52326</a>
+  <!-- Staff Login Modal -->
+  <div id="staffModal" class="modal-overlay hidden">
+    <div class="modal-content p-6 text-center max-w-sm">
+      <button onclick="document.getElementById('staffModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-800"><i class="fas fa-times"></i></button>
+      <i class="fas fa-user-shield text-4xl text-slate-900 mb-4"></i>
+      <h3 class="font-black text-lg mb-6">STAFF TERMINAL</h3>
+      <input id="staffEmail" type="email" placeholder="Staff Email" class="w-full p-3 mb-3 border rounded text-sm bg-slate-50 outline-none focus:border-yellow-400">
+      <input id="staffPass" type="password" placeholder="Master Password" class="w-full p-3 mb-6 border rounded text-sm bg-slate-50 outline-none focus:border-yellow-400">
+      <button onclick="loginStaff()" class="w-full py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-black uppercase rounded shadow">Authorize</button>
+    </div>
   </div>
-</div>
 
-<!-- Master QR Print Modal -->
-<div id="masterQrPrintModal" class="modal-overlay hidden">
-    <div class="panel" style="width:350px; text-align:center; background:white; border:4px solid var(--metro-blue);">
-        <h3 style="border-bottom:2px solid var(--metro-gold); padding-bottom:10px; font-size:16px;">MASTER WARRANTY QR</h3>
-        <p style="font-size:11px; color:#666;">Give this to the customer for warranty claims.</p>
-        <div style="background:white; padding:15px; border:2px solid #eee; margin:15px 0;">
-            <img id="masterQrPrintImage" src="" style="width:200px; height:200px; border:1px solid #000; padding:5px; margin:0 auto;">
-            <div id="masterQrPrintId" style="font-family:monospace; font-weight:bold; font-size:22px; margin-top:10px; color:#0f172a;"></div>
-        </div>
-        <div style="display:flex; gap:10px;">
-            <button class="erp-btn secondary" style="flex:1;" onclick="document.getElementById('masterQrPrintModal').classList.add('hidden')">CLOSE</button>
-        </div>
+  <!-- Alert/Status Modal -->
+  <div id="alertModal" class="modal-overlay hidden">
+    <div class="modal-content p-6 text-center max-w-sm">
+      <div id="alertIcon" class="text-4xl mb-3"></div>
+      <h3 id="alertTitle" class="font-black text-xl mb-2"></h3>
+      <p id="alertBody" class="text-sm text-slate-600 mb-6"></p>
+      <button onclick="document.getElementById('alertModal').classList.add('hidden')" class="w-full py-3 bg-slate-900 text-white font-black uppercase rounded">Close</button>
     </div>
-</div>
+  </div>
 
-<!-- FIXED CAMERA SCANNER MODAL -->
-<div id="barcodeModal" class="modal-overlay hidden">
-    <div class="panel" style="width:360px; max-width:95%; text-align:center; background:#0f172a; border:2px solid var(--metro-gold); padding: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
-            <h3 style="color:white; margin:0; font-size:14px;"><i class="fas fa-qrcode text-yellow-400"></i> Scan Code</h3>
-            <button onclick="closeBarcodeScanner()" style="background:none; border:none; color:#f87171; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
-        </div>
-        <!-- IMPORTANT: The scanner needs a fixed height/width to render properly -->
-        <div id="reader" style="border-radius: 8px; overflow: hidden; background:black; width:100%; min-height:250px;"></div>
-        <button class="erp-btn danger" onclick="closeBarcodeScanner()" style="margin-top:20px; width:100%;">CANCEL SCAN</button>
+  <!-- Master QR Print Modal -->
+  <div id="printQrModal" class="modal-overlay hidden">
+    <div class="modal-content p-6 text-center max-w-sm border-t-4 border-yellow-400">
+      <h3 class="font-black text-lg uppercase mb-2">MASTER WARRANTY QR</h3>
+      <p class="text-xs text-slate-500 font-bold mb-4">Provide this to the customer.</p>
+      <div id="printArea" class="bg-white p-4 border-2 border-slate-900 rounded mb-4">
+        <h4 class="font-black text-lg mb-2">KAALNETRA</h4>
+        <img id="printQrImg" src="" class="w-40 h-40 mx-auto border-4 border-slate-900 p-1 rounded mb-2">
+        <div id="printQrText" class="font-mono font-black text-lg text-indigo-700 tracking-widest"></div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('printQrModal').classList.add('hidden')" class="flex-1 py-2 bg-slate-200 font-bold rounded uppercase text-xs">Close</button>
+        <button onclick="window.print()" class="flex-1 py-2 bg-emerald-600 text-white font-bold rounded uppercase text-xs">Print</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- FIREBASE ENGINE & LOGIC -->
-<!-- USING REALTIME DATABASE (RTDB) STRICTLY AS REQUESTED -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, set, query, orderByChild, equalTo, update, push, remove, serverTimestamp, onValue, off, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
-  authDomain: "kaalnetra-214b6.firebaseapp.com",
-  databaseURL: "https://kaalnetra-214b6-default-rtdb.firebaseio.com", // FIXED: Correct RTDB URL!
-  projectId: "kaalnetra-214b6",
-  storageBucket: "kaalnetra-214b6.firebasestorage.app",
-  messagingSenderId: "974973616837",
-  appId: "1:974973616837:web:9d586455fd35a938ce66ac"
-};
-
-const app = initializeApp(firebaseConfig);
-window.db = getDatabase(app); 
-window.auth = getAuth(app); 
-
-let currentUser = null;
-let isAdmin = false; 
-window.scanMode = null; // Globals for scanner
-
-// ==============================================================
-// 1. PUBLIC STOREFRONT
-// ==============================================================
-const PRODUCTS = [
-    { id: "v1", name: "Version 1 - Basic Safety System", price: 15000, desc: "IR Detection, Audio Buzzer, Basic Security Unit" },
-    { id: "v2", name: "Version 2 - Bypass Switch", price: 20000, desc: "Dual Sensors, Permanent Bypass Switch" },
-    { id: "v3", name: "Version 3 - Web Access System", price: 21000, desc: "Smartphone/Web Dashboard, Real-time Logging" },
-    { id: "v4", name: "Version 4 - Biometric System", price: 26000, desc: "Fingerprint Access Control, Allow-One Entry" },
-    { id: "v5", name: "Industrial Premium System", price: 27000, desc: "Dual-level Access, High-Power Siren, Heavy Duty" }
-];
-
-let currentOrderProduct = null;
-window.dispatchCartTags = [];
-
-function renderCatalog() {
-    const cat = document.getElementById("productCatalog");
-    cat.innerHTML = PRODUCTS.map(p => `
-    <div style="background: white; border-radius: 12px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; right:0; background:#10b981; color:white; font-size:10px; font-weight:900; padding:4px 10px; border-bottom-left-radius:8px;">6M WARRANTY</div>
-        <div style="height: 100px; background: #f8fafc; border:1px solid #e2e8f0; border-radius: 8px; display:flex; align-items:center; justify-content:center; margin-bottom: 15px;">
-            <i class="fas fa-video" style="font-size: 35px; color: #cbd5e1;"></i>
-        </div>
-        <h3 style="font-size: 16px; font-weight: 900; color: var(--metro-blue); margin:0 0 5px 0;">${p.name}</h3>
-        <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">${p.desc}</p>
-        <div style="font-size: 20px; font-weight: 900; color: #10b981; margin-bottom: 15px;">₹${p.price.toLocaleString('en-IN')}</div>
-        <div style="display:flex; gap:8px;">
-            <button onclick="alert('Launching Augmented Reality preview on compatible devices...')" style="flex:1; padding: 10px; background: #eef2ff; color: #4f46e5; font-weight: 900; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size:10px;">
-                <i class="fas fa-cubes"></i> AR View
-            </button>
-            <button onclick="openOrderModal('${p.id}')" style="flex:1; padding: 10px; background: var(--metro-gold); color: #000; font-weight: 900; border: none; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size:10px;">
-                Order Now
-            </button>
-        </div>
+  <!-- Camera Scanner Modal -->
+  <div id="scannerModal" class="modal-overlay hidden">
+    <div class="modal-content p-4 text-center max-w-sm">
+      <h3 class="font-black text-sm uppercase mb-3"><i class="fas fa-camera text-yellow-500 mr-2"></i> Scanner</h3>
+      <div id="qrReader" class="w-full bg-black rounded overflow-hidden h-64 mb-3"></div>
+      <button onclick="closeScanner()" class="w-full py-2 bg-rose-600 text-white font-bold rounded uppercase text-xs">Cancel Scan</button>
     </div>
-    `).join("");
-}
-renderCatalog();
+  </div>
 
-window.openOrderModal = (id) => {
-    const prod = PRODUCTS.find(p => p.id === id);
-    currentOrderProduct = prod;
-    document.getElementById("orderProdName").innerText = prod.name;
-    document.getElementById("orderProdPrice").innerText = prod.price.toLocaleString('en-IN');
-    
-    const slider = document.getElementById("ordSlider");
-    slider.min = 0; slider.max = prod.price; slider.step = 500;
-    slider.value = prod.price * 0.1; 
-    window.updateSliderUI();
-    document.getElementById("publicOrderModal").classList.remove("hidden");
-};
+  <!-- Support Modal -->
+  <div id="supportModal" class="modal-overlay hidden">
+    <div class="modal-content p-6 text-center max-w-sm">
+      <button onclick="document.getElementById('supportModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400"><i class="fas fa-times"></i></button>
+      <i class="fas fa-headset text-4xl text-indigo-600 mb-3"></i>
+      <h3 class="font-black text-lg mb-2">Customer Support</h3>
+      <p class="text-xs text-slate-500 mb-4">24x7 assistance for installation and warranty.</p>
+      <a href="mailto:sohampal781@gmail.com" class="block w-full py-3 bg-slate-100 font-bold rounded text-xs mb-2"><i class="fas fa-envelope mr-2 text-indigo-600"></i> sohampal781@gmail.com</a>
+      <a href="tel:+916290952326" class="block w-full py-3 bg-slate-100 font-bold rounded text-xs"><i class="fas fa-phone mr-2 text-indigo-600"></i> +91 62909 52326</a>
+    </div>
+  </div>
 
-window.updateSliderUI = () => {
-    if(!currentOrderProduct) return;
-    const adv = parseInt(document.getElementById("ordSlider").value);
-    const bal = currentOrderProduct.price - adv;
-    document.getElementById("valPayNow").innerText = `₹${adv.toLocaleString('en-IN')}`;
-    document.getElementById("valPayLater").innerText = `₹${bal.toLocaleString('en-IN')}`;
-};
+  <!-- ================= FIREBASE & APP LOGIC ================= -->
+  <script type="module">
+    // Firebase Realtime Database Implementation
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, update, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-// ==============================================================
-// PUBLIC ORDERING LOGIC (RTDB SYNTAX - FIXES HANGING ISSUE)
-// ==============================================================
-window.submitPublicOrder = async () => {
-    const name = document.getElementById("ordName").value.trim();
-    const address = document.getElementById("ordAddress").value.trim();
-    const phone = document.getElementById("ordPhone").value.trim();
-    const email = document.getElementById("ordAltEmail").value.trim();
-    const txn = document.getElementById("ordTxn").value.trim();
-    const adv = parseInt(document.getElementById("ordSlider").value);
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
+      authDomain: "kaalnetra-214b6.firebaseapp.com",
+      databaseURL: "https://kaalnetra-214b6-default-rtdb.firebaseio.com",
+      projectId: "kaalnetra-214b6",
+      storageBucket: "kaalnetra-214b6.firebasestorage.app",
+      messagingSenderId: "974973616837",
+      appId: "1:974973616837:web:9d586455fd35a938ce66ac"
+    };
 
-    if(!name || !address || !phone) return alert("Please fill all details.");
-    if(adv > 0 && txn.length !== 5) return alert("Please enter exactly the LAST 5 DIGITS of your transaction ID.");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    const ordId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
-    
-    const btn = document.activeElement;
-    const oldText = btn.innerText;
-    btn.innerText = "Processing...";
-    btn.disabled = true;
+    // Global Data
+    const PRODUCTS = [
+      { id: "v1", name: "Version 1 - Basic Safety System", price: 15000, desc: "IR Detection, Audio Buzzer, Basic Security Unit" },
+      { id: "v2", name: "Version 2 - Bypass Switch", price: 20000, desc: "Dual Sensors, Permanent Bypass Switch" },
+      { id: "v3", name: "Version 3 - Web Access System", price: 21000, desc: "Smartphone Dashboard, Real-time Logging" },
+      { id: "v4", name: "Version 4 - Biometric System", price: 26000, desc: "Fingerprint Access Control, Allow-One Entry" },
+      { id: "v5", name: "Industrial Premium System", price: 27000, desc: "Dual-level Access, High-Power Siren" }
+    ];
 
-    try {
-        // USING RTDB set() INSTED OF FIRESTORE setDoc()!
-        await set(ref(window.db, `web_orders/${ordId}`), {
-            orderId: ordId,
-            productName: currentOrderProduct.name,
-            totalPrice: currentOrderProduct.price,
-            advancePaid: adv,
-            balanceDue: currentOrderProduct.price - adv,
-            customerName: name,
-            address: address,
-            phone: phone,
-            email: email,
-            txnIdLast5: txn,
-            status: "Pending Verification",
-            timestamp: serverTimestamp()
+    let currentOrderProduct = null;
+    let html5QrCode = null;
+    let scanTarget = null;
+    let dispatchCart = [];
+
+    function showAlert(title, desc, iconHtml = '<i class="fas fa-info-circle text-blue-500"></i>') {
+      document.getElementById("alertIcon").innerHTML = iconHtml;
+      document.getElementById("alertTitle").innerText = title;
+      document.getElementById("alertBody").innerHTML = desc;
+      document.getElementById("alertModal").classList.remove("hidden");
+    }
+
+    // ================= 1. PUBLIC STOREFRONT =================
+    function renderCatalog() {
+      const grid = document.getElementById("productGrid");
+      grid.innerHTML = PRODUCTS.map(p => `
+        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow hover:shadow-lg transition relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute top-0 right-0 bg-emerald-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-lg">6M WARRANTY</div>
+          <div>
+            <div class="h-32 bg-slate-50 rounded-lg flex items-center justify-center mb-4 border border-slate-100">
+              <i class="fas fa-shield-halved text-4xl text-slate-300"></i>
+            </div>
+            <h4 class="font-black text-lg text-slate-900 mb-1">${p.name}</h4>
+            <p class="text-xs text-slate-500 mb-4 h-8">${p.desc}</p>
+            <div class="text-2xl font-black text-emerald-600 mb-6">₹${p.price.toLocaleString('en-IN')}</div>
+          </div>
+          <button onclick="window.openOrderModal('${p.id}')" class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-black rounded-lg text-xs uppercase shadow transition">Order Now</button>
+        </div>
+      `).join("");
+    }
+    renderCatalog();
+
+    window.openOrderModal = (id) => {
+      const prod = PRODUCTS.find(p => p.id === id);
+      currentOrderProduct = prod;
+      document.getElementById("ordProdName").innerText = prod.name;
+      document.getElementById("ordProdPrice").innerText = prod.price.toLocaleString('en-IN');
+      const slider = document.getElementById("ordSlider");
+      slider.min = 0; slider.max = prod.price; slider.step = 500;
+      slider.value = prod.price * 0.1; 
+      window.updateSlider();
+      document.getElementById("orderModal").classList.remove("hidden");
+    };
+
+    window.updateSlider = () => {
+      if(!currentOrderProduct) return;
+      const adv = parseInt(document.getElementById("ordSlider").value);
+      const bal = currentOrderProduct.price - adv;
+      document.getElementById("vNow").innerText = `₹${adv.toLocaleString('en-IN')}`;
+      document.getElementById("vLater").innerText = `₹${bal.toLocaleString('en-IN')}`;
+    };
+
+    window.submitOrder = async () => {
+      const name = document.getElementById("ordName").value.trim();
+      const address = document.getElementById("ordAddr").value.trim();
+      const phone = document.getElementById("ordPhone").value.trim();
+      const txn = document.getElementById("ordTxn").value.trim();
+      const adv = parseInt(document.getElementById("ordSlider").value);
+
+      if(!name || !address || !phone) return alert("Fill required contact details.");
+      if(adv > 0 && txn.length !== 5) return alert("Enter exactly the LAST 5 DIGITS of your Txn ID.");
+
+      const ordId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+      try {
+        await set(ref(db, `web_orders/${ordId}`), {
+          orderId: ordId, productName: currentOrderProduct.name, totalPrice: currentOrderProduct.price,
+          advancePaid: adv, balanceDue: currentOrderProduct.price - adv, customerName: name,
+          address: address, phone: phone, txnIdLast5: txn, status: "Pending Verification", timestamp: serverTimestamp()
         });
         
-        document.getElementById("publicOrderModal").classList.add("hidden");
-        alert(`✅ Order Placed Successfully!\n\nPlease save this Tracking ID: ${ordId}\nIt may take up to 48 hours for Admin verification.`);
+        document.getElementById("orderModal").classList.add("hidden");
+        showAlert("Order Received!", `Your Tracking ID is:<br><b class="text-xl text-blue-600 font-mono">${ordId}</b><br><br>Keep this to track your order.`, '<i class="fas fa-check-circle text-emerald-500"></i>');
         
-        // Reset fields
-        document.getElementById("ordName").value = "";
-        document.getElementById("ordAddress").value = "";
-        document.getElementById("ordPhone").value = "";
-        document.getElementById("ordTxn").value = "";
-    } catch(e) { 
-        alert("Database Error: " + e.message); 
-    } finally {
-        btn.innerText = oldText;
-        btn.disabled = false;
-    }
-};
+        // Clear
+        document.getElementById("ordName").value = ""; document.getElementById("ordAddr").value = "";
+        document.getElementById("ordPhone").value = ""; document.getElementById("ordTxn").value = "";
+      } catch(e) { alert("Error: " + e.message); }
+    };
 
-window.trackPublicOrder = async () => {
-    const id = document.getElementById("trackInput").value.trim().toUpperCase();
-    if(!id) return alert("Enter ORD-XXXXXX");
-
-    try {
-        const snap = await get(ref(window.db, `web_orders/${id}`));
-        if(!snap.exists()) return alert("Order ID not found.");
-        const data = snap.val();
+    window.trackOrder = async () => {
+      const id = document.getElementById("trackOrderId").value.trim().toUpperCase();
+      if(!id) return alert("Enter ORD-XXXXXX");
+      try {
+        const snap = await get(ref(db, `web_orders/${id}`));
+        if(!snap.exists()) return showAlert("Not Found", "Invalid Order ID.", '<i class="fas fa-times-circle text-rose-500"></i>');
         
-        let msg = `Order: ${data.productName}\nStatus: ${data.status}\nAdvance Verified: ₹${data.advancePaid}\nBalance: ₹${data.balanceDue}`;
-        if(data.masterQrId) {
-            msg += `\n\nOfficial Master QR ID: ${data.masterQrId}\n(Use this for 6-Month Warranty claims)`;
-        }
-        alert(msg);
-    } catch(e) { alert(e.message); }
-};
-
-// ==============================================================
-// 2. STAFF AUTH ROUTING
-// ==============================================================
-window.showStaffLogin = () => {
-    document.getElementById("publicStorefront").classList.add("hidden");
-    document.getElementById("loginSection").classList.remove("hidden");
-};
-window.closeStaffLogin = () => {
-    document.getElementById("loginSection").classList.add("hidden");
-    document.getElementById("publicStorefront").classList.remove("hidden");
-};
-
-window.login = () => {
-    const e = document.getElementById("email").value;
-    const p = document.getElementById("password").value;
-    signInWithEmailAndPassword(auth, e, p).catch(err => alert("Login Failed: " + err.message));
-};
-window.logout = () => signOut(auth).then(() => window.location.reload());
-
-onAuthStateChanged(auth, (user) => {
-    const store = document.getElementById("publicStorefront");
-    const login = document.getElementById("loginSection");
-    const erp = document.getElementById("appScreen");
-    const nav = document.getElementById("authContainer");
-    const headerCtrl = document.getElementById("headerControls");
-
-    if (user) {
-        currentUser = user;
-        isAdmin = true; // Simple logic: if logged in here, it's staff
-        store.classList.add("hidden");
-        login.classList.add("hidden");
-        headerCtrl.classList.add("hidden");
-        erp.classList.remove("hidden");
-        nav.classList.remove("hidden");
-        document.getElementById("userInfo").innerText = user.email;
+        const d = snap.val();
+        let color = d.status.includes("Pending") ? "text-yellow-600" : "text-emerald-600";
+        let msg = `<b>Product:</b> ${d.productName}<br><b>Status:</b> <span class="${color} font-bold">${d.status}</span><br><b>Advance Verified:</b> ₹${d.advancePaid}<br><b>Balance:</b> ₹${d.balanceDue}`;
+        if(d.masterQrId) msg += `<br><br><b class="text-purple-600">Master Warranty QR: ${d.masterQrId}</b>`;
         
-        switchTab('webOrders');
-        startAdminSync();
-    } else {
-        store.classList.remove("hidden");
-        headerCtrl.classList.remove("hidden");
-        login.classList.add("hidden");
-        erp.classList.add("hidden");
-        nav.classList.add("hidden");
-    }
-});
+        showAlert(`Order ${id}`, msg);
+      } catch(e) { alert("Error: " + e.message); }
+    };
 
-// Original Tab Switcher logic preserved exactly!
-window.switchTab = (t) => {
-    const allTabs = ['webOrders', 'dispatch', 'newData', 'inventory', 'gallery', 'assigned', 'comments', 'adminPanel', 'dataView', 'funds', 'purchase', 'printReport', 'directives', 'billing', 'warranty', 'attendance', 'delivery', 'scadaControl', 'fundWorkflow'];
-    allTabs.forEach(x => {
-        const el = document.getElementById(`tab-${x}`);
-        if(el) el.classList.add("hidden"); 
+    // ================= 2. AUTHENTICATION =================
+    window.openStaffLogin = () => document.getElementById("staffModal").classList.remove("hidden");
+    window.loginStaff = () => signInWithEmailAndPassword(auth, document.getElementById("staffEmail").value, document.getElementById("staffPass").value).catch(e => alert(e.message));
+    window.logoutStaff = () => signOut(auth).then(() => window.location.reload());
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("view-storefront").classList.add("hidden");
+        document.getElementById("publicNav").classList.add("hidden");
+        document.getElementById("view-erp").classList.remove("hidden");
+        document.getElementById("adminNav").classList.remove("hidden");
+        document.getElementById("adminBadge").innerText = user.email;
+        document.getElementById("staffModal").classList.add("hidden");
+        window.switchErpTab('orders');
+        startErpSync();
+      } else {
+        document.getElementById("view-erp").classList.add("hidden");
+        document.getElementById("adminNav").classList.add("hidden");
+        document.getElementById("view-storefront").classList.remove("hidden");
+        document.getElementById("publicNav").classList.remove("hidden");
+      }
     });
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-    const targetTab = document.getElementById(`tab-${t}`);
-    if(targetTab) targetTab.classList.remove("hidden");
+    window.switchErpTab = (tab) => {
+      document.querySelectorAll('.erp-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.erp-tab-btn').forEach(b => { b.classList.remove('bg-slate-800','text-white'); b.classList.add('bg-slate-100','text-slate-600'); });
+      document.getElementById(`erp-${tab}`).classList.remove('hidden');
+      document.getElementById(`tabbtn-${tab}`).classList.remove('bg-slate-100','text-slate-600');
+      document.getElementById(`tabbtn-${tab}`).classList.add('bg-slate-800','text-white');
+    };
 
-    const activeBtn = document.getElementById('btn' + t.charAt(0).toUpperCase() + t.slice(1));
-    if(activeBtn) activeBtn.classList.add("active");
-};
-
-// ==============================================================
-// 3. ADMIN ERP LOGIC (RTDB)
-// ==============================================================
-function startAdminSync() {
-    // 1. Sync Web Orders
-    onValue(ref(window.db, "web_orders"), (snap) => {
-        const tbody = document.getElementById("webOrdersBody");
-        if(!tbody) return;
-        tbody.innerHTML = "";
-        if(!snap.exists()) return tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px;'>No orders found.</td></tr>";
-
-        const orders = [];
-        snap.forEach(c => orders.push(c.val()));
-        orders.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
-
-        orders.forEach(v => {
-            let btn = "";
-            if(v.status === "Pending Verification") {
-                btn = `<button onclick="window.verifyWebOrder('${v.orderId}')" class="erp-btn info" style="padding:4px 8px; font-size:10px;">VERIFY TXN</button>`;
-            }
-            tbody.innerHTML += `
-            <tr class="erp-tr hover:bg-slate-50">
-                <td class="erp-td" style="font-family:monospace; font-weight:bold; color:var(--metro-blue);">${v.orderId}</td>
-                <td class="erp-td"><b>${v.customerName}</b><br><span style="font-size:10px; color:#666;">${v.phone} | ${v.address}</span></td>
-                <td class="erp-td" style="font-size:11px; font-weight:bold;">${v.productName}</td>
-                <td class="erp-td" style="text-align:right;">Adv: <span style="color:green; font-weight:bold;">₹${v.advancePaid}</span><br><span style="font-size:10px; color:#999;">Txn: *${v.txnIdLast5}</span></td>
-                <td class="erp-td" style="text-align:center;"><span style="background:#f1f5f9; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:bold;">${v.status}</span></td>
-                <td class="erp-td" style="text-align:center;">${btn}</td>
-            </tr>`;
+    // ================= 3. ERP SYNC & INVENTORY =================
+    function startErpSync() {
+      // Sync Orders
+      onValue(ref(db, "web_orders"), snap => {
+        const tb = document.getElementById("tblOrders");
+        tb.innerHTML = "";
+        if(!snap.exists()) return tb.innerHTML = "<tr><td colspan='6' class='text-center'>No orders found.</td></tr>";
+        let arr = []; snap.forEach(c => arr.push(c.val())); arr.reverse();
+        arr.forEach(v => {
+          let btn = v.status === "Pending Verification" ? `<button onclick="window.verifyOrder('${v.orderId}')" class="bg-indigo-600 text-white px-2 py-1 rounded text-[10px] font-bold">VERIFY</button>` : '';
+          tb.innerHTML += `<tr>
+            <td class="font-mono font-bold text-indigo-700">${v.orderId}</td>
+            <td><b>${v.customerName}</b><br><span class="text-[10px] text-slate-500">${v.phone}</span></td>
+            <td class="text-[11px] font-bold">${v.productName}</td>
+            <td class="text-right">Adv: <b class="text-emerald-600">₹${v.advancePaid}</b><br><span class="text-[10px] text-slate-400">Txn: *${v.txnIdLast5}</span></td>
+            <td class="text-center"><span class="px-2 py-1 bg-slate-100 rounded text-[10px] font-bold">${v.status}</span></td>
+            <td class="text-center">${btn}</td>
+          </tr>`;
         });
-    });
+      });
 
-    // 2. Sync Inventory (Your original function)
-    onValue(ref(window.db, "inventory"), (snap) => {
-        const tbody = document.getElementById("inventoryBody");
-        if(!tbody) return;
-        tbody.innerHTML = "";
+      // Sync Inventory
+      onValue(ref(db, "inventory"), snap => {
+        const tb = document.getElementById("tblInventory");
+        tb.innerHTML = "";
         if(!snap.exists()) return;
-
         snap.forEach(c => {
-            const v = c.val();
-            let color = v.status === "Sold" ? "color:red;" : "color:green;";
-            tbody.innerHTML += `
-            <tr class="erp-tr stock-row">
-                <td class="erp-td" style="font-family:monospace; font-weight:bold;">${v.barcode}</td>
-                <td class="erp-td font-bold">${v.item}</td>
-                <td class="erp-td text-xs">${v.location}</td>
-                <td class="erp-td" style="text-align:center; font-weight:bold; ${color}">${v.status}</td>
-            </tr>`;
+          const v = c.val();
+          let cStyle = v.status === "Sold" ? "text-rose-600" : "text-emerald-600";
+          tb.innerHTML += `<tr class="inv-row">
+            <td class="font-mono font-bold">${v.barcode}</td>
+            <td class="font-bold">${v.item}</td>
+            <td class="text-xs">${v.location}</td>
+            <td class="text-right font-mono font-bold">₹${v.cost}</td>
+            <td class="text-center font-bold ${cStyle}">${v.status}</td>
+          </tr>`;
         });
-    });
-}
-
-window.verifyWebOrder = async (id) => {
-    if(confirm(`Mark payment verified for order ${id}?`)) {
-        await update(ref(window.db, `web_orders/${id}`), { status: "Verified & Processing" });
+      });
     }
-};
 
-// ==============================================================
-// 4. DISPATCH & MASTER QR ENGINE
-// ==============================================================
-window.addTagToDispatchCart = async () => {
-    const tag = document.getElementById("dispTagInp").value.trim().toUpperCase();
-    if(!tag) return;
+    window.verifyOrder = async (id) => {
+      if(confirm(`Mark advance payment verified for ${id}?`)) {
+        await update(ref(db, `web_orders/${id}`), { status: "Verified & Processing" });
+      }
+    };
 
-    if(window.dispatchCartTags.find(t => t.id === tag)) return alert("Already added.");
+    window.registerAsset = async () => {
+      const name = document.getElementById("invName").value.trim();
+      const loc = document.getElementById("invMainLoc").value + " [" + document.getElementById("invSpot").value.trim() + "]";
+      const cost = document.getElementById("invCost").value;
+      if(!name) return alert("Hardware name required.");
+      const tagId = "KN-" + Math.floor(100000 + Math.random() * 900000);
+      try {
+        await set(ref(db, `inventory/${tagId}`), { barcode: tagId, item: name, cost: cost, location: loc, status: "In Stock", timestamp: serverTimestamp() });
+        alert(`✅ Stock Saved! Tag: ${tagId}`);
+        document.getElementById("invName").value = ""; document.getElementById("invSpot").value = "";
+      } catch(e) { alert(e.message); }
+    };
 
-    try {
-        const snap = await get(ref(window.db, `inventory/${tag}`));
+    window.processReturn = async () => {
+      const tag = document.getElementById("retTag").value.trim().toUpperCase();
+      const loc = document.getElementById("retMainLoc").value + " [" + document.getElementById("retSpot").value.trim() + "]";
+      if(!tag) return;
+      try {
+        await update(ref(db, `inventory/${tag}`), { status: "In Stock", location: loc });
+        alert(`✅ Restocked tag ${tag}`);
+      } catch(e) { alert("Tag Error: " + e.message); }
+    };
+
+    window.filterInventory = () => {
+      const q = document.getElementById("invSearch").value.toLowerCase();
+      document.querySelectorAll(".inv-row").forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none");
+    };
+
+    // ================= 4. MASTER DISPATCH =================
+    window.addToDispatchCart = async () => {
+      const tag = document.getElementById("dispTag").value.trim().toUpperCase();
+      if(!tag) return;
+      if(dispatchCart.find(t => t.id === tag)) return alert("Already added.");
+      try {
+        const snap = await get(ref(db, `inventory/${tag}`));
         if(!snap.exists() || snap.val().status !== "In Stock") return alert("Invalid or Sold Tag.");
-        
-        window.dispatchCartTags.push({ id: tag, item: snap.val().item });
-        document.getElementById("dispTagInp").value = "";
-        renderDispatchCart();
-    } catch(e) { alert(e.message); }
-};
+        dispatchCart.push({ id: tag, item: snap.val().item });
+        document.getElementById("dispTag").value = "";
+        renderDispatch();
+      } catch(e) { alert(e.message); }
+    };
 
-function renderDispatchCart() {
-    const list = document.getElementById("dispatchCartList");
-    if(window.dispatchCartTags.length === 0) {
-        list.innerHTML = `<li style="font-style:italic;">No hardware tags added yet.</li>`;
-        return;
-    }
-    list.innerHTML = window.dispatchCartTags.map((t, i) => `
-        <li style="display:flex; justify-content:space-between; background:white; padding:10px; margin-bottom:5px; border:1px solid #e2e8f0; border-radius:4px;">
-            <span style="font-family:monospace;">${t.id} - ${t.item}</span>
-            <button onclick="window.dispatchCartTags.splice(${i},1); renderDispatchCart();" style="color:red; border:none; background:none; cursor:pointer;"><i class="fas fa-times"></i></button>
+    function renderDispatch() {
+      const ul = document.getElementById("dispatchList");
+      if(dispatchCart.length === 0) return ul.innerHTML = `<li class="text-xs text-slate-400 italic">No tags added.</li>`;
+      ul.innerHTML = dispatchCart.map((t, i) => `
+        <li class="flex justify-between items-center bg-white p-2 border rounded text-xs font-bold">
+          <span class="font-mono">${t.id} - ${t.item}</span>
+          <button onclick="window.dispatchCart.splice(${i},1); renderDispatch();" class="text-rose-500 hover:text-rose-700"><i class="fas fa-times"></i></button>
         </li>
-    `).join("");
-}
+      `).join("");
+    }
 
-window.processMasterDispatch = async () => {
-    const ordId = document.getElementById("dispOrderId").value.trim().toUpperCase();
-    const applyWar = document.getElementById("dispChkWarranty").checked;
+    window.dispatchOrder = async () => {
+      const ordId = document.getElementById("dispOrder").value.trim().toUpperCase();
+      const applyWar = document.getElementById("chkWar").checked;
+      if(!ordId || dispatchCart.length === 0) return alert("Require Order ID and Hardware Tags.");
 
-    if(!ordId) return alert("Enter Order ID.");
-    if(window.dispatchCartTags.length === 0) return alert("Add hardware tags.");
-
-    try {
-        const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+      try {
+        const ordSnap = await get(ref(db, `web_orders/${ordId}`));
         if(!ordSnap.exists()) return alert("Order not found.");
 
-        const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
-        const expDate = Date.now() + (6 * 30 * 24 * 60 * 60 * 1000); // Rough 6 months in MS
+        const mId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
         const updates = {};
-
-        // Update tags in inventory
-        for(let t of window.dispatchCartTags) {
-            updates[`inventory/${t.id}/status`] = "Sold";
-            updates[`inventory/${t.id}/masterQrRef`] = masterId;
+        for(let t of dispatchCart) {
+          updates[`inventory/${t.id}/status`] = "Sold";
+          updates[`inventory/${t.id}/masterQrRef`] = mId;
         }
 
-        // Save Master Warranty
-        updates[`master_warranties/${masterId}`] = {
-            masterId: masterId,
-            orderRef: ordId,
-            customerName: ordSnap.val().customerName,
-            hardwareList: window.dispatchCartTags,
-            warrantyActive: applyWar,
-            expiryDate: applyWar ? expDate : null,
-            timestamp: serverTimestamp()
+        updates[`master_warranties/${mId}`] = {
+          masterId: mId, orderRef: ordId, customerName: ordSnap.val().customerName, hardwareList: dispatchCart,
+          warrantyActive: applyWar, expiryDate: applyWar ? Date.now() + (6*30*24*60*60*1000) : null, timestamp: serverTimestamp()
         };
-
-        // Update Order
         updates[`web_orders/${ordId}/status`] = "Dispatched";
-        updates[`web_orders/${ordId}/masterQrId`] = masterId;
+        updates[`web_orders/${ordId}/masterQrId`] = mId;
 
-        await update(ref(window.db), updates);
+        await update(ref(db), updates);
 
-        // Show Master QR to Print/Give to customer
-        document.getElementById("masterQrPrintId").innerText = masterId;
-        document.getElementById("masterQrPrintImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${masterId}`;
-        document.getElementById("masterQrPrintModal").classList.remove("hidden");
+        document.getElementById("printQrText").innerText = mId;
+        document.getElementById("printQrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${mId}`;
+        document.getElementById("printQrModal").classList.remove("hidden");
 
-        // Clear UI
-        document.getElementById("dispOrderId").value = "";
-        window.dispatchCartTags = [];
-        renderDispatchCart();
+        document.getElementById("dispOrder").value = ""; dispatchCart = []; renderDispatch();
+      } catch(e) { alert(e.message); }
+    };
 
-    } catch(e) { alert(e.message); }
-};
-
-// ==============================================================
-// 5. MASTER WARRANTY CLAIM
-// ==============================================================
-window.checkMasterWarranty = async () => {
-    const master = document.getElementById("claimMasterTag").value.trim().toUpperCase();
-    const resultDiv = document.getElementById("claimMasterResult");
-    const hwList = document.getElementById("claimHardwareList");
-    if(!master) return;
-
-    try {
-        const snap = await get(ref(window.db, `master_warranties/${master}`));
+    // ================= 5. WARRANTY CLAIMS =================
+    window.verifyMasterWarranty = async () => {
+      const mId = document.getElementById("claimMaster").value.trim().toUpperCase();
+      if(!mId) return;
+      try {
+        const snap = await get(ref(db, `master_warranties/${mId}`));
         if(!snap.exists()) return alert("❌ Master QR not found.");
-
         const data = snap.val();
-        let isActive = false;
-        let badgeStyle = "background:#ffe4e6; color:#9f1239;"; 
-        let statusText = "WARRANTY EXPIRED";
-
-        if(data.warrantyActive && data.expiryDate) {
-            if(Date.now() <= data.expiryDate) {
-                isActive = true;
-                badgeStyle = "background:#d1fae5; color:#065f46;"; 
-                statusText = `ACTIVE UNTIL ${new Date(data.expiryDate).toLocaleDateString('en-IN')}`;
-            }
+        let isActive = false; let badge = "bg-rose-100 text-rose-800"; let txt = "WARRANTY EXPIRED";
+        if(data.warrantyActive && data.expiryDate && Date.now() <= data.expiryDate) {
+          isActive = true; badge = "bg-emerald-100 text-emerald-800"; txt = `ACTIVE UNTIL ${new Date(data.expiryDate).toLocaleDateString()}`;
         }
+        document.getElementById("claimBadge").className = `px-3 py-1 font-black text-xs rounded uppercase ${badge}`;
+        document.getElementById("claimBadge").innerText = txt;
+        document.getElementById("claimInfo").innerHTML = `Order: <b>${data.orderRef}</b> | Cust: <b>${data.customerName}</b>`;
 
-        const badge = document.getElementById("claimMasterStatusBadge");
-        badge.style = `padding:6px 12px; border-radius:4px; font-weight:900; font-size:11px; ${badgeStyle}`;
-        badge.innerText = statusText;
-        document.getElementById("claimMasterInfo").innerHTML = `Order: <b>${data.orderRef}</b> | Cust: <b>${data.customerName}</b>`;
-
-        hwList.innerHTML = data.hardwareList.map(hw => `
-            <li style="display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #e2e8f0; border-radius:6px; background:#fff;">
-                <div>
-                    <div style="font-weight:bold; font-size:14px; color:#0f172a;">${hw.item}</div>
-                    <div style="font-family:monospace; font-size:11px; color:#64748b;">Tag: ${hw.id}</div>
-                </div>
-                <button onclick="window.fileHardwareClaim('${hw.id}', '${hw.item}', ${isActive})" class="erp-btn info" style="font-size:10px; padding:6px 12px; background:#4f46e5;">FILE CLAIM</button>
-            </li>
+        document.getElementById("claimHwList").innerHTML = data.hardwareList.map(hw => `
+          <li class="flex justify-between items-center p-3 border rounded bg-white hover:bg-slate-50">
+            <div><div class="font-bold text-sm text-slate-800">${hw.item}</div><div class="font-mono text-[10px] text-slate-500">Tag: ${hw.id}</div></div>
+            <button onclick="alert('${isActive ? "✅ FREE REPAIR AUTHORIZED" : "❌ WARRANTY EXPIRED"}\\n\\nTechnician can proceed with service for ${hw.item}.')" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-2 rounded uppercase">Select Unit</button>
+          </li>
         `).join("");
+        document.getElementById("claimResult").classList.remove("hidden");
+      } catch(e) { alert(e.message); }
+    };
 
-        resultDiv.classList.remove("hidden");
-    } catch(e) { alert(e.message); }
-};
+    // ================= 6. CAMERA SCANNER =================
+    window.openScanner = (target) => {
+      scanTarget = target;
+      document.getElementById("scannerModal").classList.remove("hidden");
+      
+      // setTimeout ensures modal is fully visible before initializing camera to prevent freezing
+      setTimeout(() => {
+        if(!html5QrCode) html5QrCode = new Html5Qrcode("qrReader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 220, height: 220 } },
+          (text) => { window.closeScanner(); handleScan(text.trim()); }, (e) => {}
+        ).catch(e => { alert("Camera Permission Error."); window.closeScanner(); });
+      }, 100);
+    };
 
-window.fileHardwareClaim = (id, name, isActive) => {
-    const msg = isActive ? `✅ FREE REPAIR AUTHORIZED for ${name} (${id}).` : `❌ WARRANTY EXPIRED for ${name} (${id}). Charge applies.`;
-    alert(msg + "\n\nTechnician can proceed with service logic.");
-};
+    window.closeScanner = () => {
+      document.getElementById("scannerModal").classList.add("hidden");
+      if(html5QrCode) html5QrCode.stop().then(()=>html5QrCode.clear()).catch(e=>console.log(e));
+    };
 
-// ==============================================================
-// 6. ROBUST CAMERA SCANNER (HTML5QRCODE)
-// ==============================================================
-window.openBarcodeScanner = (mode) => {
-    window.scanMode = mode;
-    document.getElementById("barcodeModal").classList.remove("hidden");
-    
-    if(window.html5QrCode) {
-        window.html5QrCode.stop().catch(e => console.log(e));
+    function handleScan(code) {
+      if(scanTarget === 'RETURN') document.getElementById("retTag").value = code;
+      else if(scanTarget === 'DISPATCH') { document.getElementById("dispTag").value = code; window.addToDispatchCart(); }
+      else if(scanTarget === 'WARRANTY') { document.getElementById("claimMaster").value = code; window.verifyMasterWarranty(); }
     }
-    
-    // Using Html5Qrcode (Not Scanner class) for faster, reliable camera binding
-    window.html5QrCode = new Html5Qrcode("reader");
-    window.html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-            window.closeBarcodeScanner();
-            handleScannedText(decodedText.trim());
-        },
-        (errorMessage) => {
-            // Ignore frame errors silently
-        }
-    ).catch(err => {
-        alert("Camera Error: Please allow camera permissions.");
-        window.closeBarcodeScanner();
-    });
-};
 
-window.closeBarcodeScanner = () => {
-    document.getElementById("barcodeModal").classList.add("hidden");
-    if(window.html5QrCode) {
-        window.html5QrCode.stop().then(() => {
-            window.html5QrCode.clear();
-        }).catch(e => console.log(e));
-    }
-};
-
-function handleScannedText(text) {
-    if(window.scanMode === 'DISPATCH_TAG') {
-        document.getElementById("dispTagInp").value = text;
-        window.addTagToDispatchCart();
-    } else if (window.scanMode === 'CLAIM_MASTER') {
-        document.getElementById("claimMasterTag").value = text;
-        window.checkMasterWarranty();
-    }
-}
-
-</script>
+    // Intercept Tailwind CDN Warning in Console
+    const origWarn = console.warn;
+    console.warn = function(msg) { if (!msg.includes('cdn.tailwindcss.com')) origWarn.apply(console, arguments); };
+  </script>
 </body>
 </html>
