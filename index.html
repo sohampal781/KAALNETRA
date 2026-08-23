@@ -70,12 +70,59 @@
       <button id="btnAdminLogout" class="bg-red-600 px-4 py-2 rounded text-xs font-bold">TERMINATE SESSION</button>
     </header>
     
-    <div class="flex bg-white border-b border-gray-200 p-2 gap-2 overflow-x-auto shadow-sm">
-      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-boxes"></i> Inventory</button>
-      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-file-invoice"></i> Billing</button>
-      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-shield-halved"></i> Warranty</button>
-      <button class="px-4 py-2 bg-slate-100 text-slate-700 font-bold text-xs rounded hover:bg-slate-200 uppercase"><i class="fas fa-undo"></i> Returns</button>
-    </div>
+    <!-- Admin Navigation Tab Bar (Matches image_494f23.png) -->
+<div class="bg-white px-6 py-4 flex gap-3 overflow-x-auto">
+  <!-- INVENTORY BUTTON -->
+  <button onclick="switchAdminTab('inventory')" id="btn-tab-inventory" class="admin-tab-btn px-4 py-2 bg-slate-100 text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
+    <i class="fas fa-boxes"></i> INVENTORY
+  </button>
+  
+  <!-- RETURNS BUTTON -->
+  <button onclick="switchAdminTab('returns')" id="btn-tab-returns" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
+    <i class="fas fa-undo"></i> RETURNS
+  </button>
+  
+  <!-- BILLING BUTTON -->
+  <button onclick="switchAdminTab('billing')" id="btn-tab-billing" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
+    <i class="fas fa-file-invoice"></i> BILLING
+  </button>
+
+  <!-- WARRANTY BUTTON -->
+  <button onclick="switchAdminTab('warranty')" id="btn-tab-warranty" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold text-sm rounded flex items-center gap-2 transition">
+    <i class="fas fa-shield-alt"></i> WARRANTY
+  </button>
+</div>
+
+<!-- Dynamic Workspaces -->
+<main class="p-6 bg-slate-50 min-h-screen">
+  
+  <!-- 1. INVENTORY PANEL (Master Matrix) -->
+  <div id="panel-inventory" class="admin-panel bg-white p-6 rounded shadow-sm border border-gray-200">
+    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Master Matrix</h2>
+    <p class="text-sm text-gray-500">Scan QR codes and manage dispatch orders here.</p>
+    
+    <!-- You can manually paste your HTML5-QRCode Scanner logic here -->
+  </div>
+
+  <!-- 2. RETURNS PANEL -->
+  <div id="panel-returns" class="admin-panel hidden bg-white p-6 rounded shadow-sm border border-gray-200">
+    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Asset Recovery & Returns</h2>
+    <p class="text-sm text-gray-500">Process returned hardware and update database stock.</p>
+  </div>
+
+  <!-- 3. BILLING PANEL -->
+  <div id="panel-billing" class="admin-panel hidden bg-white p-6 rounded shadow-sm border border-gray-200">
+    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Official Billing</h2>
+    <p class="text-sm text-gray-500">Generate invoices and bind products to the 6-month free warranty.</p>
+  </div>
+
+  <!-- 4. WARRANTY PANEL -->
+  <div id="panel-warranty" class="admin-panel hidden bg-white p-6 rounded shadow-sm border border-gray-200">
+    <h2 class="text-xl font-bold text-[#0f172a] mb-2">Warranty Claims Engine</h2>
+    <p class="text-sm text-gray-500">Scan customer claim tickets and verify against physical hardware QR.</p>
+  </div>
+
+</main>
     
     <main class="p-6">
       <div class="bg-white p-6 rounded shadow border border-gray-200">
@@ -149,6 +196,29 @@
         document.getElementById("customerName").innerText = `Hello, ${user.displayName}`;
       }
     });
+    // Attach to window so the HTML onclick="" attributes can trigger it
+window.switchAdminTab = function(tabName) {
+  
+  // 1. Hide all panels
+  const allPanels = document.querySelectorAll('.admin-panel');
+  allPanels.forEach(panel => panel.classList.add('hidden'));
+  
+  // 2. Reset all buttons to the inactive, faded style
+  const allButtons = document.querySelectorAll('.admin-tab-btn');
+  allButtons.forEach(btn => {
+    btn.classList.remove('bg-slate-100', 'text-slate-800');
+    btn.classList.add('bg-slate-50', 'text-slate-500');
+  });
+
+  // 3. Show the specific panel the user clicked
+  document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+
+  // 4. Highlight the active button
+  const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+  activeBtn.classList.remove('bg-slate-50', 'text-slate-500');
+  activeBtn.classList.add('bg-slate-100', 'text-slate-800');
+  
+};
   </script>
 </body>
 </html>
