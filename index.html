@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaalnetra Security Systems | The Eye That Never Sleeps</title>
+    <title>Kaalnetra Security Systems | Official Store</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -44,11 +44,11 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- 1. HEADER -->
+    <!-- HEADER -->
     <header id="publicHeader" class="bg-[var(--amz-nav)] text-white sticky top-0 z-50">
         <div class="flex items-center justify-between px-4 py-3 gap-4 flex-wrap lg:flex-nowrap">
             <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.reload()">
-                <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded-lg text-2xl border-2 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]">K</div>
+                <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded-lg text-2xl border-2 border-yellow-500">K</div>
                 <div class="leading-tight">
                     <h1 class="text-xl font-bold tracking-wide m-0 text-white">Kaalnetra.in</h1>
                     <div class="text-[11px] text-gray-300 font-medium tracking-widest uppercase">Security Systems</div>
@@ -84,7 +84,7 @@
         </div>
     </header>
 
-    <!-- 2. STOREFRONT -->
+    <!-- STOREFRONT -->
     <section id="view-storefront" class="flex-1 flex flex-col">
         <div class="relative w-full h-[250px] md:h-[350px] overflow-hidden bg-gradient-to-r from-slate-900 via-gray-900 to-black flex items-center justify-center text-center text-white px-4 border-b-4 border-yellow-500">
             <div class="z-10">
@@ -100,12 +100,11 @@
             <div class="flex justify-between items-end mb-6 border-b-2 border-gray-200 pb-3">
                 <h3 class="text-2xl font-black text-gray-900">Choose The Right Version For Your Need</h3>
             </div>
-            
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" id="productGrid"></div>
         </main>
     </section>
 
-    <!-- 3. SELLER CENTRAL (ERP) -->
+    <!-- SELLER CENTRAL (ERP) -->
     <section id="view-erp" class="hidden flex-1 bg-gray-100 flex overflow-hidden">
         <!-- Sidebar -->
         <div class="w-64 bg-white border-r border-gray-300 shadow-xl flex flex-col h-screen sticky top-0 z-10">
@@ -149,8 +148,12 @@
                 <div class="flex justify-between items-end mb-4">
                     <div>
                         <h2 class="text-2xl font-black text-gray-800">Customer Orders</h2>
-                        <p class="text-sm text-gray-500 mt-1">Crash-proof real-time synchronized order stream</p>
+                        <p class="text-sm text-gray-500 mt-1">Real-time synchronized order stream</p>
                     </div>
+                    <!-- Manual Refresh Button to force re-pull -->
+                    <button onclick="window.forceRefreshOrders()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded font-bold text-sm shadow">
+                        <i class="fas fa-sync-alt mr-2"></i>Force Refresh Table
+                    </button>
                 </div>
                 <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
                     <table class="w-full">
@@ -272,7 +275,6 @@
         </div>
     </div>
 
-    <!-- Track & Auth Modals -->
     <div id="trackModal" class="modal-overlay hidden">
         <div class="bg-white rounded-lg w-full max-w-md p-6 relative shadow-2xl">
             <button onclick="document.getElementById('trackModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400"><i class="fas fa-times text-xl"></i></button>
@@ -293,6 +295,16 @@
         </div>
     </div>
 
+    <!-- Debug/Error Modal -->
+    <div id="errorModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full text-center border-t-8 border-red-600 shadow-2xl">
+            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+            <h3 class="font-black text-xl mb-2 text-gray-900">System Alert</h3>
+            <p id="errorMsgText" class="text-sm text-gray-600 mb-6 font-mono bg-gray-100 p-3 rounded border text-left overflow-hidden break-words"></p>
+            <button onclick="document.getElementById('errorModal').classList.add('hidden')" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded transition">Acknowledge & Close</button>
+        </div>
+    </div>
+
     <!-- ==========================================
          JAVASCRIPT FIREBASE LOGIC
          ========================================== -->
@@ -307,6 +319,7 @@
             databaseURL: "https://kaalnetra-214b6-default-rtdb.firebaseio.com",
             projectId: "kaalnetra-214b6"
         };
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         window.db = getDatabase(app);
@@ -322,6 +335,7 @@
 
         let currentOrderProduct = null;
         window.dispatchCartTags = [];
+        let previousOrderCount = 0;
 
         function renderCatalog(items) {
             document.getElementById("productGrid").innerHTML = items.map(p => `
@@ -408,7 +422,7 @@
                 document.getElementById("adminBadge").innerText = user.email;
                 document.getElementById("staffModal").classList.add("hidden");
                 window.switchErpTab('orders');
-                startLiveErpSync(); // Start bullet-proof sync
+                startLiveErpSync(); 
             }
         });
 
@@ -419,27 +433,41 @@
             document.getElementById(`tabbtn-${tab}`).className = "w-full text-left px-5 py-3 font-bold border-l-4 border-orange-500 bg-orange-50 text-orange-700 text-sm";
         };
 
-        // ================= ANTI-CRASH ERP SYNC ENGINE =================
+        // ================= CRASH-PROOF ERP SYNC ENGINE =================
+        
+        // Manual override function just in case
+        window.forceRefreshOrders = () => {
+            document.getElementById("tblOrders").innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Reloading Firebase Data...</td></tr>`;
+            startLiveErpSync();
+        };
+
         function startLiveErpSync() {
+            // Listen Orders
             onValue(ref(window.db, "web_orders"), (snap) => {
                 const tb = document.getElementById("tblOrders");
                 let pendingCount = 0, dispatchCount = 0, revenue = 0;
-                tb.innerHTML = "";
                 
                 if (!snap.exists()) {
-                    tb.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic">No orders in database.</td></tr>`;
+                    tb.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium">No orders in database.</td></tr>`;
                     document.getElementById("badgeLiveCount").innerText = "0";
                     return;
                 }
 
                 let arr = []; 
-                snap.forEach(c => arr.push(c.val())); 
-                arr.reverse();
                 
+                // CRITICAL FIX: Add curly braces so it DOES NOT return true and cancel the loop
+                snap.forEach(c => { 
+                    arr.push(c.val()); 
+                }); 
+                
+                arr.reverse();
                 document.getElementById("badgeLiveCount").innerText = arr.length;
 
-                // Bullet-proof rendering loop
-                arr.forEach(v => {
+                // Build HTML safely using a string variable to prevent DOM thrashing crashes
+                let rowsHtml = "";
+
+                for(let i=0; i<arr.length; i++) {
+                    const v = arr[i] || {};
                     const statusStr = v.status || "Pending Verification";
                     const advance = parseInt(v.advancePaid || 0);
                     const ordId = v.orderId || "UNKNOWN";
@@ -451,7 +479,7 @@
                     let actionHtml = statusStr.includes("Pending") ? `<button onclick="window.verifyOrder('${ordId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded text-xs font-bold transition">Verify Payment</button>` : `<span class="text-xs text-gray-400 italic">Locked</span>`;
                     let sClass = statusStr.includes("Pending") ? "bg-yellow-100 text-yellow-800 border border-yellow-200" : "bg-green-100 text-green-800 border border-green-200";
 
-                    tb.innerHTML += `
+                    rowsHtml += `
                         <tr class="hover-row border-b border-gray-100">
                             <td class="font-mono font-bold text-blue-800">${ordId}</td>
                             <td><div class="font-bold text-sm text-gray-800">${v.customerName || "N/A"}</div><div class="text-xs text-gray-500 font-mono mt-0.5">${v.phone || "N/A"}</div></td>
@@ -460,24 +488,33 @@
                             <td><span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${sClass}">${statusStr}</span></td>
                             <td class="text-center">${actionHtml}</td>
                         </tr>`;
-                });
+                }
+                
+                tb.innerHTML = rowsHtml;
                 
                 document.getElementById("dashPending").innerText = pendingCount;
                 document.getElementById("dashDispatched").innerText = dispatchCount;
                 document.getElementById("dashRevenue").innerText = "₹" + revenue.toLocaleString('en-IN');
             });
 
+            // Listen Inventory
             onValue(ref(window.db, "inventory"), (snap) => {
                 const tb = document.getElementById("tblInventory");
-                let stock = 0; tb.innerHTML = "";
-                if(!snap.exists()) return;
+                let stock = 0; 
                 
+                if(!snap.exists()) {
+                    tb.innerHTML = "";
+                    return;
+                }
+                
+                let invHtml = "";
+                // CRITICAL FIX: Add curly braces
                 snap.forEach(c => {
                     const v = c.val() || {};
                     const s = v.status || "In Stock";
                     if(s === "In Stock") stock++;
                     const sClass = s === 'Sold' ? 'text-red-600 bg-red-50' : 'text-green-700 bg-green-50';
-                    tb.innerHTML += `
+                    invHtml += `
                         <tr class="border-b border-gray-100 hover-row">
                             <td class="font-mono font-bold text-gray-800">${v.barcode || 'N/A'}</td>
                             <td class="font-bold text-xs text-gray-700">${v.item || 'N/A'}</td>
@@ -486,6 +523,7 @@
                             <td><span class="font-bold text-xs px-2 py-1 rounded border ${sClass}">${s}</span></td>
                         </tr>`;
                 });
+                tb.innerHTML = invHtml;
                 document.getElementById("dashStock").innerText = stock;
             });
         }
@@ -583,13 +621,15 @@
         window.verifyMasterWarranty = async () => {
             const id = document.getElementById("claimMaster").value.trim().toUpperCase();
             if(!id) return;
-            const snap = await get(ref(window.db, `master_warranties/${id}`));
-            if(!snap.exists()) return alert("Policy not found.");
-            
-            const d = snap.val();
-            document.getElementById("claimInfo").innerHTML = `<b>Order:</b> ${d.orderRef}<br><b>Customer:</b> ${d.customerName}`;
-            document.getElementById("claimHwList").innerHTML = d.hardwareList.map(hw => `<li class="p-3 border rounded bg-white shadow-sm font-bold text-gray-700">${hw.item} <br><span class="text-gray-500 font-mono text-xs font-normal">Tag: ${hw.id}</span></li>`).join("");
-            document.getElementById("claimResult").classList.remove("hidden");
+            try {
+                const snap = await get(ref(window.db, `master_warranties/${id}`));
+                if(!snap.exists()) return alert("Policy not found.");
+                
+                const d = snap.val();
+                document.getElementById("claimInfo").innerHTML = `<b>Order:</b> ${d.orderRef}<br><b>Customer:</b> ${d.customerName}`;
+                document.getElementById("claimHwList").innerHTML = d.hardwareList.map(hw => `<li class="p-3 border rounded bg-white shadow-sm font-bold text-gray-700">${hw.item} <br><span class="text-gray-500 font-mono text-xs font-normal">Tag: ${hw.id}</span></li>`).join("");
+                document.getElementById("claimResult").classList.remove("hidden");
+            } catch(e) { alert("Error: " + e.message); }
         };
     </script>
 </body>
