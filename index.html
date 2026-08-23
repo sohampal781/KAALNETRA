@@ -34,14 +34,14 @@
       </div>
     </div>
     
-    <!-- Customer Track Order Bar (Visible on Storefront) -->
+    <!-- Customer Track Order Bar -->
     <div id="storeNav" class="flex items-center gap-2 w-full max-w-md ml-8">
-      <input id="trackOrderIdInp" type="text" placeholder="Enter ORD-XXXXXX to check status" class="w-full p-2 text-xs text-black rounded outline-none focus:ring-2 focus:ring-yellow-400">
+      <input id="trackOrderIdInp" type="text" placeholder="Enter ORD-XXXXXX to track" class="w-full p-2 text-xs text-black rounded outline-none focus:ring-2 focus:ring-yellow-400">
       <button onclick="window.trackCustomerOrder()" class="bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-2 rounded text-xs font-bold transition">Track</button>
       <button onclick="window.openStaffLogin()" class="ml-4 text-xs font-bold text-slate-400 hover:text-white uppercase transition"><i class="fas fa-user-shield"></i> Staff</button>
     </div>
 
-    <!-- Admin Nav (Visible when logged in) -->
+    <!-- Admin Nav -->
     <div id="adminNav" class="hidden flex items-center gap-4">
       <span id="adminBadge" class="text-xs font-bold px-3 py-1 bg-slate-800 rounded border border-slate-600 text-yellow-400"></span>
       <button onclick="window.staffLogout()" class="text-xs font-bold px-3 py-1.5 bg-rose-600 hover:bg-rose-500 rounded uppercase shadow">Terminate Session</button>
@@ -51,11 +51,10 @@
   <!-- ========================================== -->
   <!-- 1. CUSTOMER STOREFRONT (PUBLIC)            -->
   <!-- ========================================== -->
-  <section id="customer-storefront" class="flex-1">
+  <section id="customer-storefront" class="flex-1 relative">
     <div class="bg-slate-900 text-white py-12 px-6 text-center shadow-inner relative overflow-hidden">
-      <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
       <h2 class="text-3xl md:text-4xl font-black text-yellow-400 tracking-wider mb-3 relative z-10">THE EYE THAT NEVER SLEEPS</h2>
-      <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto relative z-10">Order intelligent security systems directly. Includes professional installation and 6-Month Free Warranty Coverage.</p>
+      <p class="text-sm md:text-base text-slate-300 max-w-2xl mx-auto relative z-10">Order intelligent security systems directly. Includes professional installation and 6-Month Free Warranty.</p>
     </div>
 
     <main class="max-w-6xl mx-auto p-6 mt-4">
@@ -63,6 +62,11 @@
         <!-- Injected via JS -->
       </div>
     </main>
+
+    <!-- Floating Support Window Button -->
+    <button onclick="document.getElementById('supportModal').classList.remove('hidden')" class="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-500 text-white p-4 rounded-full shadow-2xl transition-transform transform hover:scale-110 z-40 flex items-center justify-center">
+      <i class="fas fa-headset text-2xl"></i>
+    </button>
   </section>
 
   <!-- ========================================== -->
@@ -72,14 +76,13 @@
     <div class="bg-white px-6 py-3 border-b border-slate-200 flex gap-2 overflow-x-auto shadow-sm">
       <button onclick="window.switchAdminTab('orders')" id="btn-tab-orders" class="admin-tab-btn px-4 py-2 bg-slate-100 text-slate-800 font-black text-xs rounded-lg transition"><i class="fas fa-shopping-cart"></i> WEB ORDERS</button>
       <button onclick="window.switchAdminTab('inventory')" id="btn-tab-inventory" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-boxes"></i> INVENTORY</button>
-      <button onclick="window.switchAdminTab('returns')" id="btn-tab-returns" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-undo"></i> RETURNS</button>
-      <button onclick="window.switchAdminTab('billing')" id="btn-tab-billing" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-file-invoice"></i> BILLING</button>
-      <button onclick="window.switchAdminTab('warranty')" id="btn-tab-warranty" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-shield-alt"></i> WARRANTY</button>
+      <button onclick="window.switchAdminTab('billing')" id="btn-tab-billing" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-truck-fast"></i> DISPATCH & MASTER QR</button>
+      <button onclick="window.switchAdminTab('warranty')" id="btn-tab-warranty" class="admin-tab-btn px-4 py-2 bg-slate-50 text-slate-500 font-black text-xs rounded-lg transition"><i class="fas fa-shield-alt"></i> WARRANTY CLAIMS</button>
     </div>
 
     <div class="max-w-7xl w-full mx-auto p-6 space-y-6 flex-1">
       
-      <!-- 2.1 WEB ORDERS (NEW) -->
+      <!-- 2.1 WEB ORDERS -->
       <div id="panel-orders" class="admin-panel space-y-6">
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-indigo-500">
           <h3 class="font-black text-lg mb-4 text-indigo-900"><i class="fas fa-globe"></i> Customer Web Orders</h3>
@@ -139,42 +142,66 @@
         </div>
       </div>
 
-      <!-- 2.3 RETURNS -->
-      <div id="panel-returns" class="admin-panel hidden space-y-6">
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-rose-500">
-          <h3 class="font-black text-lg mb-4 text-rose-800"><i class="fas fa-undo"></i> Asset Recovery / Restock</h3>
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <input id="retTagId" type="text" placeholder="Scan Tag ID to Return" class="p-3 border rounded text-sm">
-            <input id="retReason" type="text" placeholder="Return Reason (e.g. Dismantled)" class="p-3 border rounded text-sm">
-            <select id="retMainLoc" class="p-3 border rounded text-sm"><option value="Main Warehouse">Main Warehouse</option></select>
-            <input id="retSpot" type="text" placeholder="Restock Spot (e.g. Bin 5)" class="p-3 border rounded text-sm">
-          </div>
-          <button onclick="window.processReturn()" class="w-full bg-rose-600 text-white font-black py-3 rounded uppercase">Confirm Recovery</button>
-        </div>
-      </div>
-
-      <!-- 2.4 BILLING -->
+      <!-- 2.3 DISPATCH & MASTER QR BILLING (NEW LOGIC) -->
       <div id="panel-billing" class="admin-panel hidden space-y-6">
         <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm border-t-4 border-t-cyan-500">
-          <h3 class="font-black text-lg mb-4 text-cyan-800"><i class="fas fa-file-invoice"></i> Dispatch & Warranty Binding</h3>
-          <p class="text-xs text-slate-500 mb-4">Use this to clear an order and bind the physical asset tag to the 6-Month Warranty.</p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <input id="billOrderId" type="text" placeholder="Customer Order Ref (ORD-XXXXXX)" class="p-3 border rounded text-sm font-mono font-bold">
-            <input id="billProductTag" type="text" placeholder="Scan Physical Hardware Tag (KN-XXXXXX)" class="p-3 border-2 border-yellow-400 rounded text-sm font-mono font-bold text-blue-800">
+          <h3 class="font-black text-lg mb-2 text-cyan-800"><i class="fas fa-truck-fast"></i> Group Dispatch & Master QR Generation</h3>
+          <p class="text-xs text-slate-500 mb-6">Link multiple hardware tags to a single customer order to generate a Master QR code for warranty claims.</p>
+          
+          <div class="mb-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <label class="block text-xs font-bold text-slate-700 mb-2">1. CUSTOMER ORDER REFERENCE</label>
+            <input id="billOrderId" type="text" placeholder="Enter ORD-XXXXXX" class="w-full p-3 border-2 border-slate-300 focus:border-cyan-500 rounded text-sm font-mono font-bold outline-none">
           </div>
-          <button onclick="window.processBilling()" class="w-full bg-cyan-600 text-white font-black py-3 rounded uppercase">Mark Dispatched & Activate Warranty</button>
+
+          <div class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+            <label class="block text-xs font-bold text-slate-700 mb-2">2. ADD HARDWARE TAGS TO ORDER</label>
+            <div class="flex gap-2 mb-4">
+              <input id="billHardwareTag" type="text" placeholder="Scan or enter Physical Tag (KN-XXXXXX)" class="w-full p-3 border-2 border-yellow-400 rounded text-sm font-mono font-bold text-slate-800 outline-none">
+              <button onclick="window.addTagToDispatchCart()" class="bg-slate-800 text-white px-6 font-black rounded uppercase hover:bg-slate-700 transition">Add Item</button>
+            </div>
+            
+            <!-- Cart for Scanned Items -->
+            <ul id="dispatchCartList" class="space-y-2 mb-2">
+              <li class="text-xs text-slate-400 italic">No hardware tags added yet.</li>
+            </ul>
+          </div>
+
+          <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-3">
+            <input type="checkbox" id="chkWarranty" checked class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500 cursor-pointer">
+            <label for="chkWarranty" class="text-sm font-black text-emerald-800 cursor-pointer uppercase tracking-wide">Activate 6-Month Free Master Warranty</label>
+          </div>
+
+          <button onclick="window.processMasterDispatch()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-4 rounded-xl uppercase tracking-widest shadow-lg transition">
+            Dispatch Order & Generate Master QR
+          </button>
         </div>
       </div>
 
-      <!-- 2.5 WARRANTY -->
+      <!-- 2.4 WARRANTY CLAIMS (MASTER QR SCAN) -->
       <div id="panel-warranty" class="admin-panel hidden space-y-6">
         <div class="bg-white p-6 rounded-xl border shadow-sm border-t-4 border-t-purple-600">
-          <h3 class="font-black text-lg mb-4 text-purple-900"><i class="fas fa-shield-alt"></i> Technician Warranty Check</h3>
-          <div class="flex gap-2 mb-4">
-            <input id="claimTag" type="text" placeholder="Scan Physical Hardware Tag" class="w-full p-3 border rounded text-sm font-mono font-bold">
-            <button onclick="window.checkWarranty()" class="bg-purple-600 text-white px-6 font-black rounded uppercase">Verify</button>
+          <h3 class="font-black text-lg mb-2 text-purple-900"><i class="fas fa-qrcode"></i> Master Warranty Claims Engine</h3>
+          <p class="text-xs text-slate-500 mb-6">Scan the customer's Master QR code to view all associated hardware and file a targeted claim.</p>
+          
+          <div class="flex gap-2 mb-6">
+            <input id="claimMasterTag" type="text" placeholder="Scan Customer's Master QR (MQR-XXXXXX)" class="w-full p-3 border-2 border-purple-300 focus:border-purple-600 rounded text-sm font-mono font-bold outline-none">
+            <button onclick="window.checkMasterWarranty()" class="bg-purple-600 hover:bg-purple-500 text-white px-8 font-black rounded uppercase transition">Verify Master</button>
           </div>
-          <div id="claimResult" class="hidden p-4 rounded text-sm font-bold"></div>
+
+          <!-- Dynamic List of Hardware Under Master QR -->
+          <div id="claimMasterResult" class="hidden border border-slate-200 rounded-xl overflow-hidden">
+            <div class="bg-slate-100 p-4 border-b border-slate-200 flex justify-between items-center">
+              <div>
+                <h4 class="font-black text-slate-800 uppercase">Master Policy Active</h4>
+                <div class="text-xs text-slate-500" id="claimMasterInfo"></div>
+              </div>
+              <span id="claimMasterStatusBadge" class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded uppercase"></span>
+            </div>
+            <div class="p-4 bg-white">
+              <p class="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">Select Damaged Hardware to File Claim:</p>
+              <ul id="claimHardwareList" class="space-y-2"></ul>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -200,11 +227,11 @@
         </div>
 
         <div class="space-y-3 mb-6">
-          <input id="ordName" type="text" placeholder="Full Name" class="w-full p-2.5 bg-slate-50 border rounded text-sm">
-          <textarea id="ordAddress" placeholder="Complete Installation Address" rows="2" class="w-full p-2.5 bg-slate-50 border rounded text-sm"></textarea>
+          <input id="ordName" type="text" placeholder="Full Name" class="w-full p-2.5 bg-slate-50 border rounded text-sm outline-none focus:border-yellow-500">
+          <textarea id="ordAddress" placeholder="Complete Installation Address" rows="2" class="w-full p-2.5 bg-slate-50 border rounded text-sm outline-none focus:border-yellow-500"></textarea>
           <div class="grid grid-cols-2 gap-3">
-            <input id="ordPhone" type="text" placeholder="Contact Number" class="w-full p-2.5 bg-slate-50 border rounded text-sm">
-            <input id="ordAltEmail" type="email" placeholder="Alternate Email" class="w-full p-2.5 bg-slate-50 border rounded text-sm">
+            <input id="ordPhone" type="text" placeholder="Contact Number" class="w-full p-2.5 bg-slate-50 border rounded text-sm outline-none focus:border-yellow-500">
+            <input id="ordAltEmail" type="email" placeholder="Email Address" class="w-full p-2.5 bg-slate-50 border rounded text-sm outline-none focus:border-yellow-500">
           </div>
         </div>
 
@@ -219,7 +246,8 @@
 
           <div class="mt-4 pt-4 border-t border-yellow-200 text-center">
             <p class="text-xs text-slate-600 font-bold mb-2">Scan QR to pay the Advance Amount</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=kaalnetra@bank" class="w-24 h-24 mx-auto rounded border-2 border-slate-300 mb-3">
+            <!-- UPDATED PAYMENT UPI ID -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=sohampal781@okhdfcbank&pn=KaalnetraSecurity" class="w-24 h-24 mx-auto rounded border-2 border-slate-300 mb-3">
             <input id="ordTxn" type="text" maxlength="5" placeholder="Enter LAST 5 DIGITS of Txn ID" class="w-full p-2.5 border-2 border-yellow-400 rounded text-center font-mono font-black tracking-widest text-lg outline-none">
           </div>
         </div>
@@ -231,13 +259,45 @@
     </div>
   </div>
 
+  <!-- Master QR Print Modal -->
+  <div id="masterQrModal" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl">
+      <h3 class="font-black text-xl text-slate-900 mb-2 uppercase">MASTER WARRANTY QR</h3>
+      <p class="text-xs text-slate-500 font-bold mb-6">Give this code to the customer. It links all their purchased hardware to the 6-Month Warranty.</p>
+      
+      <img id="masterQrDisplay" src="" class="w-48 h-48 mx-auto border-4 border-slate-900 p-2 rounded-xl mb-4" alt="Master QR" />
+      <div id="masterIdDisplay" class="font-mono font-black text-xl text-indigo-700 tracking-widest mb-6"></div>
+      
+      <button onclick="document.getElementById('masterQrModal').classList.add('hidden')" class="w-full py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-black rounded-lg uppercase transition">Close</button>
+    </div>
+  </div>
+
+  <!-- Support Modal -->
+  <div id="supportModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden text-center p-8 relative">
+      <button onclick="document.getElementById('supportModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-rose-500"><i class="fas fa-times text-xl"></i></button>
+      <i class="fas fa-headset text-5xl text-indigo-600 mb-4"></i>
+      <h3 class="font-black text-2xl mb-2 text-slate-900">Need Help?</h3>
+      <p class="text-sm text-slate-500 mb-6">Our support team is available 24x7 to assist you with installation, tracking, or warranty claims.</p>
+      
+      <div class="space-y-4">
+        <a href="mailto:support@kaalnetra.com" class="block w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg transition">
+          <i class="fas fa-envelope mr-2"></i> support@kaalnetra.com
+        </a>
+        <a href="tel:+919876543210" class="block w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg transition">
+          <i class="fas fa-phone-alt mr-2"></i> +91 98765 43210
+        </a>
+      </div>
+    </div>
+  </div>
+
   <!-- Staff Login Modal -->
   <div id="staffLoginModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-2xl max-w-sm w-full shadow-2xl border-t-4 border-indigo-600 text-center">
       <i class="fas fa-user-shield text-4xl text-indigo-600 mb-4"></i>
       <h3 class="font-black text-xl mb-6">STAFF TERMINAL</h3>
-      <input id="staffEmail" type="email" placeholder="Staff Email ID" class="w-full p-3 mb-3 border rounded text-sm bg-slate-50 focus:border-indigo-600 outline-none">
-      <input id="staffPass" type="password" placeholder="Master Password" class="w-full p-3 mb-6 border rounded text-sm bg-slate-50 focus:border-indigo-600 outline-none">
+      <input id="staffEmail" type="email" placeholder="Staff Email ID" class="w-full p-3 mb-3 border rounded text-sm bg-slate-50 outline-none focus:border-indigo-600">
+      <input id="staffPass" type="password" placeholder="Master Password" class="w-full p-3 mb-6 border rounded text-sm bg-slate-50 outline-none focus:border-indigo-600">
       <div class="flex gap-2">
         <button onclick="document.getElementById('staffLoginModal').classList.add('hidden')" class="flex-1 py-3 bg-slate-200 text-slate-700 font-bold rounded">Cancel</button>
         <button onclick="window.loginStaff()" class="flex-1 py-3 bg-indigo-600 text-white font-black uppercase rounded shadow">Login</button>
@@ -245,7 +305,7 @@
     </div>
   </div>
 
-  <!-- Order Status Modal -->
+  <!-- Status / Alert Modal -->
   <div id="statusModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-2xl max-w-md w-full shadow-2xl text-center">
       <div id="statusIcon" class="text-5xl mb-4"></div>
@@ -287,26 +347,32 @@
     ];
 
     let currentOrderProduct = null;
+    window.billCartTags = []; // Stores hardware tags temporarily during dispatch
 
     function renderCatalog() {
       const cat = document.getElementById("productCatalog");
       cat.innerHTML = PRODUCTS.map(p => `
-        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow hover:shadow-lg transition flex flex-col justify-between">
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow hover:shadow-lg transition flex flex-col justify-between relative overflow-hidden group">
+          <div class="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg">6M WARRANTY</div>
           <div>
-            <div class="h-32 bg-slate-100 text-slate-400 rounded-xl flex items-center justify-center text-4xl mb-4 border border-slate-200">
-              <i class="fas fa-video"></i>
+            <div class="h-40 bg-slate-50 text-slate-300 rounded-xl flex flex-col items-center justify-center mb-4 border border-slate-100 group-hover:bg-slate-100 transition">
+              <i class="fas fa-video text-5xl mb-2"></i>
             </div>
             <h4 class="font-black text-lg text-slate-900 mb-1 leading-tight">${p.name}</h4>
             <p class="text-xs text-slate-500 mb-4">${p.desc}</p>
             <div class="text-2xl font-black text-emerald-600 mb-6">₹${p.price.toLocaleString('en-IN')}</div>
           </div>
-          <button onclick="window.openOrderModal('${p.id}')" class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-black rounded-lg text-xs uppercase tracking-widest shadow transition">
-            Order & Install
-          </button>
+          <div class="flex gap-2">
+            <button onclick="alert('Launching Augmented Reality preview on compatible devices...')" class="flex-1 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-xs uppercase tracking-wider transition">
+              <i class="fas fa-cubes mr-1"></i> AR View
+            </button>
+            <button onclick="window.openOrderModal('${p.id}')" class="flex-1 py-3 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-black rounded-lg text-xs uppercase tracking-wider shadow transition">
+              Order Now
+            </button>
+          </div>
         </div>
       `).join("");
     }
-
     renderCatalog();
 
     // ==============================================================
@@ -363,13 +429,12 @@
           address, phone, email,
           txnIdLast5: txn,
           status: "Pending Verification",
-          trackingId: null, // Assigned later by Admin
+          masterQrId: null, // Assigned later during dispatch
           createdAt: serverTimestamp()
         });
 
         window.closeOrderModal();
         
-        // Show Success Modal
         document.getElementById("statusIcon").innerHTML = '<i class="fas fa-check-circle text-emerald-500"></i>';
         document.getElementById("statusTitle").innerText = "Order Request Received!";
         document.getElementById("statusDesc").innerText = "Please wait for admin verification. It may take up to 48 hours to confirm payment and dispatch.";
@@ -378,6 +443,13 @@
           <span class="text-xl text-blue-600 font-mono tracking-widest">${orderRefId}</span>
         `;
         document.getElementById("statusModal").classList.remove("hidden");
+
+        // Clear Form
+        document.getElementById("ordName").value = "";
+        document.getElementById("ordAddress").value = "";
+        document.getElementById("ordPhone").value = "";
+        document.getElementById("ordAltEmail").value = "";
+        document.getElementById("ordTxn").value = "";
 
       } catch(e) { alert("Order Failed: " + e.message); }
     };
@@ -395,7 +467,7 @@
         let color = "text-yellow-600";
         
         if(data.status === "Verified & Processing") { icon = '<i class="fas fa-cog text-blue-500"></i>'; color = "text-blue-600"; }
-        if(data.status === "Dispatched") { icon = '<i class="fas fa-truck text-emerald-500"></i>'; color = "text-emerald-600"; }
+        if(data.status === "Dispatched") { icon = '<i class="fas fa-truck-fast text-emerald-500"></i>'; color = "text-emerald-600"; }
 
         document.getElementById("statusIcon").innerHTML = icon;
         document.getElementById("statusTitle").innerText = "Order Status";
@@ -406,8 +478,8 @@
           Advance Verified: ₹${data.advancePaid.toLocaleString('en-IN')}<br>
           Pending Balance: ₹${data.balanceDue.toLocaleString('en-IN')}<br>
         `;
-        if(data.trackingId) {
-          details += `<br><strong class="text-purple-700">Official Tracking / Hardware ID: ${data.trackingId}</strong>`;
+        if(data.masterQrId) {
+          details += `<br><strong class="text-purple-700">Official Master Warranty QR: ${data.masterQrId}</strong>`;
         }
 
         document.getElementById("statusDetails").innerHTML = details;
@@ -445,9 +517,9 @@
         document.getElementById("adminBadge").innerText = user.email;
         
         window.switchAdminTab('orders');
-        startAdminSync(); // Load ERP data
+        startAdminSync(); 
       } else {
-        // Logged out (Public Customer View)
+        // Logged out (Public View)
         erp.classList.add("hidden");
         aNav.classList.add("hidden");
         sf.classList.remove("hidden");
@@ -535,7 +607,7 @@
 
     // RETURNS
     window.processReturn = async () => {
-      const tag = document.getElementById("retTagId").value.trim();
+      const tag = document.getElementById("retTagId").value.trim().toUpperCase();
       const loc = document.getElementById("retMainLoc").value + " [" + document.getElementById("retSpot").value.trim() + "]";
       try {
         await updateDoc(doc(db, "inventory", tag), { status: "In Stock", location: loc });
@@ -543,75 +615,163 @@
       } catch (e) { alert("Error: Check Tag ID. " + e.message); }
     };
 
-    // BILLING & DISPATCH
-    window.processBilling = async () => {
-      const ordId = document.getElementById("billOrderId").value.trim().toUpperCase();
-      const tagId = document.getElementById("billProductTag").value.trim().toUpperCase();
+    // ==============================================================
+    // 5. MASTER QR DISPATCH & BILLING ENGINE
+    // ==============================================================
+    
+    // Renders the tags added to the current dispatch cart
+    function renderDispatchCart() {
+      const list = document.getElementById("dispatchCartList");
+      if(window.billCartTags.length === 0) {
+        list.innerHTML = `<li class="text-xs text-slate-400 italic">No hardware tags added yet.</li>`;
+        return;
+      }
+      list.innerHTML = window.billCartTags.map((tag, i) => `
+        <li class="flex justify-between items-center bg-white p-2 border border-slate-200 rounded">
+          <span class="font-mono font-bold text-slate-700 text-sm">${tag.id} - ${tag.item}</span>
+          <button onclick="window.removeTagFromCart(${i})" class="text-rose-500 hover:text-rose-700"><i class="fas fa-times"></i></button>
+        </li>
+      `).join("");
+    }
 
-      if(!ordId || !tagId) return alert("Need Order ID and Hardware Tag.");
+    window.removeTagFromCart = (index) => {
+      window.billCartTags.splice(index, 1);
+      renderDispatchCart();
+    }
+
+    // Add a single tag to the array before dispatch
+    window.addTagToDispatchCart = async () => {
+      const tagInput = document.getElementById("billHardwareTag");
+      const tagId = tagInput.value.trim().toUpperCase();
+      if(!tagId) return;
+
+      if(window.billCartTags.find(t => t.id === tagId)) return alert("Tag already added to list.");
+
+      try {
+        const invSnap = await getDoc(doc(db, "inventory", tagId));
+        if(!invSnap.exists() || invSnap.data().status !== "In Stock") {
+          return alert("Invalid or already sold Tag ID: " + tagId);
+        }
+        
+        window.billCartTags.push({
+          id: tagId,
+          item: invSnap.data().item
+        });
+        
+        tagInput.value = "";
+        renderDispatchCart();
+      } catch(e) { alert(e.message); }
+    };
+
+    // Process all tags, generate Master QR
+    window.processMasterDispatch = async () => {
+      const ordId = document.getElementById("billOrderId").value.trim().toUpperCase();
+      const applyWarranty = document.getElementById("chkWarranty").checked;
+
+      if(!ordId) return alert("Need Order ID.");
+      if(window.billCartTags.length === 0) return alert("Add at least one hardware tag to dispatch.");
 
       try {
         const orderRef = doc(db, "orders", ordId);
         const orderSnap = await getDoc(orderRef);
-        if(!orderSnap.exists()) return alert("Order not found.");
+        if(!orderSnap.exists()) return alert("Customer Order not found.");
 
-        const invRef = doc(db, "inventory", tagId);
-        const invSnap = await getDoc(invRef);
-        if(!invSnap.exists() || invSnap.data().status !== "In Stock") return alert("Invalid or already sold Tag ID.");
-
-        // 6 Month Logic
+        const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
         const now = new Date();
-        const exp = new Date(); exp.setMonth(exp.getMonth() + 6);
+        const exp = new Date(); 
+        if(applyWarranty) exp.setMonth(exp.getMonth() + 6);
 
-        // Update Order
-        await updateDoc(orderRef, { status: "Dispatched", trackingId: tagId });
-        
-        // Update Inventory
-        await updateDoc(invRef, { status: "Sold" });
+        // 1. Update Inventory for all tags
+        for(let t of window.billCartTags) {
+          await updateDoc(doc(db, "inventory", t.id), { status: "Sold", masterQrRef: masterId });
+        }
 
-        // Save Warranty
-        await setDoc(doc(db, "warranty_registry", tagId), {
-          orderId: ordId,
-          productName: orderSnap.data().productName,
+        // 2. Save Master Warranty Node
+        await setDoc(doc(db, "master_warranties", masterId), {
+          masterId,
+          orderRef: ordId,
           customerName: orderSnap.data().customerName,
-          active: true,
-          expiryDate: Timestamp.fromDate(exp)
+          hardwareList: window.billCartTags,
+          warrantyActive: applyWarranty,
+          expiryDate: applyWarranty ? Timestamp.fromDate(exp) : null,
+          issuedAt: serverTimestamp()
         });
 
-        alert("✅ Dispatched! Warranty Active for 6 Months on Tag: " + tagId);
+        // 3. Update Original Order
+        await updateDoc(orderRef, { status: "Dispatched", masterQrId: masterId });
+
+        // Show Master QR to Print/Give to customer
+        document.getElementById("masterIdDisplay").innerText = masterId;
+        document.getElementById("masterQrDisplay").src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${masterId}`;
+        document.getElementById("masterQrModal").classList.remove("hidden");
+
+        // Clear UI
         document.getElementById("billOrderId").value = "";
-        document.getElementById("billProductTag").value = "";
-      } catch(e) { alert("Billing Error: " + e.message); }
+        window.billCartTags = [];
+        renderDispatchCart();
+
+      } catch(e) { alert("Dispatch Error: " + e.message); }
     };
 
-    // WARRANTY
-    window.checkWarranty = async () => {
-      const tag = document.getElementById("claimTag").value.trim().toUpperCase();
-      const resBox = document.getElementById("claimResult");
-      if(!tag) return;
+    // ==============================================================
+    // 6. MASTER WARRANTY CLAIM ENGINE
+    // ==============================================================
+    window.checkMasterWarranty = async () => {
+      const masterTag = document.getElementById("claimMasterTag").value.trim().toUpperCase();
+      const resultArea = document.getElementById("claimMasterResult");
+      const listArea = document.getElementById("claimHardwareList");
+
+      if(!masterTag) return;
 
       try {
-        const snap = await getDoc(doc(db, "warranty_registry", tag));
-        resBox.classList.remove("hidden", "bg-emerald-100", "bg-rose-100", "text-emerald-900", "text-rose-900");
-
-        if(!snap.exists()) {
-          resBox.className = "p-4 mt-4 bg-rose-100 text-rose-900 border border-rose-300 rounded block";
-          resBox.innerText = "❌ NO WARRANTY FOUND FOR THIS TAG.";
-          return;
-        }
+        const snap = await getDoc(doc(db, "master_warranties", masterTag));
+        if(!snap.exists()) return alert("❌ Master QR not found in database.");
 
         const data = snap.data();
-        const exp = data.expiryDate.toDate();
+        let isActive = false;
+        let badgeClass = "bg-rose-100 text-rose-800";
+        let statusText = "WARRANTY VOID/EXPIRED";
 
-        if(new Date() > exp) {
-          resBox.className = "p-4 mt-4 bg-rose-100 text-rose-900 border border-rose-300 rounded block";
-          resBox.innerHTML = `❌ WARRANTY EXPIRED ON ${exp.toLocaleDateString('en-IN')}`;
-        } else {
-          resBox.className = "p-4 mt-4 bg-emerald-100 text-emerald-900 border border-emerald-300 rounded block";
-          resBox.innerHTML = `✅ WARRANTY ACTIVE.<br>Valid Until: ${exp.toLocaleDateString('en-IN')}<br>Cust: ${data.customerName}<br>Item: ${data.productName}`;
+        if(data.warrantyActive && data.expiryDate) {
+          const exp = data.expiryDate.toDate();
+          if(new Date() <= exp) {
+            isActive = true;
+            badgeClass = "bg-emerald-100 text-emerald-800";
+            statusText = `ACTIVE UNTIL ${exp.toLocaleDateString('en-IN')}`;
+          }
         }
-      } catch(e) { alert(e.message); }
+
+        document.getElementById("claimMasterStatusBadge").className = `px-3 py-1 font-bold text-xs rounded uppercase ${badgeClass}`;
+        document.getElementById("claimMasterStatusBadge").innerText = statusText;
+        
+        document.getElementById("claimMasterInfo").innerHTML = `
+          Order Ref: <strong>${data.orderRef}</strong><br>
+          Customer: <strong>${data.customerName}</strong>
+        `;
+
+        // Render hardware list for selection
+        listArea.innerHTML = data.hardwareList.map(hw => `
+          <li class="flex justify-between items-center p-3 border rounded hover:bg-slate-50 transition cursor-pointer">
+            <div>
+              <div class="font-bold text-slate-800 text-sm">${hw.item}</div>
+              <div class="font-mono text-xs text-slate-500">Tag: ${hw.id}</div>
+            </div>
+            <button onclick="window.fileHardwareClaim('${hw.id}', '${hw.item}', '${isActive}')" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1.5 rounded uppercase">File Claim</button>
+          </li>
+        `).join("");
+
+        resultArea.classList.remove("hidden");
+
+      } catch(e) { alert("Claim Engine Error: " + e.message); }
     };
+
+    window.fileHardwareClaim = (hwId, hwName, isCovered) => {
+      const isFree = isCovered === 'true';
+      const msg = isFree 
+        ? `Free Repair Authorized for ${hwName} (${hwId}). Warranty is active.`
+        : `Warranty Expired for ${hwName} (${hwId}). Standard repair charges apply.`;
+      alert(msg + "\n\n(Technician can now log the repair work into the database).");
+    }
 
   </script>
 </body>
