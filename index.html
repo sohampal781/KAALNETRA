@@ -1,684 +1,1304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kaalnetra Security | Amazon-Style Store & Seller Central</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaalnetra.in | Security Systems, CCTVs, Smart Locks & More</title>
 
-  <!-- Tailwind CSS & FontAwesome -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- HTML5 QR Scanner -->
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-  <style>
-    :root {
-      --amz-dark: #232f3e;
-      --amz-darker: #131921;
-      --amz-yellow: #ffd814;
-      --amz-orange: #ffa41c;
-      --amz-blue: #007185;
-    }
-    body { font-family: 'Inter', system-ui, sans-serif; background: #eaeded; color: #0f1111; margin: 0; }
-    .hidden { display: none !important; }
-
-    /* Custom Input Slider */
-    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: var(--amz-orange); cursor: pointer; border: 2px solid #fff; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #d5d9d9; border-radius: 4px; }
-
-    /* Modals */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
-    th { background: #f2f2f2; font-size: 12px; padding: 12px; border-bottom: 2px solid #ddd; text-align: left; color: #555; }
-    td { padding: 12px; border-bottom: 1px solid #eee; }
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for Seller Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    .btn-amz-yellow { background-color: var(--amz-yellow); border: 1px solid #FCD200; border-radius: 8px; box-shadow: 0 2px 5px 0 rgba(213,217,217,.5); color: #0f1111; transition: background 0.2s; }
-    .btn-amz-yellow:hover { background-color: #f7ca00; }
-    .btn-amz-orange { background-color: var(--amz-orange); border: 1px solid #FF8F00; border-radius: 8px; box-shadow: 0 2px 5px 0 rgba(213,217,217,.5); color: #0f1111; transition: background 0.2s; }
-    .btn-amz-orange:hover { background-color: #fa8900; }
+    <!-- HTML5 QR Scanner -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-    @media print {
-      body * { visibility: hidden !important; }
-      #printArea, #printArea * { visibility: visible !important; }
-      #printArea { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
-    }
-  </style>
+    <style>
+        /* Amazon Color Palette & Variables */
+        :root {
+            --amz-nav: #131921;
+            --amz-subnav: #232f3e;
+            --amz-bg: #eaeded;
+            --amz-yellow: #ffd814;
+            --amz-yellow-hover: #f7ca00;
+            --amz-orange: #ffa41c;
+            --amz-orange-hover: #fa8900;
+            --amz-link: #007185;
+            --amz-link-hover: #c45500;
+            --amz-price: #B12704;
+        }
+
+        body { 
+            font-family: 'Amazon Ember', 'Inter', system-ui, sans-serif; 
+            background: var(--amz-bg); 
+            color: #0f1111; 
+            margin: 0; 
+        }
+
+        .hidden { display: none !important; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+        /* Links & Buttons */
+        .amz-link { color: var(--amz-link); cursor: pointer; text-decoration: none; }
+        .amz-link:hover { color: var(--amz-link-hover); text-decoration: underline; }
+        
+        .btn-amz-yellow { background-color: var(--amz-yellow); border: 1px solid #FCD200; border-radius: 8px; box-shadow: 0 2px 5px 0 rgba(213,217,217,.5); color: #0f1111; transition: background 0.2s; text-align: center; cursor: pointer; }
+        .btn-amz-yellow:hover { background-color: var(--amz-yellow-hover); }
+        
+        .btn-amz-orange { background-color: var(--amz-orange); border: 1px solid #FF8F00; border-radius: 8px; box-shadow: 0 2px 5px 0 rgba(213,217,217,.5); color: #0f1111; transition: background 0.2s; text-align: center; cursor: pointer; }
+        .btn-amz-orange:hover { background-color: var(--amz-orange-hover); }
+
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
+        th { background: #f3f3f3; font-size: 12px; padding: 12px; border-bottom: 2px solid #ddd; text-align: left; color: #555; }
+        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        tr:hover { background-color: #f9f9f9; }
+
+        /* Hero Carousel Animation */
+        .carousel-track { display: flex; transition: transform 0.5s ease-in-out; }
+        .carousel-slide { min-width: 100%; }
+
+        /* Line Clamp for Descriptions */
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Print Styles for Tags and Bills */
+        @media print {
+            body * { visibility: hidden !important; }
+            #printArea, #printArea * { visibility: visible !important; }
+            #printArea { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        }
+    </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
-  <!-- ================= HEADER (AMAZON STYLE) ================= -->
-  <header class="bg-[#131921] text-white sticky top-0 z-40">
-    <div class="flex items-center justify-between px-4 py-2 flex-wrap gap-4">
-      <!-- Logo -->
-      <div class="flex items-center gap-2 cursor-pointer" onclick="window.location.reload()">
-        <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded text-xl">K</div>
-        <div class="leading-tight">
-          <h1 class="text-lg font-black tracking-wide m-0">Kaalnetra.in</h1>
-          <div class="text-[10px] text-gray-300">Security Systems</div>
+    <!-- ================= PUBLIC HEADER ================= -->
+    <header class="bg-[var(--amz-nav)] text-white sticky top-0 z-50">
+        <!-- Main Nav -->
+        <div class="flex items-center justify-between px-4 py-2 gap-4 flex-wrap lg:flex-nowrap">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer hover:border-white border border-transparent p-1 rounded" onclick="window.location.reload()">
+                <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded text-2xl shadow-lg">K</div>
+                <div class="leading-tight">
+                    <h1 class="text-xl font-bold tracking-wide m-0">Kaalnetra.in</h1>
+                    <div class="text-[11px] text-gray-300">Security & Surveillance</div>
+                </div>
+            </div>
+
+            <!-- Address Pin -->
+            <div class="hidden lg:flex flex-col hover:border-white border border-transparent p-1 rounded cursor-pointer">
+                <span class="text-[11px] text-gray-300 ml-4">Delivering to</span>
+                <span class="text-sm font-bold"><i class="fas fa-location-dot"></i> Update location</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div id="searchContainer" class="flex-1 max-w-4xl flex items-center rounded overflow-hidden focus-within:ring-4 focus-within:ring-orange-400">
+                <select class="bg-gray-100 text-black text-xs px-3 py-3 outline-none border-r border-gray-300 h-full hover:bg-gray-200 cursor-pointer">
+                    <option>All Categories</option>
+                    <option>CCTV Cameras</option>
+                    <option>Smart Locks</option>
+                    <option>Biometrics</option>
+                    <option>Accessories</option>
+                </select>
+                <input id="searchInput" type="text" placeholder="Search Kaalnetra for Security Systems, Locks, and more" class="flex-1 px-4 py-3 text-black outline-none h-full w-full" onkeyup="filterCatalog()">
+                <button class="bg-[#febd69] hover:bg-[#f3a847] px-5 py-3 text-black text-xl h-full transition"><i class="fas fa-search"></i></button>
+            </div>
+
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-2">
+                <!-- Track Orders -->
+                <div onclick="document.getElementById('trackModal').classList.remove('hidden')" class="flex flex-col hover:border-white border border-transparent p-1 rounded cursor-pointer">
+                    <span class="text-[11px] text-gray-300">Returns</span>
+                    <span class="text-sm font-bold">& Orders</span>
+                </div>
+
+                <!-- Seller Portal Link -->
+                <div onclick="openStaffLogin()" class="flex items-center gap-2 hover:border-white border border-transparent p-1 rounded cursor-pointer ml-2">
+                    <i class="fas fa-store text-[#febd69] text-xl"></i>
+                    <div class="flex flex-col">
+                        <span class="text-[11px] text-gray-300">Staff & Admins</span>
+                        <span class="text-sm font-bold text-[#febd69]">Seller Central</span>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- Public Search Bar -->
-      <div id="publicNav" class="flex-1 max-w-2xl hidden md:flex items-center rounded overflow-hidden">
-        <select class="bg-gray-100 text-black text-xs px-2 py-3 outline-none border-r border-gray-300 h-full"><option>All</option></select>
-        <input type="text" placeholder="Search for security cameras, smart locks, systems..." class="flex-1 px-3 py-2 text-black outline-none h-full">
-        <button class="bg-[#febd69] hover:bg-[#f3a847] px-4 py-2 text-black text-lg h-full transition"><i class="fas fa-search"></i></button>
-      </div>
-
-      <!-- User/Order Tracking -->
-      <div class="flex items-center gap-4">
-        <div id="customerActions" class="flex items-center gap-4">
-          <div class="flex flex-col">
-            <span class="text-[10px] text-gray-300">Returns</span>
-            <button onclick="document.getElementById('trackModal').classList.remove('hidden')" class="font-bold text-sm hover:underline hover:text-white">& Orders</button>
-          </div>
-          <button onclick="openStaffLogin()" class="font-bold text-sm text-[#febd69] hover:underline flex items-center gap-1">
-            <i class="fas fa-store"></i> Seller Central
-          </button>
+        <!-- Sub Nav -->
+        <div class="bg-[var(--amz-subnav)] text-white text-sm px-4 py-2 flex items-center gap-4 overflow-x-auto whitespace-nowrap">
+            <div class="font-bold cursor-pointer hover:border-white border border-transparent p-1 rounded"><i class="fas fa-bars mr-1"></i> All</div>
+            <div class="cursor-pointer hover:border-white border border-transparent p-1 rounded">Today's Deals</div>
+            <div class="cursor-pointer hover:border-white border border-transparent p-1 rounded">Customer Service</div>
+            <div class="cursor-pointer hover:border-white border border-transparent p-1 rounded">CCTV Cameras</div>
+            <div class="cursor-pointer hover:border-white border border-transparent p-1 rounded">Smart Home</div>
+            <div class="cursor-pointer hover:border-white border border-transparent p-1 rounded">Installation Services</div>
+            <div class="cursor-pointer hover:border-white border border-transparent p-1 rounded text-yellow-400 font-bold">New: AI Recognition Systems</div>
         </div>
+    </header>
 
-        <!-- Admin Nav -->
-        <div id="adminNav" class="hidden flex items-center gap-4">
-          <div class="text-right">
-            <div class="text-[10px] text-gray-400">Logged in as</div>
-            <div id="adminBadge" class="text-xs font-bold text-[#febd69]"></div>
-          </div>
-          <button onclick="logoutStaff()" class="bg-transparent border border-gray-400 hover:border-white px-3 py-1 rounded text-sm transition">Logout</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Admin Seller Sub-nav -->
-    <div id="sellerSubnav" class="hidden bg-[#232f3e] px-4 py-2 flex gap-4 overflow-x-auto whitespace-nowrap text-sm border-t border-gray-700">
-      <button onclick="switchErpTab('dashboard')" id="tabbtn-dashboard" class="erp-tab-btn font-bold text-[#febd69]"><i class="fas fa-chart-line"></i> Dashboard</button>
-      <button onclick="switchErpTab('catalog')" id="tabbtn-catalog" class="erp-tab-btn text-white hover:text-gray-300"><i class="fas fa-list"></i> Catalog</button>
-      <button onclick="switchErpTab('orders')" id="tabbtn-orders" class="erp-tab-btn text-white hover:text-gray-300"><i class="fas fa-shopping-cart"></i> Orders</button>
-      <button onclick="switchErpTab('inventory')" id="tabbtn-inventory" class="erp-tab-btn text-white hover:text-gray-300"><i class="fas fa-boxes"></i> FBA Inventory</button>
-      <button onclick="switchErpTab('billing')" id="tabbtn-billing" class="erp-tab-btn text-white hover:text-gray-300"><i class="fas fa-truck-fast"></i> Dispatch</button>
-      <button onclick="switchErpTab('warranty')" id="tabbtn-warranty" class="erp-tab-btn text-white hover:text-gray-300"><i class="fas fa-shield-alt"></i> Warranty & Returns</button>
-    </div>
-  </header>
-
-  <!-- ================= PUBLIC STOREFRONT ================= -->
-  <section id="view-storefront" class="flex-1">
-    <!-- Promotional Banner -->
-    <div class="bg-gradient-to-r from-blue-700 to-[#007185] text-white text-center py-10 px-4 mb-4">
-      <h2 class="text-3xl font-black mb-2">Secure Your World Today</h2>
-      <p class="text-lg">Up to 50% Off Installation + 6 Months Free Warranty on all systems.</p>
-    </div>
-
-    <main class="max-w-7xl mx-auto px-4 pb-12">
-      <h3 class="text-xl font-bold text-gray-800 mb-4">Featured Security Systems</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="productGrid">
-        <!-- Rendered via JS -->
-      </div>
-    </main>
-  </section>
-
-  <!-- ================= SELLER CENTRAL (ERP) ================= -->
-  <section id="view-erp" class="hidden flex-1 bg-gray-50 p-4 md:p-6">
-    <div class="max-w-7xl mx-auto">
-
-      <!-- Seller Dashboard -->
-      <div id="erp-dashboard" class="erp-panel block">
-        <h2 class="text-2xl font-bold mb-6">Seller Dashboard</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div class="bg-white p-6 rounded shadow border-l-4 border-blue-500">
-            <div class="text-gray-500 text-sm font-bold uppercase">Pending Orders</div>
-            <div class="text-3xl font-black mt-2 text-gray-800" id="dashPending">0</div>
-          </div>
-          <div class="text-gray-500 text-sm font-bold uppercase">Total Revenue (Verified)</div>
-            <div class="text-3xl font-black mt-2 text-gray-800" id="dashRevenue">₹0</div>
-          <div class="bg-white p-6 rounded shadow border-l-4 border-green-500">
-            <div class="text-gray-500 text-sm font-bold uppercase">Inventory In Stock</div>
-            <div class="text-3xl font-black mt-2 text-gray-800" id="dashStock">0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Manage Catalog -->
-      <div id="erp-catalog" class="erp-panel hidden bg-white p-6 rounded shadow">
-        <h3 class="text-xl font-bold border-b pb-2 mb-4">Manage Product Catalog</h3>
-        <p class="text-sm text-gray-600 mb-4">Add or update products shown on the customer storefront.</p>
-        <div class="flex gap-2 mb-6">
-          <input id="catName" type="text" placeholder="Product Title" class="p-2 border rounded w-1/3 text-sm outline-none">
-          <input id="catPrice" type="number" placeholder="Price (₹)" class="p-2 border rounded w-1/4 text-sm outline-none">
-          <input id="catDesc" type="text" placeholder="Short Description" class="p-2 border rounded flex-1 text-sm outline-none">
-          <button onclick="addCatalogItem()" class="btn-amz-yellow px-4 font-bold text-sm">Add Product</button>
-        </div>
-        <table class="border">
-          <thead><tr><th>Product Title</th><th>Description</th><th>Price</th><th>Action</th></tr></thead>
-          <tbody id="tblCatalog"></tbody>
-        </table>
-      </div>
-
-      <!-- Web Orders -->
-      <div id="erp-orders" class="erp-panel hidden bg-white p-6 rounded shadow">
-        <h3 class="text-xl font-bold border-b pb-2 mb-4">Manage Orders</h3>
-        <div class="overflow-x-auto">
-          <table>
-            <thead><tr><th>Order ID</th><th>Customer</th><th>Product</th><th>Payment Adv.</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="tblOrders"><tr><td colspan="6" class="text-center py-4 text-gray-500">Loading orders...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- FBA Inventory -->
-      <div id="erp-inventory" class="erp-panel hidden bg-white p-6 rounded shadow">
-        <h3 class="text-xl font-bold border-b pb-2 mb-4">Inbound Inventory</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <input id="invName" type="text" placeholder="Hardware Name/Model" class="p-2 border rounded text-sm outline-none col-span-2">
-          <input id="invCost" type="number" placeholder="Unit Cost (₹)" class="p-2 border rounded text-sm outline-none">
-          <input id="invSpot" type="text" placeholder="Warehouse Spot (e.g. A4)" class="p-2 border rounded text-sm outline-none">
-        </div>
-        <button onclick="registerAsset()" class="btn-amz-yellow py-2 px-6 font-bold text-sm w-full md:w-auto mb-8">Generate Tag & Save</button>
-
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold">Current Stock Matrix</h3>
-          <input type="text" id="invSearch" onkeyup="filterInventory()" placeholder="Search Inventory..." class="p-2 border rounded text-sm w-64 outline-none">
-        </div>
-        <div class="overflow-x-auto border">
-          <table>
-            <thead><tr><th>Tag ID</th><th>Asset Name</th><th>Location</th><th>Cost</th><th>Status</th></tr></thead>
-            <tbody id="tblInventory"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Dispatch & Master QR -->
-      <div id="erp-billing" class="erp-panel hidden bg-white p-6 rounded shadow">
-        <h3 class="text-xl font-bold border-b pb-2 mb-4">Order Dispatch & Master QR</h3>
-        <input id="dispOrder" type="text" placeholder="Scan/Enter Customer Order ID (ORD-XXXXX)" class="w-full p-3 border-2 border-blue-200 focus:border-[#007185] rounded text-sm font-mono font-bold outline-none uppercase mb-6">
+    <!-- ================= PUBLIC STOREFRONT ================= -->
+    <section id="view-storefront" class="flex-1 flex flex-col">
         
-        <div class="bg-gray-50 p-4 border rounded mb-6">
-          <label class="block text-xs font-bold text-gray-700 mb-2">ADD HARDWARE TAGS TO PACKAGE</label>
-          <div class="flex gap-2 mb-4">
-            <input id="dispTagInp" class="flex-1 p-2 border font-mono font-bold uppercase text-sm" placeholder="Scan Tag (KN-XXXXXX)">
-            <button onclick="openScanner('DISPATCH')" class="bg-gray-800 text-white px-4 rounded hover:bg-gray-700"><i class="fas fa-camera"></i> SCAN</button>
-            <button onclick="addTagToDispatchCart()" class="btn-amz-orange px-6 font-bold text-sm">ADD ITEM</button>
-          </div>
-          <table class="w-full bg-white border">
-            <thead><tr><th>Tag ID</th><th>Asset Name</th><th class="text-center">6M Warranty</th><th class="text-center">Action</th></tr></thead>
-            <tbody id="dispatchCartBody"><tr><td colspan="4" class="text-center italic text-gray-500 py-4">No tags added yet.</td></tr></tbody>
-          </table>
+        <!-- Hero Carousel Banner -->
+        <div class="relative w-full h-[250px] md:h-[400px] overflow-hidden bg-gradient-to-r from-gray-800 to-gray-900">
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-6 z-10">
+                <h2 class="text-3xl md:text-5xl font-black mb-4 drop-shadow-lg">Secure Your World Today</h2>
+                <p class="text-lg md:text-2xl mb-6 drop-shadow-md">Up to 50% Off Installation + 6 Months Free Warranty</p>
+                <button onclick="document.getElementById('searchInput').focus()" class="btn-amz-yellow px-8 py-3 text-lg font-bold">Shop Now</button>
+            </div>
+            <!-- Background Decoration -->
+            <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+            <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[var(--amz-bg)] to-transparent z-10"></div>
         </div>
-        <button onclick="processMasterDispatch()" class="btn-amz-yellow w-full py-4 font-bold text-base shadow uppercase">Dispatch Order & Print Bill</button>
-      </div>
 
-      <!-- Warranty & Returns -->
-      <div id="erp-warranty" class="erp-panel hidden bg-white p-6 rounded shadow">
-        <h3 class="text-xl font-bold border-b pb-2 mb-4">Warranty Claims & Returns Scanner</h3>
-        <div class="flex gap-2 mb-6">
-          <input id="claimMaster" type="text" placeholder="Scan Master QR (MQR-XXXXXX) or Item Tag" class="w-full p-3 border-2 border-gray-300 rounded text-sm font-mono font-bold outline-none uppercase">
-          <button onclick="openScanner('WARRANTY')" class="bg-gray-800 text-white px-4 rounded"><i class="fas fa-camera"></i></button>
-          <button onclick="verifyMasterWarranty()" class="btn-amz-yellow px-8 font-bold text-sm">Lookup</button>
-        </div>
-        <div id="claimResult" class="hidden border rounded overflow-hidden">
-          <div class="bg-gray-100 p-4 flex justify-between items-center border-b">
-            <div><h4 class="font-bold text-sm uppercase">Policy Overview</h4><div id="claimInfo" class="text-xs text-gray-600 mt-1"></div></div>
-            <span id="claimBadge" class="px-3 py-1 font-bold text-xs rounded uppercase border"></span>
-          </div>
-          <div class="p-4 bg-white">
-            <ul id="claimHwList" class="space-y-2"></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+        <!-- Main Product Grids -->
+        <main class="max-w-[1500px] mx-auto px-4 pb-12 -mt-16 z-20 w-full relative">
+            
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 bg-white p-4 shadow-sm rounded">Results</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6" id="productGrid">
+                <!-- Products Injected Here by JS -->
+            </div>
 
-  <!-- ================= MODALS ================= -->
+            <div id="noResults" class="hidden text-center py-20 bg-white shadow-sm mt-4 rounded">
+                <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-bold">No exact matches found</h3>
+                <p class="text-gray-500">Try checking your spelling or use more general terms</p>
+            </div>
+        </main>
 
-  <!-- Customer Order Modal (Amazon Checkout Style) -->
-  <div id="publicOrderModal" class="modal-overlay hidden">
-    <div class="bg-white rounded w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-      <div class="bg-gray-100 border-b p-4 flex justify-between items-center">
-        <h3 class="font-bold text-lg">Checkout</h3>
-        <button onclick="document.getElementById('publicOrderModal').classList.add('hidden')" class="text-gray-500 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="p-6 overflow-y-auto">
-        <h4 id="orderProdName" class="font-bold text-gray-800 mb-1"></h4>
-        <div class="text-xl font-bold text-red-700 mb-4">₹<span id="orderProdPrice"></span></div>
+        <!-- Amazon Style Footer -->
+        <footer class="bg-[var(--amz-subnav)] text-white mt-auto">
+            <div class="bg-[#37475a] text-center py-4 cursor-pointer hover:bg-[#485769] transition" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                Back to top
+            </div>
+            <div class="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+                <div>
+                    <h4 class="font-bold mb-4 text-lg">Get to Know Us</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="hover:underline cursor-pointer">About Us</li>
+                        <li class="hover:underline cursor-pointer">Careers</li>
+                        <li class="hover:underline cursor-pointer">Press Releases</li>
+                        <li class="hover:underline cursor-pointer">Kaalnetra Science</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-lg">Connect with Us</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="hover:underline cursor-pointer">Facebook</li>
+                        <li class="hover:underline cursor-pointer">Twitter</li>
+                        <li class="hover:underline cursor-pointer">Instagram</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-lg">Make Money with Us</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="hover:underline cursor-pointer">Sell on Kaalnetra</li>
+                        <li class="hover:underline cursor-pointer">Protect and Build Your Brand</li>
+                        <li class="hover:underline cursor-pointer">Kaalnetra Global Selling</li>
+                        <li class="hover:underline cursor-pointer">Become an Affiliate</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-lg">Let Us Help You</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="hover:underline cursor-pointer">Your Account</li>
+                        <li class="hover:underline cursor-pointer">Returns Centre</li>
+                        <li class="hover:underline cursor-pointer">100% Purchase Protection</li>
+                        <li class="hover:underline cursor-pointer">Help</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="bg-[var(--amz-nav)] text-center py-8 border-t border-gray-700">
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <div class="w-8 h-8 bg-yellow-400 text-black font-black flex items-center justify-center rounded text-lg">K</div>
+                    <span class="text-xl font-bold tracking-wide">Kaalnetra.in</span>
+                </div>
+                <p class="text-xs text-gray-400">&copy; 2024 Kaalnetra Security Systems. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </section>
+
+    <!-- ================= SELLER CENTRAL (ERP) ================= -->
+    <section id="view-erp" class="hidden flex-1 bg-gray-100 flex overflow-hidden">
         
-        <label class="block text-xs font-bold text-gray-700 mb-1 mt-2">Shipping Address</label>
-        <input id="ordName" class="w-full p-2 border border-gray-300 rounded mb-2 text-sm focus:border-orange-500 outline-none" type="text" placeholder="Full Name">
-        <textarea id="ordAddress" class="w-full p-2 border border-gray-300 rounded mb-2 text-sm focus:border-orange-500 outline-none" placeholder="Street Address, City, Pincode" rows="2"></textarea>
-        <input id="ordPhone" class="w-full p-2 border border-gray-300 rounded mb-4 text-sm focus:border-orange-500 outline-none" type="text" placeholder="Phone Number">
-
-        <div class="bg-yellow-50 p-4 border border-yellow-200 rounded mb-4">
-          <label class="text-xs font-bold text-gray-800 block mb-2">Advance Payment Slider</label>
-          <input id="ordSlider" type="range" oninput="updateSliderUI()">
-          <div class="flex justify-between text-xs font-bold mt-2">
-            <span class="text-green-700">Pay Now: <span id="valPayNow"></span></span>
-            <span class="text-gray-600">Balance: <span id="valPayLater"></span></span>
-          </div>
-          <div class="mt-4 pt-4 border-t border-yellow-200 text-center">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=upi://pay?pa=sohampal781@okhdfcbank&pn=Kaalnetra" class="w-24 h-24 mx-auto mb-2 border p-1 bg-white">
-            <input id="ordTxn" type="text" maxlength="5" placeholder="Last 5 digits of UPI Ref" class="w-full p-2 text-center font-mono font-bold text-sm border border-gray-300 rounded outline-none focus:border-orange-500">
-          </div>
+        <!-- Sidebar Navigation -->
+        <div class="w-64 bg-white border-r shadow-sm flex flex-col h-full sticky top-0">
+            <div class="p-4 border-b">
+                <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Seller Central</div>
+                <div class="text-sm font-bold text-gray-800 break-words" id="adminBadge">Admin</div>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4">
+                <button onclick="switchErpTab('dashboard')" id="tabbtn-dashboard" class="w-full text-left px-6 py-3 font-bold border-l-4 border-orange-500 bg-orange-50 text-orange-700"><i class="fas fa-chart-line w-6"></i> Dashboard</button>
+                <button onclick="switchErpTab('orders')" id="tabbtn-orders" class="w-full text-left px-6 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50"><i class="fas fa-shopping-cart w-6"></i> Manage Orders</button>
+                <button onclick="switchErpTab('inventory')" id="tabbtn-inventory" class="w-full text-left px-6 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50"><i class="fas fa-boxes w-6"></i> FBA Inventory</button>
+                <button onclick="switchErpTab('billing')" id="tabbtn-billing" class="w-full text-left px-6 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50"><i class="fas fa-truck-fast w-6"></i> Dispatch & Bills</button>
+                <button onclick="switchErpTab('warranty')" id="tabbtn-warranty" class="w-full text-left px-6 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50"><i class="fas fa-shield-alt w-6"></i> Returns & RMA</button>
+                <button onclick="switchErpTab('settings')" id="tabbtn-settings" class="w-full text-left px-6 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50"><i class="fas fa-cog w-6"></i> Settings</button>
+            </div>
+            <div class="p-4 border-t">
+                <button onclick="logoutStaff()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded font-bold text-sm">Sign Out</button>
+            </div>
         </div>
-        <button onclick="submitPublicOrder()" class="btn-amz-yellow w-full py-3 font-bold text-sm">Place Your Order</button>
-      </div>
+
+        <!-- Main ERP Content Area -->
+        <div class="flex-1 overflow-y-auto p-8">
+            
+            <!-- Dashboard Tab -->
+            <div id="erp-dashboard" class="erp-panel block max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Business Dashboard</h2>
+                
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded shadow-sm border-t-4 border-blue-500">
+                        <div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Revenue</div>
+                        <div class="text-3xl font-black mt-2 text-gray-800" id="dashRevenue">₹0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded shadow-sm border-t-4 border-yellow-500">
+                        <div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Pending Orders</div>
+                        <div class="text-3xl font-black mt-2 text-gray-800" id="dashPending">0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded shadow-sm border-t-4 border-green-500">
+                        <div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Items Dispatched</div>
+                        <div class="text-3xl font-black mt-2 text-gray-800" id="dashDispatched">0</div>
+                    </div>
+                    <div class="bg-white p-6 rounded shadow-sm border-t-4 border-purple-500">
+                        <div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Inventory Count</div>
+                        <div class="text-3xl font-black mt-2 text-gray-800" id="dashStock">0</div>
+                    </div>
+                </div>
+
+                <!-- Charts Area -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded shadow-sm">
+                        <h3 class="font-bold text-gray-700 mb-4">Sales Overview (7 Days)</h3>
+                        <canvas id="salesChart" height="200"></canvas>
+                    </div>
+                    <div class="bg-white p-6 rounded shadow-sm">
+                        <h3 class="font-bold text-gray-700 mb-4">Inventory Distribution</h3>
+                        <canvas id="inventoryChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Orders Tab -->
+            <div id="erp-orders" class="erp-panel hidden max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Manage Orders</h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="orderSearch" placeholder="Search Order ID..." class="p-2 border rounded text-sm outline-none w-64" onkeyup="filterOrders()">
+                        <select class="p-2 border rounded text-sm outline-none bg-white">
+                            <option>All Statuses</option>
+                            <option>Pending</option>
+                            <option>Verified</option>
+                            <option>Dispatched</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-white rounded shadow-sm overflow-hidden border">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th>Order Details</th>
+                                    <th>Customer Info</th>
+                                    <th>Product Ordered</th>
+                                    <th>Financials</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblOrders">
+                                <tr><td colspan="6" class="text-center py-10 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i> Loading orders...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FBA Inventory Tab -->
+            <div id="erp-inventory" class="erp-panel hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Inventory Management</h2>
+                
+                <!-- Add Stock Form -->
+                <div class="bg-white p-6 rounded shadow-sm border mb-8">
+                    <h3 class="font-bold text-lg border-b pb-2 mb-4"><i class="fas fa-plus-circle text-green-500"></i> Inbound Shipment (Register Stock)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Hardware / Item Name</label>
+                            <input id="invName" type="text" placeholder="e.g. Kaalnetra 4K Dome Camera" class="w-full p-2 border rounded text-sm outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Cost Price (₹)</label>
+                            <input id="invCost" type="number" placeholder="0.00" class="w-full p-2 border rounded text-sm outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Warehouse Bin</label>
+                            <input id="invSpot" type="text" placeholder="e.g. Shelf B2" class="w-full p-2 border rounded text-sm outline-none focus:border-orange-500">
+                        </div>
+                    </div>
+                    <button onclick="registerAsset()" class="btn-amz-yellow py-2 px-8 font-bold text-sm shadow">Generate Asset Tag & Save</button>
+                </div>
+
+                <!-- Stock Matrix -->
+                <div class="bg-white p-6 rounded shadow-sm border">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg"><i class="fas fa-database text-blue-500"></i> Live Stock Matrix</h3>
+                        <input type="text" id="invSearch" onkeyup="filterInventoryAdmin()" placeholder="Search by Tag or Name..." class="p-2 border rounded text-sm w-64 outline-none bg-gray-50 focus:bg-white focus:border-orange-500">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th>Tag ID (Barcode)</th>
+                                    <th>Asset Description</th>
+                                    <th>Storage Bin</th>
+                                    <th>Base Cost</th>
+                                    <th>Status</th>
+                                    <th>Date Added</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblInventory"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dispatch & Bills Tab -->
+            <div id="erp-billing" class="erp-panel hidden max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Fulfillment & Dispatch</h2>
+                
+                <div class="bg-white p-8 rounded shadow-sm border">
+                    <p class="text-sm text-gray-600 mb-6">Scan items to compile a package, link to an Order ID, and generate the Master Warranty QR Bill.</p>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold text-gray-800 mb-2">1. Verify Customer Order ID</label>
+                        <input id="dispOrder" type="text" placeholder="Enter ORD-XXXXXX" class="w-full p-3 border-2 border-gray-300 focus:border-[#007185] rounded text-lg font-mono font-bold outline-none uppercase bg-gray-50">
+                    </div>
+                    
+                    <div class="bg-blue-50 p-6 border border-blue-200 rounded mb-8">
+                        <label class="block text-sm font-bold text-gray-800 mb-2">2. Scan Hardware Tags (Add to Package)</label>
+                        <div class="flex gap-2 mb-4">
+                            <input id="dispTagInp" class="flex-1 p-3 border border-gray-300 rounded font-mono font-bold uppercase text-base outline-none" placeholder="Scan or Type Tag (KN-XXXXXX)">
+                            <button onclick="openScanner('DISPATCH')" class="bg-gray-800 text-white px-6 rounded hover:bg-gray-700 transition font-bold"><i class="fas fa-camera mr-2"></i> SCAN</button>
+                            <button onclick="addTagToDispatchCart()" class="btn-amz-orange px-8 font-bold text-sm">ADD TO BOX</button>
+                        </div>
+                        
+                        <div class="bg-white border rounded overflow-hidden shadow-inner">
+                            <table class="w-full">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th>Scanned Tag ID</th>
+                                        <th>Asset Name</th>
+                                        <th class="text-center">6M Free Warranty</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dispatchCartBody">
+                                    <tr><td colspan="4" class="text-center italic text-gray-400 py-6">Box is empty. Scan tags to add.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <button onclick="processMasterDispatch()" class="btn-amz-yellow w-full py-4 font-bold text-lg shadow-md uppercase tracking-wider">Confirm Dispatch & Print Official Bill</button>
+                </div>
+            </div>
+
+            <!-- Warranty & Returns Tab -->
+            <div id="erp-warranty" class="erp-panel hidden max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">RMA & Warranty Center</h2>
+                
+                <div class="bg-white p-8 rounded shadow-sm border flex flex-col items-center">
+                    <i class="fas fa-qrcode text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Scan Master QR</h3>
+                    <p class="text-sm text-gray-500 mb-6 text-center max-w-md">Scan the customer's Master Warranty QR code from their bill to retrieve policy details and authorize free repairs.</p>
+                    
+                    <div class="flex w-full max-w-lg gap-2 mb-8">
+                        <input id="claimMaster" type="text" placeholder="MQR-XXXXXX" class="flex-1 p-4 border-2 border-gray-300 rounded text-center text-xl font-mono font-bold outline-none uppercase bg-gray-50 focus:border-[#007185]">
+                        <button onclick="openScanner('WARRANTY')" class="bg-gray-800 text-white px-6 rounded hover:bg-gray-700 transition"><i class="fas fa-camera text-xl"></i></button>
+                        <button onclick="verifyMasterWarranty()" class="btn-amz-yellow px-8 font-bold text-sm">Lookup</button>
+                    </div>
+
+                    <!-- Results Area -->
+                    <div id="claimResult" class="hidden w-full border rounded overflow-hidden shadow">
+                        <div class="bg-gray-100 p-4 flex justify-between items-center border-b">
+                            <div>
+                                <h4 class="font-bold text-sm uppercase text-gray-600">Policy Details</h4>
+                                <div id="claimInfo" class="text-sm text-gray-800 mt-1"></div>
+                            </div>
+                            <span id="claimBadge" class="px-4 py-2 font-black text-sm rounded uppercase border tracking-wider"></span>
+                        </div>
+                        <div class="p-4 bg-white">
+                            <h5 class="font-bold text-sm mb-3">Covered Hardware List:</h5>
+                            <ul id="claimHwList" class="space-y-3"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="erp-settings" class="erp-panel hidden max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">Store Settings</h2>
+                <div class="bg-white p-6 rounded shadow-sm border space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Store Name</label>
+                        <input type="text" value="Kaalnetra Security Systems" class="w-full p-2 border rounded bg-gray-50" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Support Email</label>
+                        <input type="email" value="support@kaalnetra.in" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">UPI Payment ID</label>
+                        <input type="text" value="sohampal781@okhdfcbank" class="w-full p-2 border rounded">
+                    </div>
+                    <button class="btn-amz-yellow px-6 py-2 font-bold mt-4">Save Changes</button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- Complex Amazon-Style Checkout Modal -->
+    <div id="publicOrderModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-lg w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="bg-gray-100 border-b p-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-lock text-[#007185]"></i>
+                    <h3 class="font-bold text-lg">Secure Checkout</h3>
+                </div>
+                <button onclick="document.getElementById('publicOrderModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 text-2xl transition"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-0 flex flex-col md:flex-row">
+                <!-- Left Col: Form -->
+                <div class="p-6 flex-1 border-r border-gray-200">
+                    <h3 class="font-bold text-lg mb-4 text-orange-600">1. Shipping Address</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
+                            <input id="ordName" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition" type="text" placeholder="First and Last Name">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Detailed Address</label>
+                            <textarea id="ordAddress" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition" placeholder="Street Address, Apt, City, Pincode" rows="3"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mobile Number</label>
+                            <input id="ordPhone" class="w-full p-2 border border-gray-300 rounded text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none transition" type="text" placeholder="10-digit number">
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-lg mb-4 text-orange-600 mt-8">2. Payment Method</h3>
+                    <div class="bg-yellow-50 p-4 border border-yellow-300 rounded mb-4">
+                        <p class="text-xs text-gray-600 mb-3">Adjust the slider to choose your advance payment amount. The remaining balance will be collected post-installation.</p>
+                        <input id="ordSlider" type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="updateSliderUI()">
+                        
+                        <div class="flex justify-between text-sm font-bold mt-3">
+                            <span class="text-green-700">Pay Now: <span id="valPayNow"></span></span>
+                            <span class="text-red-700">Pay Later: <span id="valPayLater"></span></span>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-yellow-200 text-center">
+                            <p class="text-xs font-bold text-gray-800 mb-2">Scan QR to pay advance:</p>
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=sohampal781@okhdfcbank&pn=Kaalnetra" class="w-32 h-32 mx-auto mb-3 border border-gray-300 p-1 bg-white shadow-sm">
+                            <input id="ordTxn" type="text" maxlength="5" placeholder="Enter Last 5 digits of UPI Ref" class="w-full max-w-[200px] p-2 text-center font-mono font-bold text-sm border border-gray-400 rounded outline-none focus:border-orange-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Col: Summary -->
+                <div class="w-full md:w-64 bg-gray-50 p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg mb-4 text-gray-800">Order Summary</h3>
+                        <div class="mb-4">
+                            <h4 id="orderProdName" class="font-bold text-sm text-[#007185] line-clamp-2 mb-1"></h4>
+                            <p class="text-xs text-gray-500">Qty: 1</p>
+                        </div>
+                        <div class="border-t pt-3 mb-2 flex justify-between text-sm">
+                            <span>Items:</span>
+                            <span>₹<span id="orderProdPrice"></span></span>
+                        </div>
+                        <div class="flex justify-between text-sm mb-2 text-green-600">
+                            <span>Installation:</span>
+                            <span>Free</span>
+                        </div>
+                        <div class="border-t border-gray-300 pt-3 mt-3 flex justify-between text-lg font-black text-red-700">
+                            <span>Order Total:</span>
+                            <span>₹<span id="orderProdPriceTotal"></span></span>
+                        </div>
+                    </div>
+                    <button onclick="submitPublicOrder()" class="btn-amz-yellow w-full py-3 font-bold text-sm mt-6 shadow-md">Place your order</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Track Order Modal -->
-  <div id="trackModal" class="modal-overlay hidden">
-    <div class="bg-white rounded w-full max-w-sm p-6 relative">
-      <button onclick="document.getElementById('trackModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
-      <h3 class="font-bold text-lg mb-4">Track Package</h3>
-      <input id="trackOrderId" type="text" placeholder="Order ID (ORD-XXXXXX)" class="w-full p-2 border rounded uppercase font-mono font-bold mb-4 outline-none focus:border-orange-500">
-      <button onclick="trackOrder()" class="btn-amz-yellow w-full py-2 font-bold text-sm">Track Package</button>
+    <!-- Track Order Modal -->
+    <div id="trackModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-lg w-full max-w-md p-0 overflow-hidden shadow-2xl relative">
+            <div class="bg-gray-100 p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold text-lg">Track Package</h3>
+                <button onclick="document.getElementById('trackModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Enter the Order ID provided during checkout to check your fulfillment status.</p>
+                <input id="trackOrderId" type="text" placeholder="e.g. ORD-123456" class="w-full p-3 border border-gray-300 rounded uppercase font-mono font-bold mb-4 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+                <button onclick="trackOrder()" class="btn-amz-yellow w-full py-3 font-bold text-sm">Track Package</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Staff Login Modal -->
-  <div id="staffModal" class="modal-overlay hidden">
-    <div class="bg-white rounded p-8 max-w-sm w-full relative text-center">
-      <button onclick="document.getElementById('staffModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400"><i class="fas fa-times"></i></button>
-      <i class="fas fa-store text-4xl text-[#007185] mb-4"></i>
-      <h3 class="font-bold text-xl mb-6">Seller Central Login</h3>
-      <input id="staffEmail" type="email" placeholder="Email" class="w-full p-3 mb-3 border rounded text-sm outline-none focus:border-orange-500">
-      <input id="staffPass" type="password" placeholder="Password" class="w-full p-3 mb-6 border rounded text-sm outline-none focus:border-orange-500">
-      <button onclick="loginStaff()" class="btn-amz-yellow w-full py-3 font-bold text-sm">Sign In</button>
+    <!-- Staff Login Modal -->
+    <div id="staffModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-lg p-8 max-w-sm w-full relative text-center shadow-2xl border-t-8 border-yellow-400">
+            <button onclick="document.getElementById('staffModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-black"><i class="fas fa-times"></i></button>
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-200">
+                <i class="fas fa-store text-2xl text-[#007185]"></i>
+            </div>
+            <h3 class="font-bold text-2xl mb-2">Seller Central</h3>
+            <p class="text-xs text-gray-500 mb-6">Sign in to manage your business</p>
+            <input id="staffEmail" type="email" placeholder="Email address" class="w-full p-3 mb-3 border border-gray-300 rounded text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+            <input id="staffPass" type="password" placeholder="Password" class="w-full p-3 mb-6 border border-gray-300 rounded text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
+            <button onclick="loginStaff()" class="btn-amz-yellow w-full py-3 font-bold text-sm shadow">Sign in</button>
+        </div>
     </div>
-  </div>
 
-  <!-- Camera Scanner Modal -->
-  <div id="scannerModal" class="modal-overlay hidden">
-    <div class="bg-white p-4 rounded text-center max-w-sm w-full">
-      <h3 class="font-bold text-sm mb-3">Scan Barcode / QR</h3>
-      <div id="qrReader" class="w-full bg-black rounded overflow-hidden h-64 mb-3"></div>
-      <button onclick="closeScanner()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 text-black font-bold rounded text-xs">Cancel</button>
+    <!-- Camera Scanner Modal -->
+    <div id="scannerModal" class="modal-overlay hidden">
+        <div class="bg-white p-4 rounded text-center max-w-sm w-full shadow-2xl border">
+            <h3 class="font-bold text-sm mb-3 text-gray-800"><i class="fas fa-qrcode mr-2"></i> Scan Barcode</h3>
+            <div id="qrReader" class="w-full bg-black rounded overflow-hidden h-64 mb-4 border-2 border-dashed border-gray-400 relative">
+                <div class="absolute inset-0 border-4 border-green-500 border-opacity-50 m-8 rounded pointer-events-none"></div>
+            </div>
+            <button onclick="closeScanner()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 text-black font-bold rounded text-sm transition">Cancel</button>
+        </div>
     </div>
-  </div>
 
-  <!-- Thermal Print Area (Hidden) -->
-  <div id="printableTagArea" class="hidden">
-     <div style="width: 80mm; padding: 5mm; text-align: center; border: 1px dashed #000; font-family: Arial, sans-serif; background: white; color: black;">
-         <div style="font-size:14px; font-weight:bold; border-bottom:1px solid #000; padding-bottom:3px; margin-bottom:10px;">KAALNETRA SECURITY</div>
-         <div id="tagDisplayItemName" style="font-weight:bold; font-size:12px; margin-bottom:10px;">ASSET</div>
-         <img id="tagQrImage" src="" style="width: 50mm; height: 50mm; margin: 0 auto 10px;">
-         <div id="tagDisplayId" style="font-family:monospace; font-weight:bold; font-size:16px;">#000</div>
-     </div>
-  </div>
+    <!-- Thermal Print Area (Hidden in UI, Used for Printing) -->
+    <div id="printableTagArea" class="hidden">
+        <div style="width: 80mm; padding: 5mm; text-align: center; border: 2px solid #000; font-family: Arial, sans-serif; background: white; color: black; box-sizing: border-box;">
+            <div style="font-size:16px; font-weight:900; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:10px; text-transform: uppercase;">KAALNETRA SECURITY</div>
+            <div id="tagDisplayItemName" style="font-weight:bold; font-size:14px; margin-bottom:15px; text-transform: uppercase; line-height:1.2;">ASSET</div>
+            <img id="tagQrImage" src="" style="width: 50mm; height: 50mm; margin: 0 auto 10px; border: 1px solid #ccc; padding: 2px;">
+            <div id="tagDisplayId" style="font-family:monospace; font-weight:900; font-size:20px; letter-spacing: 2px; margin-bottom: 5px;">#000</div>
+            <div style="font-size:10px; border-top:1px solid #000; padding-top:5px; margin-top:10px;">PROPERTY OF KAALNETRA<br>DO NOT REMOVE</div>
+        </div>
+    </div>
 
-  <!-- ================= FIREBASE & APP LOGIC ================= -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-    import { getDatabase, ref, set, get, update, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+    <!-- ================= FIREBASE & APP LOGIC ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
-      authDomain: "kaalnetra-214b6.firebaseapp.com",
-      databaseURL: "https://kaalnetra-214b6-default-rtdb.firebaseio.com",
-      projectId: "kaalnetra-214b6",
-      storageBucket: "kaalnetra-214b6.firebasestorage.app",
-      messagingSenderId: "974973616837",
-      appId: "1:974973616837:web:9d586455fd35a938ce66ac"
-    };
+        // Keep existing config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
+            authDomain: "kaalnetra-214b6.firebaseapp.com",
+            databaseURL: "https://kaalnetra-214b6-default-rtdb.firebaseio.com",
+            projectId: "kaalnetra-214b6",
+            storageBucket: "kaalnetra-214b6.firebasestorage.app",
+            messagingSenderId: "974973616837",
+            appId: "1:974973616837:web:9d586455fd35a938ce66ac"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    window.db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window.db = getDatabase(app);
 
-    // Default Products Fallback (if firebase catalog empty)
-    let storeProducts = [
-      { id: "v1", name: "Basic Safety System", price: 15000, desc: "IR Detection, Audio Buzzer" },
-      { id: "v2", name: "Pro Bypass Switch", price: 20000, desc: "Dual Sensors, Manual Bypass" }
-    ];
+        // ================= MASSIVE HARDCODED PRODUCT CATALOG =================
+        // This instantly populates the store with rich data while keeping Firebase purely for orders/inventory
+        const STORE_CATALOG = [
+            { id: "kn_cctv_01", category: "cctv", name: "Kaalnetra 4K Ultra HD Dome Camera with Night Vision", price: 4500, mrp: 6999, rating: 4.8, reviews: 1243, desc: "Crystal clear 4K resolution with 30m IR night vision. Ideal for indoor retail and office spaces. Weatherproof casing." },
+            { id: "kn_cctv_02", category: "cctv", name: "Kaalnetra Pro Bullet CCTV Camera (Outdoor Waterproof)", price: 5200, mrp: 8500, rating: 4.6, reviews: 890, desc: "IP67 rated waterproof outdoor camera. 5MP lens with motion detection alerts pushed to your smartphone." },
+            { id: "kn_cctv_03", category: "cctv", name: "Kaalnetra 360° PTZ Smart WiFi Camera", price: 3999, mrp: 5999, rating: 4.9, reviews: 2100, desc: "Pan, Tilt, and Zoom from your phone. Two-way audio communication and AI human detection built-in." },
+            { id: "kn_lock_01", category: "lock", name: "Kaalnetra Biometric Smart Door Lock (Fingerprint/PIN/RFID)", price: 12500, mrp: 18000, rating: 4.7, reviews: 456, desc: "Unlock with fingerprint, PIN code, RFID card, or app. Auto-locking mechanism with low battery alarm." },
+            { id: "kn_lock_02", category: "lock", name: "Kaalnetra Glass Door Magnetic Smart Lock", price: 8500, mrp: 12000, rating: 4.5, reviews: 230, desc: "Sleek magnetic lock designed specifically for frameless glass doors. Includes remote control access." },
+            { id: "kn_sys_01", category: "system", name: "Kaalnetra Version 1 - Basic Anti-Theft Safety System", price: 15000, mrp: 20000, rating: 4.4, reviews: 120, desc: "Complete kit: IR Detection, High-decibel Audio Buzzer, Basic Security Control Unit. Great for small shops." },
+            { id: "kn_sys_02", category: "system", name: "Kaalnetra Version 2 - Pro System with Manual Bypass Switch", price: 20000, mrp: 28000, rating: 4.7, reviews: 345, desc: "Dual sensor setup with a permanent physical bypass switch for authorized extended entry without triggering alarms." },
+            { id: "kn_sys_03", category: "system", name: "Kaalnetra Version 3 - Cloud Web Access System", price: 21000, mrp: 32000, rating: 4.9, reviews: 870, desc: "Includes Smartphone Dashboard app, real-time access logging, and remote arm/disarm capabilities." },
+            { id: "kn_sys_04", category: "system", name: "Kaalnetra Version 4 - Biometric Access Control System", price: 26000, mrp: 38000, rating: 4.8, reviews: 512, desc: "High-security fingerprint access control. Allow-One entry system prevents tailgating. Integrated with time-attendance." },
+            { id: "kn_sys_05", category: "system", name: "Kaalnetra Industrial Premium Security System", price: 27000, mrp: 45000, rating: 5.0, reviews: 128, desc: "Heavy-duty dual-level access. High-power industrial siren. Designed for warehouses and factories." },
+            { id: "kn_fire_01", category: "fire", name: "Kaalnetra Smart Smoke & Carbon Monoxide Detector", price: 2999, mrp: 4999, rating: 4.6, reviews: 678, desc: "Voice alerts tell you the type of danger and location. Sends immediate app notifications." },
+            { id: "kn_acc_01", category: "accessories", name: "Kaalnetra 8-Channel 4K DVR Network Video Recorder", price: 9500, mrp: 14000, rating: 4.7, reviews: 320, desc: "Supports up to 8 cameras. 2TB HDD pre-installed. H.265+ compression for longer storage." },
+            { id: "kn_acc_02", category: "accessories", name: "Kaalnetra Heavy Duty Door Closer", price: 1500, mrp: 2500, rating: 4.3, reviews: 89, desc: "Commercial grade hydraulic door closer. Adjustable speed and latching." }
+        ];
 
-    let currentOrderProduct = null;
-    let html5QrCode = null;
-    let scanTarget = null;
-    window.dispatchCartTags = [];
+        let currentOrderProduct = null;
+        let html5QrCode = null;
+        let scanTarget = null;
+        window.dispatchCartTags = [];
+        let sellerCharts = {}; // Store chart instances
 
-    // ================= 1. PUBLIC STOREFRONT =================
-    
-    // Fetch or Render Catalog
-    function initCatalog() {
-      onValue(ref(window.db, "catalog"), snap => {
-        if(snap.exists()) {
-          storeProducts = [];
-          snap.forEach(c => storeProducts.push(c.val()));
+        // ================= 1. RENDER STOREFRONT =================
+        function renderStore(catalog) {
+            const grid = document.getElementById("productGrid");
+            const noRes = document.getElementById("noResults");
+            
+            if(catalog.length === 0) {
+                grid.innerHTML = "";
+                noRes.classList.remove("hidden");
+                return;
+            }
+            noRes.classList.add("hidden");
+
+            grid.innerHTML = catalog.map(p => {
+                const discount = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+                // Create star rating HTML
+                const fullStars = Math.floor(p.rating);
+                const halfStar = p.rating % 1 >= 0.5 ? 1 : 0;
+                let starsHTML = '';
+                for(let i=0; i<fullStars; i++) starsHTML += '<i class="fas fa-star text-orange-400"></i>';
+                if(halfStar) starsHTML += '<i class="fas fa-star-half-alt text-orange-400"></i>';
+                for(let i=0; i<(5-fullStars-halfStar); i++) starsHTML += '<i class="far fa-star text-orange-400"></i>';
+
+                return `
+                <div class="bg-white border rounded shadow-sm hover:shadow-lg transition flex flex-col h-full relative group">
+                    <!-- Discount Badge -->
+                    <div class="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded z-10">
+                        ${discount}% OFF
+                    </div>
+                    
+                    <!-- Image Placeholder -->
+                    <div class="bg-gray-100 h-48 flex items-center justify-center rounded-t border-b p-4 relative overflow-hidden">
+                        <i class="fas fa-shield-halved text-gray-300 text-6xl group-hover:scale-110 transition duration-300"></i>
+                    </div>
+                    
+                    <div class="p-4 flex flex-col flex-1">
+                        <h4 class="font-bold text-base text-[#007185] hover:text-orange-600 hover:underline cursor-pointer mb-1 line-clamp-2" title="${p.name}">${p.name}</h4>
+                        
+                        <!-- Ratings -->
+                        <div class="flex items-center text-xs mb-2">
+                            ${starsHTML}
+                            <span class="text-blue-500 ml-2 hover:underline cursor-pointer">${p.reviews.toLocaleString()}</span>
+                        </div>
+                        
+                        <!-- Price Block -->
+                        <div class="mb-2">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xs font-bold align-top mt-1">₹</span>
+                                <span class="text-2xl font-black">${p.price.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">M.R.P: <span class="line-through">₹${p.mrp.toLocaleString('en-IN')}</span></div>
+                        </div>
+                        
+                        <p class="text-xs text-gray-600 mb-4 flex-1 line-clamp-3">${p.desc}</p>
+                        
+                        <!-- Delivery Info -->
+                        <div class="text-xs text-gray-800 font-bold mb-4">
+                            <i class="fas fa-check text-orange-500 mr-1"></i> FREE Delivery & Installation
+                        </div>
+                        
+                        <button onclick="window.openOrderModal('${p.id}')" class="btn-amz-yellow w-full py-2 font-bold text-sm rounded-full shadow-sm mt-auto">Add to Cart</button>
+                    </div>
+                </div>
+            `}).join("");
         }
-        renderCustomerCatalog();
-        renderAdminCatalog();
-      });
-    }
-    initCatalog();
 
-    function renderCustomerCatalog() {
-      const grid = document.getElementById("productGrid");
-      grid.innerHTML = storeProducts.map(p => `
-        <div class="bg-white border rounded shadow-sm hover:shadow-md transition p-4 flex flex-col h-full relative">
-          <div class="bg-gray-100 h-40 flex items-center justify-center rounded mb-4">
-             <i class="fas fa-camera text-gray-300 text-5xl"></i>
-          </div>
-          <h4 class="font-bold text-base text-[#007185] hover:text-orange-600 hover:underline cursor-pointer mb-1 line-clamp-2">${p.name}</h4>
-          <div class="text-xl font-bold mb-1">₹${Number(p.price).toLocaleString('en-IN')}</div>
-          <p class="text-xs text-gray-500 mb-4 flex-1">${p.desc}</p>
-          <button onclick="window.openOrderModal('${p.id}')" class="btn-amz-yellow w-full py-2 font-bold text-sm rounded-full">Add to Cart</button>
-        </div>
-      `).join("");
-    }
+        // Initial render
+        renderStore(STORE_CATALOG);
 
-    window.openOrderModal = (id) => {
-      currentOrderProduct = storeProducts.find(p => p.id === id);
-      document.getElementById("orderProdName").innerText = currentOrderProduct.name;
-      document.getElementById("orderProdPrice").innerText = Number(currentOrderProduct.price).toLocaleString('en-IN');
-      const slider = document.getElementById("ordSlider");
-      slider.min = 0; slider.max = currentOrderProduct.price; slider.step = 500;
-      slider.value = currentOrderProduct.price * 0.1; 
-      window.updateSliderUI();
-      document.getElementById("publicOrderModal").classList.remove("hidden");
-    };
+        // Search Filter
+        window.filterCatalog = () => {
+            const q = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = STORE_CATALOG.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+            renderStore(filtered);
+        };
 
-    window.updateSliderUI = () => {
-      if(!currentOrderProduct) return;
-      const adv = parseInt(document.getElementById("ordSlider").value);
-      const bal = currentOrderProduct.price - adv;
-      document.getElementById("valPayNow").innerText = `₹${adv.toLocaleString('en-IN')}`;
-      document.getElementById("valPayLater").innerText = `₹${bal.toLocaleString('en-IN')}`;
-    };
+        // ================= 2. PUBLIC CHECKOUT LOGIC =================
+        window.openOrderModal = (id) => {
+            currentOrderProduct = STORE_CATALOG.find(p => p.id === id);
+            
+            document.getElementById("orderProdName").innerText = currentOrderProduct.name;
+            document.getElementById("orderProdPrice").innerText = currentOrderProduct.price.toLocaleString('en-IN');
+            document.getElementById("orderProdPriceTotal").innerText = currentOrderProduct.price.toLocaleString('en-IN');
+            
+            const slider = document.getElementById("ordSlider");
+            slider.min = 0; 
+            slider.max = currentOrderProduct.price; 
+            slider.step = 100;
+            slider.value = currentOrderProduct.price * 0.1; // Default 10% advance
+            
+            window.updateSliderUI();
+            document.getElementById("publicOrderModal").classList.remove("hidden");
+        };
 
-    window.submitPublicOrder = async () => {
-      const name = document.getElementById("ordName").value.trim();
-      const address = document.getElementById("ordAddress").value.trim();
-      const phone = document.getElementById("ordPhone").value.trim();
-      const txn = document.getElementById("ordTxn").value.trim();
-      const adv = parseInt(document.getElementById("ordSlider").value);
+        window.updateSliderUI = () => {
+            if(!currentOrderProduct) return;
+            const adv = parseInt(document.getElementById("ordSlider").value);
+            const bal = currentOrderProduct.price - adv;
+            document.getElementById("valPayNow").innerText = `₹${adv.toLocaleString('en-IN')}`;
+            document.getElementById("valPayLater").innerText = `₹${bal.toLocaleString('en-IN')}`;
+        };
 
-      if(!name || !address || !phone) return alert("Please fill shipping details.");
-      if(adv > 0 && txn.length !== 5) return alert("Enter last 5 digits of UPI transaction.");
+        window.submitPublicOrder = async () => {
+            const name = document.getElementById("ordName").value.trim();
+            const address = document.getElementById("ordAddress").value.trim();
+            const phone = document.getElementById("ordPhone").value.trim();
+            const txn = document.getElementById("ordTxn").value.trim();
+            const adv = parseInt(document.getElementById("ordSlider").value);
 
-      const ordId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
-      try {
-        await set(ref(window.db, `web_orders/${ordId}`), {
-          orderId: ordId, productName: currentOrderProduct.name, totalPrice: currentOrderProduct.price,
-          advancePaid: adv, balanceDue: currentOrderProduct.price - adv, customerName: name,
-          address: address, phone: phone, txnIdLast5: txn, status: "Pending", timestamp: serverTimestamp()
+            if(!name || !address || !phone) return alert("Amazon requires all shipping details to proceed.");
+            if(phone.length < 10) return alert("Enter a valid 10-digit phone number.");
+            if(adv > 0 && txn.length !== 5) return alert("Security check: Please enter exactly the last 5 digits of your UPI transaction ID.");
+
+            const ordId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+            const btn = document.activeElement;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            try {
+                // Save to Firebase
+                await set(ref(window.db, `web_orders/${ordId}`), {
+                    orderId: ordId, 
+                    productName: currentOrderProduct.name, 
+                    totalPrice: currentOrderProduct.price,
+                    advancePaid: adv, 
+                    balanceDue: currentOrderProduct.price - adv, 
+                    customerName: name,
+                    address: address, 
+                    phone: phone, 
+                    txnIdLast5: txn, 
+                    status: "Pending Verification", 
+                    timestamp: serverTimestamp()
+                });
+
+                document.getElementById("publicOrderModal").classList.add("hidden");
+                alert(`Order Confirmed!\n\nThank you for shopping with Kaalnetra.\nYour Tracking ID is: ${ordId}\n\nPlease save this ID to track your installation status.`);
+                
+                // Clear form
+                document.getElementById("ordName").value = ""; 
+                document.getElementById("ordAddress").value = "";
+                document.getElementById("ordPhone").value = ""; 
+                document.getElementById("ordTxn").value = "";
+            } catch(e) { 
+                alert("Database Error: " + e.message); 
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.trackOrder = async () => {
+            const id = document.getElementById("trackOrderId").value.trim().toUpperCase();
+            if(!id) return alert("Enter an Order ID");
+            
+            const btn = document.activeElement;
+            btn.innerText = "Searching...";
+            
+            try {
+                const snap = await get(ref(window.db, `web_orders/${id}`));
+                if(!snap.exists()) {
+                    alert("Order Not Found. Please check the ID.");
+                } else {
+                    const d = snap.val();
+                    alert(`Amazon-Style Tracking Report for ${id}:\n\nProduct: ${d.productName}\nCurrent Status: ${d.status}\nAdvance Verified: ₹${d.advancePaid}\nBalance Due on Install: ₹${d.balanceDue}\nShipping To: ${d.customerName}`);
+                }
+            } catch(e) { 
+                alert("Error: " + e.message); 
+            } finally {
+                btn.innerText = "Track Package";
+            }
+        };
+
+
+        // ================= 3. AUTHENTICATION & SELLER CENTRAL =================
+        window.openStaffLogin = () => document.getElementById("staffModal").classList.remove("hidden");
+        window.loginStaff = () => signInWithEmailAndPassword(auth, document.getElementById("staffEmail").value, document.getElementById("staffPass").value).catch(e => alert("Login Failed: " + e.message));
+        window.logoutStaff = () => signOut(auth).then(() => window.location.reload());
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Hide Public Store
+                document.getElementById("view-storefront").classList.add("hidden");
+                document.querySelector("header").classList.add("hidden"); // Hide public header
+                
+                // Show ERP
+                document.getElementById("view-erp").classList.remove("hidden");
+                
+                document.getElementById("adminBadge").innerText = user.email;
+                document.getElementById("staffModal").classList.add("hidden");
+                
+                window.switchErpTab('dashboard');
+                initSellerCharts();
+                startErpSync();
+            }
         });
 
-        document.getElementById("publicOrderModal").classList.add("hidden");
-        alert(`Order Placed! Your Order ID is ${ordId}. Save this to track your package.`);
-      } catch(e) { alert("Error: " + e.message); }
-    };
+        window.switchErpTab = (tab) => {
+            // Hide all panels
+            document.querySelectorAll('.erp-panel').forEach(p => p.classList.add('hidden'));
+            
+            // Reset all buttons
+            document.querySelectorAll('#view-erp button[id^="tabbtn-"]').forEach(b => { 
+                b.className = "w-full text-left px-6 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 transition";
+            });
+            
+            // Show target panel
+            document.getElementById(`erp-${tab}`).classList.remove('hidden');
+            
+            // Highlight active button
+            const activeBtn = document.getElementById(`tabbtn-${tab}`);
+            if(activeBtn) {
+                activeBtn.className = "w-full text-left px-6 py-3 font-bold border-l-4 border-orange-500 bg-orange-50 text-orange-700 transition";
+            }
+        };
 
-    window.trackOrder = async () => {
-      const id = document.getElementById("trackOrderId").value.trim().toUpperCase();
-      if(!id) return;
-      try {
-        const snap = await get(ref(window.db, `web_orders/${id}`));
-        if(!snap.exists()) return alert("Order Not Found.");
-        const d = snap.val();
-        alert(`Status for ${id}:\n\nProduct: ${d.productName}\nStatus: ${d.status}\nAdvance: ₹${d.advancePaid}\nBalance Due: ₹${d.balanceDue}`);
-      } catch(e) { alert("Error: " + e.message); }
-    };
+        // ================= 4. ERP DATA SYNC & LOGIC =================
+        function startErpSync() {
+            // Sync Orders
+            onValue(ref(window.db, "web_orders"), snap => {
+                const tb = document.getElementById("tblOrders");
+                let pendingCount = 0; 
+                let dispatchedCount = 0;
+                let revenue = 0;
+                tb.innerHTML = "";
+                
+                if(!snap.exists()) return tb.innerHTML = "<tr><td colspan='6' class='text-center py-8 text-gray-500'>No orders found in database.</td></tr>";
+                
+                let arr = []; snap.forEach(c => arr.push(c.val())); arr.reverse(); // Newest first
+                
+                arr.forEach(v => {
+                    // Update KPIs
+                    if(v.status.includes("Pending")) pendingCount++;
+                    if(v.status === "Dispatched") dispatchedCount++;
+                    if(!v.status.includes("Pending")) revenue += parseInt(v.advancePaid || 0);
 
-    // ================= 2. AUTHENTICATION & UI TOGGLE =================
-    window.openStaffLogin = () => document.getElementById("staffModal").classList.remove("hidden");
-    window.loginStaff = () => signInWithEmailAndPassword(auth, document.getElementById("staffEmail").value, document.getElementById("staffPass").value).catch(e => alert(e.message));
-    window.logoutStaff = () => signOut(auth).then(() => window.location.reload());
+                    // Render Row
+                    let statusColor = v.status.includes("Pending") ? "bg-yellow-100 text-yellow-800 border-yellow-200" : 
+                                      v.status === "Dispatched" ? "bg-green-100 text-green-800 border-green-200" : 
+                                      "bg-blue-100 text-blue-800 border-blue-200";
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("view-storefront").classList.add("hidden");
-        document.getElementById("customerActions").classList.add("hidden");
-        document.getElementById("publicNav").classList.add("hidden");
-        
-        document.getElementById("view-erp").classList.remove("hidden");
-        document.getElementById("adminNav").classList.remove("hidden");
-        document.getElementById("sellerSubnav").classList.remove("hidden");
-        
-        document.getElementById("adminBadge").innerText = user.email.split('@')[0];
-        document.getElementById("staffModal").classList.add("hidden");
-        window.switchErpTab('dashboard');
-        startErpSync();
-      }
-    });
+                    let actionBtn = v.status.includes("Pending") ? 
+                        `<button onclick="window.verifyOrder('${v.orderId}')" class="btn-amz-yellow px-3 py-1 text-xs shadow-sm">Verify Payment</button>` : 
+                        `<span class="text-xs text-gray-400 italic">Locked</span>`;
 
-    window.switchErpTab = (tab) => {
-      document.querySelectorAll('.erp-panel').forEach(p => p.classList.add('hidden'));
-      document.querySelectorAll('.erp-tab-btn').forEach(b => { 
-        b.classList.remove('text-[#febd69]', 'font-bold'); 
-        b.classList.add('text-white'); 
-      });
-      document.getElementById(`erp-${tab}`).classList.remove('hidden');
-      document.getElementById(`tabbtn-${tab}`).classList.add('text-[#febd69]', 'font-bold');
-      document.getElementById(`tabbtn-${tab}`).classList.remove('text-white');
-    };
+                    tb.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition border-b order-row" data-status="${v.status}" data-id="${v.orderId}">
+                        <td>
+                            <div class="font-mono font-bold text-[#007185]">${v.orderId}</div>
+                            <div class="text-[10px] text-gray-400">${new Date(v.timestamp || Date.now()).toLocaleDateString()}</div>
+                        </td>
+                        <td>
+                            <div class="font-bold text-sm">${v.customerName}</div>
+                            <div class="text-xs text-gray-500">${v.phone}</div>
+                        </td>
+                        <td class="text-xs text-gray-700 max-w-[200px] truncate" title="${v.productName}">${v.productName}</td>
+                        <td>
+                            <div class="text-sm">Adv: <span class="font-bold text-green-700">₹${v.advancePaid}</span></div>
+                            <div class="text-[10px] text-gray-500 font-mono">TXN: *${v.txnIdLast5}</div>
+                        </td>
+                        <td><span class="px-2 py-1 border rounded text-[10px] font-bold uppercase tracking-wider ${statusColor}">${v.status}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>`;
+                });
+                
+                // Update Dashboard DOM
+                document.getElementById("dashPending").innerText = pendingCount;
+                document.getElementById("dashDispatched").innerText = dispatchedCount;
+                document.getElementById("dashRevenue").innerText = "₹" + revenue.toLocaleString('en-IN');
+                
+                // Update Chart data randomly just for visual feedback (since we don't have historical data structure here)
+                updateChartsDummyData(revenue, pendingCount, dispatchedCount);
+            });
 
-    // ================= 3. SELLER CENTRAL DATA SYNC =================
-    function startErpSync() {
-      // Sync Orders & Dashboard
-      onValue(ref(window.db, "web_orders"), snap => {
-        const tb = document.getElementById("tblOrders");
-        let pendingCount = 0; let revenue = 0;
-        tb.innerHTML = "";
-        
-        if(!snap.exists()) return tb.innerHTML = "<tr><td colspan='6' class='text-center py-4'>No orders yet.</td></tr>";
-        
-        let arr = []; snap.forEach(c => arr.push(c.val())); arr.reverse();
-        arr.forEach(v => {
-          if(v.status.includes("Pending")) pendingCount++;
-          if(!v.status.includes("Pending")) revenue += parseInt(v.advancePaid || 0);
-
-          let btn = v.status === "Pending" ? `<button onclick="window.verifyOrder('${v.orderId}')" class="btn-amz-yellow px-2 py-1 text-xs">Verify</button>` : '';
-          tb.innerHTML += `<tr class="hover:bg-gray-50">
-            <td class="font-mono font-bold text-[#007185]">${v.orderId}</td>
-            <td><b>${v.customerName}</b><br><span class="text-xs text-gray-500">${v.phone}</span></td>
-            <td class="text-xs">${v.productName}</td>
-            <td>₹${v.advancePaid} <span class="text-[10px] text-gray-400">Txn: *${v.txnIdLast5}</span></td>
-            <td><span class="px-2 py-1 bg-gray-200 rounded text-xs">${v.status}</span></td>
-            <td>${btn}</td>
-          </tr>`;
-        });
-        
-        document.getElementById("dashPending").innerText = pendingCount;
-        document.getElementById("dashRevenue").innerText = "₹" + revenue.toLocaleString('en-IN');
-      });
-
-      // Sync Inventory
-      onValue(ref(window.db, "inventory"), snap => {
-        const tb = document.getElementById("tblInventory");
-        tb.innerHTML = "";
-        let stockCount = 0;
-        if(!snap.exists()) return;
-        
-        snap.forEach(c => {
-          const v = c.val();
-          if(v.status === "In Stock") stockCount++;
-          let cStyle = v.status === "Sold" ? "text-red-600" : "text-green-600";
-          tb.innerHTML += `<tr class="inv-row">
-            <td class="font-mono font-bold">${v.barcode}</td>
-            <td class="font-bold">${v.item}</td>
-            <td class="text-xs">${v.location || 'Warehouse'}</td>
-            <td class="font-mono">₹${v.cost}</td>
-            <td class="font-bold ${cStyle}">${v.status}</td>
-          </tr>`;
-        });
-        document.getElementById("dashStock").innerText = stockCount;
-      });
-    }
-
-    // Catalog Logic
-    function renderAdminCatalog() {
-      const tb = document.getElementById("tblCatalog");
-      tb.innerHTML = storeProducts.map(p => `
-        <tr>
-          <td class="font-bold">${p.name}</td>
-          <td class="text-xs">${p.desc}</td>
-          <td>₹${p.price}</td>
-          <td><button onclick="window.deleteCatalogItem('${p.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></td>
-        </tr>
-      `).join("");
-    }
-
-    window.addCatalogItem = async () => {
-      const name = document.getElementById("catName").value;
-      const price = document.getElementById("catPrice").value;
-      const desc = document.getElementById("catDesc").value;
-      if(!name || !price) return;
-      const id = "p_" + Date.now();
-      await set(ref(window.db, `catalog/${id}`), { id, name, price: Number(price), desc });
-      document.getElementById("catName").value = ''; document.getElementById("catPrice").value = ''; document.getElementById("catDesc").value = '';
-    };
-
-    window.deleteCatalogItem = async (id) => {
-      if(confirm("Remove product from storefront?")) await set(ref(window.db, `catalog/${id}`), null);
-    };
-
-    window.verifyOrder = async (id) => {
-      if(confirm(`Verify payment for ${id}?`)) {
-        await update(ref(window.db, `web_orders/${id}`), { status: "Verified & Processing" });
-      }
-    };
-
-    // Inventory Generate Tag
-    window.registerAsset = async () => {
-      const name = document.getElementById("invName").value.trim();
-      const loc = document.getElementById("invSpot").value.trim();
-      const cost = document.getElementById("invCost").value;
-      if(!name) return alert("Name required.");
-      
-      const tagId = "KN-" + Math.floor(100000 + Math.random() * 900000);
-      try {
-        await set(ref(window.db, `inventory/${tagId}`), { barcode: tagId, item: name, cost: cost, location: loc, status: "In Stock", timestamp: serverTimestamp() });
-        
-        // Print
-        document.getElementById("tagDisplayItemName").innerText = name.toUpperCase();
-        document.getElementById("tagQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${tagId}`;
-        document.getElementById("tagDisplayId").innerText = tagId;
-        
-        setTimeout(() => { window.printAssetTag(); }, 500);
-        
-        document.getElementById("invName").value = ""; 
-      } catch(e) { alert(e.message); }
-    };
-
-    window.printAssetTag = () => {
-      const printContent = document.getElementById("printableTagArea").innerHTML;
-      const win = window.open('', '', 'height=400,width=400');
-      win.document.write('<html><body>' + printContent + '</body></html>');
-      win.document.close();
-      setTimeout(() => { win.print(); win.close(); }, 500);
-    };
-
-    window.filterInventory = () => {
-      const q = document.getElementById("invSearch").value.toLowerCase();
-      document.querySelectorAll(".inv-row").forEach(r => r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none");
-    };
-
-    // ================= 4. DISPATCH ENGINE =================
-    window.addTagToDispatchCart = async () => {
-      const tag = document.getElementById("dispTagInp").value.trim().toUpperCase();
-      if(!tag) return;
-      if(window.dispatchCartTags.find(t => t.id === tag)) return alert("Already added.");
-
-      try {
-        const snap = await get(ref(window.db, `inventory/${tag}`));
-        if(!snap.exists() || snap.val().status !== "In Stock") return alert("Invalid or Sold Tag.");
-
-        window.dispatchCartTags.push({ id: tag, item: snap.val().item, warranty: true });
-        document.getElementById("dispTagInp").value = "";
-        window.renderDispatchCart();
-      } catch(e) { alert(e.message); }
-    };
-
-    window.renderDispatchCart = () => {
-      const tbody = document.getElementById("dispatchCartBody");
-      if(window.dispatchCartTags.length === 0) return tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-400 py-4">No tags added.</td></tr>`;
-      
-      tbody.innerHTML = window.dispatchCartTags.map((t, i) => `
-        <tr>
-          <td class="font-mono font-bold">${t.id}</td>
-          <td>${t.item}</td>
-          <td class="text-center"><input type="checkbox" ${t.warranty ? 'checked' : ''} onchange="dispatchCartTags[${i}].warranty = this.checked"></td>
-          <td class="text-center"><button onclick="dispatchCartTags.splice(${i},1); renderDispatchCart();" class="text-red-500"><i class="fas fa-times"></i></button></td>
-        </tr>
-      `).join("");
-    };
-
-    window.processMasterDispatch = async () => {
-      const ordId = document.getElementById("dispOrder").value.trim().toUpperCase();
-      if(!ordId) return alert("Enter Order ID.");
-      if(window.dispatchCartTags.length === 0) return alert("Add items to package.");
-
-      try {
-        const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
-        if(!ordSnap.exists()) return alert("Order not found.");
-
-        const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
-        const updates = {};
-
-        for(let t of window.dispatchCartTags) {
-          updates[`inventory/${t.id}/status`] = "Sold";
-          updates[`inventory/${t.id}/masterQrRef`] = masterId;
-          updates[`inventory/${t.id}/hasWarranty`] = t.warranty;
+            // Sync Inventory
+            onValue(ref(window.db, "inventory"), snap => {
+                const tb = document.getElementById("tblInventory");
+                tb.innerHTML = "";
+                let stockCount = 0;
+                
+                if(!snap.exists()) return tb.innerHTML = "<tr><td colspan='6' class='text-center py-6 text-gray-400'>No inventory found.</td></tr>";
+                
+                snap.forEach(c => {
+                    const v = c.val();
+                    if(v.status === "In Stock") stockCount++;
+                    
+                    let cStyle = v.status === "Sold" ? "text-red-600 bg-red-50 px-2 py-1 rounded" : "text-green-600 bg-green-50 px-2 py-1 rounded";
+                    
+                    tb.innerHTML += `
+                    <tr class="inv-row hover:bg-gray-50 transition border-b">
+                        <td class="font-mono font-bold text-sm">${v.barcode}</td>
+                        <td class="font-bold text-sm text-gray-800">${v.item}</td>
+                        <td class="text-xs text-gray-600"><i class="fas fa-box text-gray-400 mr-1"></i> ${v.location || 'Main Warehouse'}</td>
+                        <td class="font-mono text-sm">₹${v.cost}</td>
+                        <td class="font-bold text-xs"><span class="${cStyle}">${v.status}</span></td>
+                        <td class="text-[10px] text-gray-400">${new Date(v.timestamp || Date.now()).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+                
+                document.getElementById("dashStock").innerText = stockCount;
+            });
         }
 
-        updates[`master_warranties/${masterId}`] = { masterId, orderRef: ordId, customerName: ordSnap.val().customerName, hardwareList: window.dispatchCartTags, timestamp: serverTimestamp() };
-        updates[`web_orders/${ordId}/status`] = "Dispatched";
-        updates[`web_orders/${ordId}/masterQrId`] = masterId;
+        window.verifyOrder = async (id) => {
+            if(confirm(`Security Protocol: Confirm you have verified the advance payment for order ${id} in your bank?`)) {
+                await update(ref(window.db, `web_orders/${id}`), { status: "Verified & Processing" });
+            }
+        };
 
-        await update(ref(window.db), updates);
-        
-        alert("Dispatched Successfully! Generating Bill...");
-        document.getElementById("dispOrder").value = ""; 
-        window.dispatchCartTags = []; 
-        window.renderDispatchCart();
-      } catch(e) { alert(e.message); }
-    };
+        window.filterOrders = () => {
+            const q = document.getElementById("orderSearch").value.toLowerCase();
+            document.querySelectorAll(".order-row").forEach(r => {
+                r.style.display = r.dataset.id.toLowerCase().includes(q) ? "" : "none";
+            });
+        };
 
-    // ================= 5. WARRANTY VERIFY =================
-    window.verifyMasterWarranty = async () => {
-      const mId = document.getElementById("claimMaster").value.trim().toUpperCase();
-      if(!mId) return;
-      try {
-        const snap = await get(ref(window.db, `master_warranties/${mId}`));
-        if(!snap.exists()) return alert("QR/Tag not found.");
-        const data = snap.val();
-        
-        document.getElementById("claimBadge").innerText = "AUTHORIZED";
-        document.getElementById("claimBadge").className = "px-2 py-1 font-bold text-xs rounded border border-green-500 text-green-700 bg-green-50";
-        document.getElementById("claimInfo").innerHTML = `Order: <b>${data.orderRef}</b> | Cust: <b>${data.customerName}</b>`;
-        
-        document.getElementById("claimHwList").innerHTML = data.hardwareList.map(hw => `
-          <li class="flex justify-between items-center p-3 border rounded">
-            <div><div class="font-bold">${hw.item}</div><div class="text-xs text-gray-500">${hw.id}</div></div>
-            <span class="${hw.warranty ? 'text-green-600' : 'text-red-600'} font-bold text-xs">${hw.warranty ? 'Covered' : 'Out of Warranty'}</span>
-          </li>
-        `).join("");
-        document.getElementById("claimResult").classList.remove("hidden");
-      } catch(e) { alert(e.message); }
-    };
+        // Inventory Management Logic
+        window.registerAsset = async () => {
+            const name = document.getElementById("invName").value.trim();
+            const loc = document.getElementById("invSpot").value.trim() || "Main Warehouse";
+            const cost = document.getElementById("invCost").value;
+            
+            if(!name || !cost) return alert("Hardware Name and Cost are required for FBA Inbound.");
+            
+            const tagId = "KN-" + Math.floor(100000 + Math.random() * 900000);
+            const btn = document.activeElement;
+            btn.innerText = "Generating...";
+            
+            try {
+                // Save to DB
+                await set(ref(window.db, `inventory/${tagId}`), { 
+                    barcode: tagId, 
+                    item: name, 
+                    cost: cost, 
+                    location: loc, 
+                    status: "In Stock", 
+                    timestamp: serverTimestamp() 
+                });
+                
+                // Setup Thermal Print UI
+                document.getElementById("tagDisplayItemName").innerText = name;
+                document.getElementById("tagQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${tagId}`;
+                document.getElementById("tagDisplayId").innerText = tagId;
+                
+                // Trigger Print
+                setTimeout(() => { window.printAssetTag(); }, 500);
+                
+                // Clear form
+                document.getElementById("invName").value = ""; 
+                document.getElementById("invCost").value = "";
+                document.getElementById("invSpot").value = "";
+            } catch(e) { 
+                alert(e.message); 
+            } finally {
+                btn.innerText = "Generate Asset Tag & Save";
+            }
+        };
 
-    // ================= 6. SCANNER =================
-    window.openScanner = (target) => {
-      scanTarget = target;
-      document.getElementById("scannerModal").classList.remove("hidden");
-      setTimeout(() => {
-        if(!html5QrCode) html5QrCode = new Html5Qrcode("qrReader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 220, height: 220 } },
-          (text) => { window.closeScanner(); handleScan(text.trim()); }, (e) => {}
-        ).catch(e => { alert("Camera Error"); window.closeScanner(); });
-      }, 100);
-    };
+        window.printAssetTag = () => {
+            const printContent = document.getElementById("printableTagArea").innerHTML;
+            const win = window.open('', '', 'height=400,width=400');
+            win.document.write('<html><head><title>Print Tag</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;">' + printContent + '</body></html>');
+            win.document.close();
+            win.focus();
+            setTimeout(() => { win.print(); win.close(); }, 800);
+        };
 
-    window.closeScanner = () => {
-      document.getElementById("scannerModal").classList.add("hidden");
-      if(html5QrCode) html5QrCode.stop().then(()=>html5QrCode.clear()).catch(e=>{});
-    };
+        window.filterInventoryAdmin = () => {
+            const q = document.getElementById("invSearch").value.toLowerCase();
+            document.querySelectorAll(".inv-row").forEach(r => {
+                r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+            });
+        };
 
-    function handleScan(code) {
-      if(scanTarget === 'DISPATCH') { document.getElementById("dispTagInp").value = code; window.addTagToDispatchCart(); }
-      else if(scanTarget === 'WARRANTY') { document.getElementById("claimMaster").value = code; window.verifyMasterWarranty(); }
-    }
-  </script>
+        // ================= 5. DISPATCH & MASTER QR ENGINE =================
+        window.addTagToDispatchCart = async () => {
+            const tag = document.getElementById("dispTagInp").value.trim().toUpperCase();
+            if(!tag) return;
+            if(window.dispatchCartTags.find(t => t.id === tag)) return alert("Tag is already in the dispatch box.");
+
+            const btn = document.activeElement;
+            btn.innerText = "Searching...";
+
+            try {
+                const snap = await get(ref(window.db, `inventory/${tag}`));
+                if(!snap.exists()) {
+                    alert("Tag not found in database.");
+                } else if(snap.val().status !== "In Stock") {
+                    alert(`Error: This tag is marked as '${snap.val().status}'.`);
+                } else {
+                    window.dispatchCartTags.push({ id: tag, item: snap.val().item, warranty: true });
+                    document.getElementById("dispTagInp").value = "";
+                    window.renderDispatchCart();
+                }
+            } catch(e) { 
+                alert("Database Error: " + e.message); 
+            } finally {
+                btn.innerText = "ADD TO BOX";
+            }
+        };
+
+        window.renderDispatchCart = () => {
+            const tbody = document.getElementById("dispatchCartBody");
+            if(window.dispatchCartTags.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center italic text-gray-400 py-6">Box is empty. Scan tags to add.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = window.dispatchCartTags.map((t, i) => `
+                <tr class="bg-white border-b">
+                    <td class="font-mono font-bold text-sm text-gray-800">${t.id}</td>
+                    <td class="text-sm font-bold">${t.item}</td>
+                    <td class="text-center">
+                        <input type="checkbox" ${t.warranty ? 'checked' : ''} onchange="dispatchCartTags[${i}].warranty = this.checked" class="w-4 h-4 cursor-pointer text-orange-500">
+                    </td>
+                    <td class="text-center">
+                        <button onclick="dispatchCartTags.splice(${i},1); renderDispatchCart();" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join("");
+        };
+
+        window.processMasterDispatch = async () => {
+            const ordId = document.getElementById("dispOrder").value.trim().toUpperCase();
+            if(!ordId) return alert("Please enter the Customer Order ID.");
+            if(window.dispatchCartTags.length === 0) return alert("You cannot dispatch an empty box. Add hardware tags first.");
+
+            const btn = document.activeElement;
+            const originalText = btn.innerText;
+            btn.innerText = "Processing Dispatch...";
+            btn.disabled = true;
+
+            try {
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if(!ordSnap.exists()) return alert("Order ID not found in database.");
+                if(ordSnap.val().status === "Dispatched") return alert("This order has already been dispatched.");
+
+                const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
+                const updates = {};
+
+                // Update all scanned tags to Sold and link MQR
+                for(let t of window.dispatchCartTags) {
+                    updates[`inventory/${t.id}/status`] = "Sold";
+                    updates[`inventory/${t.id}/masterQrRef`] = masterId;
+                    updates[`inventory/${t.id}/hasWarranty`] = t.warranty;
+                }
+
+                // Create Master Warranty Document
+                updates[`master_warranties/${masterId}`] = { 
+                    masterId, 
+                    orderRef: ordId, 
+                    customerName: ordSnap.val().customerName, 
+                    hardwareList: window.dispatchCartTags, 
+                    timestamp: serverTimestamp() 
+                };
+                
+                // Update Order Status
+                updates[`web_orders/${ordId}/status`] = "Dispatched";
+                updates[`web_orders/${ordId}/masterQrId`] = masterId;
+
+                // Execute mass update
+                await update(ref(window.db), updates);
+                
+                // Print Amazon Style Official Bill
+                window.printDispatchBill(ordId, masterId, ordSnap.val().customerName, window.dispatchCartTags);
+                
+                // Reset UI
+                document.getElementById("dispOrder").value = ""; 
+                window.dispatchCartTags = []; 
+                window.renderDispatchCart();
+                alert("Dispatch Successful! Order closed.");
+
+            } catch(e) { 
+                alert(e.message); 
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        // Official A4 Dispatch Bill Generation
+        window.printDispatchBill = (ordId, masterId, customerName, items) => {
+            let itemRows = items.map((it, i) => `
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px; font-size: 12pt;">${i+1}</td>
+                    <td style="padding: 12px; font-size: 12pt; font-weight: bold;">${it.item}</td>
+                    <td style="padding: 12px; font-size: 12pt; font-family: monospace;">${it.id}</td>
+                    <td style="padding: 12px; font-size: 12pt; text-align: right;">${it.warranty ? "6M Free" : "None"}</td>
+                </tr>
+            `).join("");
+
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            const doc = iframe.contentWindow.document;
+            
+            doc.open();
+            doc.write(`
+                <html><head><style>
+                    body { font-family: 'Arial', sans-serif; padding: 40px; color: #111; }
+                    .header { border-bottom: 3px solid #111; padding-bottom: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+                    .title { font-size: 28pt; font-weight: 900; margin:0; }
+                    .subtitle { font-size: 14pt; color: #555; margin:0; }
+                    .meta-box { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; margin-bottom: 30px; }
+                    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14pt; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+                    th { border-bottom: 2px solid #111; text-align: left; padding: 12px; font-size: 14pt; }
+                    .qr-section { display: flex; align-items: center; justify-content: center; flex-direction: column; border: 2px dashed #111; padding: 30px; margin-top: 40px; }
+                </style></head><body>
+                    <div class="header">
+                        <div>
+                            <h1 class="title">KAALNETRA SECURITY</h1>
+                            <p class="subtitle">Official Fulfillment & Warranty Invoice</p>
+                        </div>
+                        <div style="font-size:12pt; text-align:right;">Date: ${new Date().toLocaleDateString()}</div>
+                    </div>
+                    
+                    <div class="meta-box">
+                        <div class="meta-grid">
+                            <div><strong>Order Ref:</strong> ${ordId}</div>
+                            <div><strong>Customer:</strong> ${customerName}</div>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead><tr><th>#</th><th>Asset Description</th><th>Hardware Tag ID</th><th style="text-align:right;">Warranty Status</th></tr></thead>
+                        <tbody>${itemRows}</tbody>
+                    </table>
+                    
+                    <div class="qr-section">
+                        <h2 style="margin-top:0; font-size:18pt;">MASTER WARRANTY QR</h2>
+                        <p style="color:#555; margin-top:0; text-align:center;">Technicians will scan this QR to authorize repairs or replacements.</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${masterId}" style="width:200px; height:200px; margin: 20px 0;">
+                        <div style="font-family:monospace; font-size:24pt; font-weight:bold;">${masterId}</div>
+                    </div>
+                </body></html>
+            `);
+            doc.close();
+            
+            setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 800);
+        };
+
+        // ================= 6. RMA WARRANTY SCANNER =================
+        window.verifyMasterWarranty = async () => {
+            const mId = document.getElementById("claimMaster").value.trim().toUpperCase();
+            if(!mId) return alert("Please enter a Master QR ID or Tag ID.");
+            
+            const btn = document.activeElement;
+            btn.innerText = "Searching...";
+
+            try {
+                // Determine if it's a tag or master QR
+                let queryId = mId;
+                if(mId.startsWith('KN-')) {
+                    // Try to find Master QR from Tag
+                    const tagSnap = await get(ref(window.db, `inventory/${mId}`));
+                    if(!tagSnap.exists() || !tagSnap.val().masterQrRef) {
+                        return alert("Hardware tag not found or not associated with any Master Warranty.");
+                    }
+                    queryId = tagSnap.val().masterQrRef;
+                }
+
+                const snap = await get(ref(window.db, `master_warranties/${queryId}`));
+                if(!snap.exists()) return alert("Master Warranty Policy not found.");
+                
+                const data = snap.val();
+                
+                document.getElementById("claimBadge").innerText = "AUTHORIZED / ACTIVE";
+                document.getElementById("claimBadge").className = "px-3 py-1 font-bold text-xs rounded border border-green-500 text-green-800 bg-green-50 uppercase tracking-wider";
+                document.getElementById("claimInfo").innerHTML = `<b>Customer:</b> ${data.customerName}<br><b>Linked Order:</b> ${data.orderRef}<br><b>Policy Generated:</b> ${new Date(data.timestamp || Date.now()).toLocaleDateString()}`;
+                
+                document.getElementById("claimHwList").innerHTML = data.hardwareList.map(hw => `
+                    <li class="flex justify-between items-center p-4 border rounded bg-gray-50 hover:bg-white transition">
+                        <div>
+                            <div class="font-bold text-sm text-gray-800">${hw.item}</div>
+                            <div class="text-xs font-mono text-gray-500 mt-1">Tag: ${hw.id}</div>
+                        </div>
+                        <div>
+                            <span class="${hw.warranty ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'} font-bold text-xs px-2 py-1 rounded">
+                                ${hw.warranty ? '<i class="fas fa-check-circle"></i> Covered' : '<i class="fas fa-times-circle"></i> Out of Warranty'}
+                            </span>
+                        </div>
+                    </li>
+                `).join("");
+                
+                document.getElementById("claimResult").classList.remove("hidden");
+            } catch(e) { 
+                alert("Lookup Error: " + e.message); 
+            } finally {
+                btn.innerText = "Lookup";
+            }
+        };
+
+        // ================= 7. CHART.JS & HTML5 CAMERA =================
+        function initSellerCharts() {
+            // Dummy initialization for charts
+            const ctxSales = document.getElementById('salesChart').getContext('2d');
+            const ctxInv = document.getElementById('inventoryChart').getContext('2d');
+            
+            sellerCharts.sales = new Chart(ctxSales, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{ label: 'Revenue (₹)', data: [12000, 19000, 3000, 5000, 20000, 30000, 0], borderColor: '#007185', tension: 0.3 }]
+                }
+            });
+
+            sellerCharts.inv = new Chart(ctxInv, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CCTV', 'Locks', 'Systems', 'Accessories'],
+                    datasets: [{ data: [45, 25, 20, 10], backgroundColor: ['#ffa41c', '#007185', '#232f3e', '#e7e9ec'] }]
+                }
+            });
+        }
+
+        function updateChartsDummyData(rev, pending, dispatched) {
+            if(sellerCharts.sales) {
+                // Just a visual hack to make charts feel alive based on current data
+                let d = sellerCharts.sales.data.datasets[0].data;
+                d[6] = rev > 0 ? rev / 2 : 15000; 
+                sellerCharts.sales.update();
+            }
+        }
+
+        window.openScanner = (target) => {
+            scanTarget = target;
+            document.getElementById("scannerModal").classList.remove("hidden");
+            setTimeout(() => {
+                if(!html5QrCode) html5QrCode = new Html5Qrcode("qrReader");
+                html5QrCode.start(
+                    { facingMode: "environment" }, 
+                    { fps: 15, qrbox: { width: 250, height: 250 } },
+                    (text) => { window.closeScanner(); handleScan(text.trim()); }, 
+                    (e) => { /* ignore frame errors */ }
+                ).catch(e => { 
+                    alert("Camera Permission Error. Please allow camera access."); 
+                    window.closeScanner(); 
+                });
+            }, 100);
+        };
+
+        window.closeScanner = () => {
+            document.getElementById("scannerModal").classList.add("hidden");
+            if(html5QrCode) html5QrCode.stop().then(()=>html5QrCode.clear()).catch(e=>{});
+        };
+
+        function handleScan(code) {
+            if(scanTarget === 'DISPATCH') { 
+                document.getElementById("dispTagInp").value = code; 
+                window.addTagToDispatchCart(); 
+            }
+            else if(scanTarget === 'WARRANTY') { 
+                document.getElementById("claimMaster").value = code; 
+                window.verifyMasterWarranty(); 
+            }
+        }
+    </script>
 </body>
 </html>
