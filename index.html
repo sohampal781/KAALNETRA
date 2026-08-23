@@ -44,11 +44,11 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <!-- HEADER -->
+    <!-- 1. HEADER -->
     <header id="publicHeader" class="bg-[var(--amz-nav)] text-white sticky top-0 z-50">
         <div class="flex items-center justify-between px-4 py-3 gap-4 flex-wrap lg:flex-nowrap">
             <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.reload()">
-                <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded-lg text-2xl border-2 border-yellow-500">K</div>
+                <div class="w-10 h-10 bg-yellow-400 text-black font-black flex items-center justify-center rounded-lg text-2xl border-2 border-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]">K</div>
                 <div class="leading-tight">
                     <h1 class="text-xl font-bold tracking-wide m-0 text-white">Kaalnetra.in</h1>
                     <div class="text-[11px] text-gray-300 font-medium tracking-widest uppercase">Security Systems</div>
@@ -84,7 +84,7 @@
         </div>
     </header>
 
-    <!-- STOREFRONT -->
+    <!-- 2. STOREFRONT -->
     <section id="view-storefront" class="flex-1 flex flex-col">
         <div class="relative w-full h-[250px] md:h-[350px] overflow-hidden bg-gradient-to-r from-slate-900 via-gray-900 to-black flex items-center justify-center text-center text-white px-4 border-b-4 border-yellow-500">
             <div class="z-10">
@@ -100,11 +100,12 @@
             <div class="flex justify-between items-end mb-6 border-b-2 border-gray-200 pb-3">
                 <h3 class="text-2xl font-black text-gray-900">Choose The Right Version For Your Need</h3>
             </div>
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" id="productGrid"></div>
         </main>
     </section>
 
-    <!-- SELLER CENTRAL (ERP) -->
+    <!-- 3. SELLER CENTRAL (ERP) -->
     <section id="view-erp" class="hidden flex-1 bg-gray-100 flex overflow-hidden">
         <!-- Sidebar -->
         <div class="w-64 bg-white border-r border-gray-300 shadow-xl flex flex-col h-screen sticky top-0 z-10">
@@ -164,7 +165,7 @@
                                 <th>System Model</th>
                                 <th>Advance Paid</th>
                                 <th>Status</th>
-                                <th class="text-center">Action</th>
+                                <th class="text-center w-36">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="tblOrders"><tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Connecting to Firebase...</td></tr></tbody>
@@ -191,7 +192,7 @@
                 </div>
                 <div class="bg-white rounded-lg border shadow-md overflow-hidden">
                     <table class="w-full">
-                        <thead><tr><th>Tag ID</th><th>Hardware Name</th><th>Location</th><th>Cost</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Tag ID</th><th>Hardware Name</th><th>Location</th><th>Cost</th><th>Status</th><th class="text-center">Action</th></tr></thead>
                         <tbody id="tblInventory"></tbody>
                     </table>
                 </div>
@@ -275,6 +276,7 @@
         </div>
     </div>
 
+    <!-- Track Order -->
     <div id="trackModal" class="modal-overlay hidden">
         <div class="bg-white rounded-lg w-full max-w-md p-6 relative shadow-2xl">
             <button onclick="document.getElementById('trackModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400"><i class="fas fa-times text-xl"></i></button>
@@ -284,6 +286,7 @@
         </div>
     </div>
 
+    <!-- Auth -->
     <div id="staffModal" class="modal-overlay hidden">
         <div class="bg-white rounded-lg p-8 max-w-sm w-full relative text-center shadow-2xl border-t-8 border-yellow-400">
             <button onclick="document.getElementById('staffModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400"><i class="fas fa-times text-xl"></i></button>
@@ -292,6 +295,27 @@
             <input id="staffEmail" type="email" placeholder="Staff Email" class="w-full p-3 mb-4 border rounded-md text-sm outline-none">
             <input id="staffPass" type="password" placeholder="Password" class="w-full p-3 mb-6 border rounded-md text-sm outline-none">
             <button onclick="loginStaff()" class="btn-amz-yellow w-full py-3 text-sm font-bold uppercase">Sign In</button>
+        </div>
+    </div>
+
+    <!-- Schedule Install & WhatsApp Modal -->
+    <div id="scheduleModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-lg p-6 max-w-sm w-full relative shadow-2xl border-t-8 border-green-500">
+            <button onclick="document.getElementById('scheduleModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400"><i class="fas fa-times text-xl"></i></button>
+            <i class="fab fa-whatsapp text-4xl text-green-500 mb-2"></i>
+            <h3 class="font-bold text-lg mb-4 text-gray-800">Schedule & Notify</h3>
+            
+            <input type="hidden" id="schedOrderId">
+            <input type="hidden" id="schedCustomerPhone">
+            <input type="hidden" id="schedCustomerName">
+            
+            <label class="block text-xs font-bold text-gray-600 mb-1 text-left">Select Installation Date</label>
+            <input type="date" id="schedDate" class="w-full p-3 border border-gray-300 rounded mb-4 text-sm outline-none focus:border-green-500">
+            
+            <label class="block text-xs font-bold text-gray-600 mb-1 text-left">Select Arrival Time</label>
+            <input type="time" id="schedTime" class="w-full p-3 border border-gray-300 rounded mb-6 text-sm outline-none focus:border-green-500">
+            
+            <button onclick="saveSchedule()" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded text-sm font-bold uppercase tracking-wider transition">Save & Open WhatsApp</button>
         </div>
     </div>
 
@@ -311,7 +335,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+        import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"; // Added remove
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHTz8LAvaxr1y3egWQnhDrP2d3FOAWyn8",
@@ -324,9 +348,9 @@
         const auth = getAuth(app);
         window.db = getDatabase(app);
 
-        // ================= STORE CATALOG =================
+        // ================= STORE CATALOG (STRICT 5 ITEMS) =================
         const CATALOG = [
-            { id: "v1", name: "Version 1 - Basic Safety System", price: 15000, desc: "IR Detection, Buzzer / Audio Alert, LED Indication." },
+            { id: "v1", name: "Version 1 - Basic Safety Alert System", price: 15000, desc: "IR Detection, Buzzer / Audio Alert, LED Indication." },
             { id: "v2", name: "Version 2 - Safety System with Bypass Switch", price: 20000, desc: "Includes V1 features plus Dual Sensor Support and physical Permanent Bypass Switch." },
             { id: "v3", name: "Version 3 - Smart Phone Web Access System", price: 21000, desc: "Includes V2 features plus Remote Web App Access and Basic Activity Logging." },
             { id: "v4", name: "Version 4 - Biometric Smart Access System", price: 26000, desc: "Advanced security with Biometric Fingerprint Access, Real-time Alerts on phone." },
@@ -335,7 +359,6 @@
 
         let currentOrderProduct = null;
         window.dispatchCartTags = [];
-        let previousOrderCount = 0;
 
         function renderCatalog(items) {
             document.getElementById("productGrid").innerHTML = items.map(p => `
@@ -349,6 +372,12 @@
             `).join("");
         }
         renderCatalog(CATALOG);
+
+        window.filterCatalog = () => {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = CATALOG.filter(p => p.name.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+            renderCatalog(filtered);
+        };
 
         // ================= PUBLIC CHECKOUT =================
         window.openOrderModal = (id) => {
@@ -387,7 +416,7 @@
 
             try {
                 await set(ref(window.db, `web_orders/${ordId}`), {
-                    orderId: ordId, productName: currentOrderProduct.name, advancePaid: adv, balanceDue: currentOrderProduct.price - adv, customerName: name, phone: phone, txnIdLast5: txn, status: "Pending Verification", timestamp: Date.now()
+                    orderId: ordId, productName: currentOrderProduct.name, advancePaid: adv, balanceDue: currentOrderProduct.price - adv, customerName: name, address: address, phone: phone, txnIdLast5: txn, status: "Pending Verification", timestamp: Date.now()
                 });
                 document.getElementById("publicOrderModal").classList.add("hidden");
                 alert(`SUCCESS! Tracking ID: ${ordId}`);
@@ -405,13 +434,15 @@
                 const snap = await get(ref(window.db, `web_orders/${id}`));
                 if(!snap.exists()) return alert("Order ID not found.");
                 const d = snap.val();
-                alert(`ORDER: ${id}\nSystem: ${d.productName}\nStatus: ${d.status}\nAdvance: ₹${d.advancePaid}`);
+                let statusMsg = `ORDER: ${id}\nSystem: ${d.productName}\nStatus: ${d.status}\nAdvance: ₹${d.advancePaid}`;
+                if(d.installDate) statusMsg += `\nScheduled For: ${d.installDate} at ${d.installTime}`;
+                alert(statusMsg);
             } catch(e) { alert(e.message); }
         };
 
         // ================= SELLER CENTRAL AUTH =================
         window.openStaffLogin = () => document.getElementById("staffModal").classList.remove("hidden");
-        window.loginStaff = () => signInWithEmailAndPassword(auth, document.getElementById("staffEmail").value, document.getElementById("staffPass").value);
+        window.loginStaff = () => signInWithEmailAndPassword(auth, document.getElementById("staffEmail").value, document.getElementById("staffPass").value).catch((e)=>alert(e.message));
         window.logoutStaff = () => signOut(auth).then(() => window.location.reload());
 
         onAuthStateChanged(auth, (user) => {
@@ -434,8 +465,6 @@
         };
 
         // ================= CRASH-PROOF ERP SYNC ENGINE =================
-        
-        // Manual override function just in case
         window.forceRefreshOrders = () => {
             document.getElementById("tblOrders").innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Reloading Firebase Data...</td></tr>`;
             startLiveErpSync();
@@ -454,16 +483,10 @@
                 }
 
                 let arr = []; 
-                
-                // CRITICAL FIX: Add curly braces so it DOES NOT return true and cancel the loop
-                snap.forEach(c => { 
-                    arr.push(c.val()); 
-                }); 
-                
+                snap.forEach(c => { arr.push(c.val()); }); 
                 arr.reverse();
+                
                 document.getElementById("badgeLiveCount").innerText = arr.length;
-
-                // Build HTML safely using a string variable to prevent DOM thrashing crashes
                 let rowsHtml = "";
 
                 for(let i=0; i<arr.length; i++) {
@@ -476,8 +499,26 @@
                     if (statusStr.includes("Dispatched")) dispatchCount++;
                     if (!statusStr.includes("Pending")) revenue += advance;
 
-                    let actionHtml = statusStr.includes("Pending") ? `<button onclick="window.verifyOrder('${ordId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded text-xs font-bold transition">Verify Payment</button>` : `<span class="text-xs text-gray-400 italic">Locked</span>`;
-                    let sClass = statusStr.includes("Pending") ? "bg-yellow-100 text-yellow-800 border border-yellow-200" : "bg-green-100 text-green-800 border border-green-200";
+                    let actionHtml = "";
+                    let sClass = "bg-gray-100 text-gray-800 border-gray-200";
+
+                    // Determine Action Buttons and Badges based on Status
+                    if (statusStr.includes("Pending")) {
+                        actionHtml = `<button onclick="window.verifyOrder('${ordId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full">Verify Pay</button>`;
+                        sClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+                    } else if (statusStr === "Verified & Ready For Dispatch" || statusStr.includes("Verified")) {
+                        actionHtml = `<button onclick="window.openScheduleModal('${ordId}', '${v.phone}', '${v.customerName}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full"><i class="fab fa-whatsapp mr-1"></i>Schedule</button>`;
+                        sClass = "bg-green-100 text-green-800 border-green-200";
+                    } else if (statusStr.includes("Scheduled")) {
+                        actionHtml = `<span class="text-xs text-gray-500 font-bold block mb-1">Scheduled: <br>${v.installDate}</span>`;
+                        sClass = "bg-blue-100 text-blue-800 border-blue-200";
+                    } else if (statusStr.includes("Dispatched")) {
+                        actionHtml = `<span class="text-xs text-emerald-600 font-bold block mb-1"><i class="fas fa-check-circle"></i> Closed</span>`;
+                        sClass = "bg-purple-100 text-purple-800 border-purple-200";
+                    }
+
+                    // Always add Delete Button
+                    actionHtml += `<button onclick="window.deleteOrder('${ordId}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded text-[11px] font-bold transition w-full mt-1"><i class="fas fa-trash mr-1"></i>Delete</button>`;
 
                     rowsHtml += `
                         <tr class="hover-row border-b border-gray-100">
@@ -486,7 +527,7 @@
                             <td class="text-xs font-bold text-gray-700">${v.productName || "System"}</td>
                             <td><div class="font-black text-emerald-700">₹${advance}</div><div class="text-[10px] text-gray-400 font-mono mt-0.5">UPI: *${v.txnIdLast5 || 'N/A'}</div></td>
                             <td><span class="px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${sClass}">${statusStr}</span></td>
-                            <td class="text-center">${actionHtml}</td>
+                            <td class="text-center align-top w-28">${actionHtml}</td>
                         </tr>`;
                 }
                 
@@ -503,12 +544,12 @@
                 let stock = 0; 
                 
                 if(!snap.exists()) {
-                    tb.innerHTML = "";
+                    tb.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400 italic">No inventory registered.</td></tr>`;
+                    document.getElementById("dashStock").innerText = 0;
                     return;
                 }
                 
                 let invHtml = "";
-                // CRITICAL FIX: Add curly braces
                 snap.forEach(c => {
                     const v = c.val() || {};
                     const s = v.status || "In Stock";
@@ -521,6 +562,7 @@
                             <td class="text-xs text-gray-500">${v.location || 'Warehouse'}</td>
                             <td class="font-mono text-sm">₹${v.cost || 0}</td>
                             <td><span class="font-bold text-xs px-2 py-1 rounded border ${sClass}">${s}</span></td>
+                            <td class="text-center"><button onclick="window.deleteInventory('${v.barcode}')" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash"></i></button></td>
                         </tr>`;
                 });
                 tb.innerHTML = invHtml;
@@ -528,9 +570,67 @@
             });
         }
 
+        // ================= ACTIONS & DELETE =================
         window.verifyOrder = async (id) => {
             if(confirm(`Verify payment for ${id}?`)) {
                 await update(ref(window.db, `web_orders/${id}`), { status: "Verified & Ready For Dispatch" });
+            }
+        };
+
+        window.deleteOrder = async (id) => {
+            if(confirm(`🚨 WARNING: Are you sure you want to permanently DELETE order ${id}? This cannot be undone.`)) {
+                try {
+                    await remove(ref(window.db, `web_orders/${id}`));
+                } catch(e) { alert("Delete Failed: " + e.message); }
+            }
+        };
+
+        window.deleteInventory = async (id) => {
+            if(confirm(`Are you sure you want to delete inventory tag ${id}?`)) {
+                try {
+                    await remove(ref(window.db, `inventory/${id}`));
+                } catch(e) { alert("Delete Failed: " + e.message); }
+            }
+        };
+
+        // ================= SCHEDULING & WHATSAPP =================
+        window.openScheduleModal = (orderId, phone, name) => {
+            document.getElementById('schedOrderId').value = orderId;
+            document.getElementById('schedCustomerPhone').value = phone;
+            document.getElementById('schedCustomerName').value = name;
+            document.getElementById('scheduleModal').classList.remove('hidden');
+        };
+
+        window.saveSchedule = async () => {
+            const id = document.getElementById('schedOrderId').value;
+            const phone = document.getElementById('schedCustomerPhone').value;
+            const name = document.getElementById('schedCustomerName').value;
+            const date = document.getElementById('schedDate').value;
+            const time = document.getElementById('schedTime').value;
+
+            if(!date || !time) return alert("Please select both an installation date and time.");
+
+            try {
+                // Update Firebase Status
+                await update(ref(window.db, `web_orders/${id}`), {
+                    status: "Scheduled for Install",
+                    installDate: date,
+                    installTime: time
+                });
+                
+                document.getElementById('scheduleModal').classList.add('hidden');
+
+                // Prepare WhatsApp Notification
+                const msg = `Hello ${name},%0A%0AThank you for choosing Kaalnetra Security Systems! 👁️%0A%0AYour order (${id}) has been verified. We have scheduled your professional installation for:%0A📅 *Date:* ${date}%0A⏰ *Time:* ${time}%0A%0AOur technician will arrive at the scheduled time. Please keep your balance payment ready after successful installation.%0A%0AStay Secure,%0AKaalnetra Support`;
+                
+                let cleanPhone = phone.replace(/\D/g,'');
+                if(cleanPhone.length === 10) cleanPhone = "91" + cleanPhone; // Add India code if missing
+
+                // Open WhatsApp
+                window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+                
+            } catch(e) {
+                alert("Scheduling Error: " + e.message);
             }
         };
 
