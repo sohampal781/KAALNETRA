@@ -416,7 +416,8 @@
                     <p class="text-xs font-bold text-gray-600 mb-2 uppercase">Scan QR to pay advance</p>
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dsohampal781%40okhdfcbank%26pn%3DKaalnetraSecurity" class="w-32 h-32 mx-auto mb-4 border border-gray-300 p-1 bg-white shadow-sm rounded" alt="UPI QR Code">
                     
-                    <input id="ordTxn" type="text" maxlength="5" placeholder="Enter last 5 digits of UPI" class="p-3 text-center font-mono font-bold text-sm border rounded outline-none focus:border-orange-500">
+                   <!-- REPLACE THE PAYMENT INPUT IN THE PUBLIC CHECKOUT MODAL -->
+                    <input id="ordTxn" type="text" maxlength="4" placeholder="Enter last 4 digits of UPI" class="p-3 text-center font-mono font-bold text-sm border rounded outline-none focus:border-orange-500">
                 </div>
                 <button id="btnSubmitOrder" onclick="submitPublicOrder()" class="btn-amz-yellow w-full py-4 text-sm font-bold uppercase">Confirm Order</button>
             </div>
