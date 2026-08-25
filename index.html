@@ -680,8 +680,7 @@
             tbody.innerHTML = html;
         }
         initTagPrinter();
-
-        // Print Execution
+        // ================= TAB 6: BATCH TAG GENERATION & PRINTING =================
         window.generateAndPrintTags = async () => {
             const btn = document.activeElement;
             const origText = btn.innerHTML;
@@ -696,23 +695,24 @@
                 for (const prefix of Object.keys(PREFIX_MAP)) {
                     const chk = document.getElementById(`chk_${prefix}`);
                     if (chk && chk.checked) {
-                        const qty = parseInt(document.getElementById(`qty_${prefix}`).value) || 0;
+                        const qty = parseInt(document.getElementById(`qty_${prefix}`).value);
+                        
+                        // Enforce minimum 1, no maximum limit
                         if (qty > 0) {
-                            
-                            // 2. Fetch current sequence counter from Database to prevent duplicates
+                            // Fetch current sequence counter from Database to completely prevent duplicates
                             const countSnap = await get(ref(window.db, `tag_counters/${prefix}`));
                             let currentCount = countSnap.exists() ? parseInt(countSnap.val()) : 0;
                             
                             for (let i = 0; i < qty; i++) {
                                 currentCount++;
                                 
-                                // Format: Prefix (2) + Sequence (10) = 12 digits (e.g. 010000000105)
-                                const sequencePart = currentCount.toString().padStart(10, '0');
+                                // Clean 8-Digit Format: Prefix (2) + Sequence (6) = 8 digits (Matches your PDF)
+                                const sequencePart = currentCount.toString().padStart(6, '0');
                                 const tagId = `${prefix}${sequencePart}`;
                                 tagsToPrint.push(tagId);
                             }
                             
-                            // 3. Queue the database update so the next batch starts higher
+                            // Queue the database update so the next batch starts perfectly higher
                             updates[`tag_counters/${prefix}`] = currentCount;
                         }
                     }
@@ -725,77 +725,92 @@
                     return;
                 }
 
-                // 4. Save new max counters to Firebase instantly
+                // 2. Open the NEW TAB immediately (Browsers require this to happen directly after a click to avoid popup blockers)
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    alert("⚠️ Pop-up blocked! Please allow pop-ups for this site to print the tags.");
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 3. Save new max counters to Firebase instantly
                 await update(ref(window.db), updates);
 
-                // 5. Build Print HTML (Matches your PDF styling)
+                // 4. Build Print HTML matching the provided PDF styling exactly
                 let printHtml = "";
                 tagsToPrint.forEach(tagId => {
                     printHtml += `
                         <div class="label-page">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${tagId}" class="qr-code">
-                            <svg class="barcode"
-                                jsbarcode-format="CODE128"
-                                jsbarcode-value="${tagId}"
-                                jsbarcode-textmargin="5"
-                                jsbarcode-height="80"
-                                jsbarcode-width="3"
-                                jsbarcode-fontsize="30"
-                                jsbarcode-margin="0"
-                                jsbarcode-fontoptions="bold">
-                            </svg>
+                            <div class="label-box">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${tagId}" class="qr-code" alt="QR Code">
+                                <svg class="barcode"
+                                    jsbarcode-format="CODE128"
+                                    jsbarcode-value="${tagId}"
+                                    jsbarcode-textmargin="6"
+                                    jsbarcode-height="75"
+                                    jsbarcode-width="3"
+                                    jsbarcode-fontsize="32"
+                                    jsbarcode-margin="0"
+                                    jsbarcode-fontoptions="bold">
+                                </svg>
+                            </div>
                         </div>
                     `;
                 });
 
-                // 6. Inject into hidden iFrame for silent printing
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-                const doc = iframe.contentWindow.document;
-                doc.open();
-                doc.write(`
+                // 5. Inject into the New Tab
+                printWindow.document.open();
+                printWindow.document.write(`
                     <html>
                     <head>
+                        <title>Kaalnetra Batch Print - ${tagsToPrint.length} Tags</title>
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"><\/script>
                         <style>
-                            @page { size: auto; margin: 0mm; }
-                            body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; background: white; }
+                            @page { size: auto; margin: 3mm; }
+                            body { margin: 0; padding: 0; background: white; font-family: sans-serif; }
                             .label-page {
                                 width: 100%;
                                 page-break-after: always;
                                 display: flex;
-                                flex-direction: column;
                                 justify-content: center;
                                 align-items: center;
                                 padding-top: 15px;
-                                padding-bottom: 15px;
                             }
-                            .qr-code { width: 220px; height: 220px; margin-bottom: 15px; }
-                            .barcode { width: 100%; max-width: 250px; }
+                            /* This box matches your PDF border style exactly */
+                            .label-box {
+                                border: 4px solid #000;
+                                padding: 15px;
+                                width: 280px;
+                                text-align: center;
+                                background: #fff;
+                            }
+                            .qr-code { width: 230px; height: 230px; margin-bottom: 10px; }
+                            .barcode { width: 100%; max-width: 260px; }
                         </style>
                     </head>
                     <body>
                         ${printHtml}
                         <script>
+                            // window.onload guarantees EVERY image is fully downloaded before the print menu opens
                             window.onload = function() {
-                                // Renders all Barcodes on the page
+                                // Render all Barcodes on the page
                                 JsBarcode(".barcode").init(); 
-                                // Wait 1 second to ensure QR codes load, then print
-                                setTimeout(() => { window.print(); }, 1000);
+                                
+                                // Give the browser half a second to draw the barcodes, then open Print Menu
+                                setTimeout(() => { 
+                                    window.print(); 
+                                }, 500);
                             };
                         <\/script>
                     </body>
                     </html>
                 `);
-                doc.close();
-
-                // Clean up iframe after print dialog
-                setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+                printWindow.document.close();
                 
                 // Uncheck all boxes to prevent accidental double-printing
                 document.querySelectorAll('.print-chk').forEach(c => c.checked = false);
-                alert(`✅ Successfully generated, saved, and sent ${tagsToPrint.length} tags to the printer!`);
+                alert(`✅ Successfully generated and saved ${tagsToPrint.length} tags to the database!`);
 
             } catch (e) {
                 alert("Print Error: " + e.message);
@@ -804,7 +819,6 @@
                 btn.disabled = false;
             }
         };
-
         function renderCatalog(items) {
             document.getElementById("productGrid").innerHTML = items.map(p => `
                 <div class="bg-white border rounded-lg shadow-sm p-5 relative">
@@ -997,6 +1011,7 @@
             } catch(e) { alert(e.message); }
         };
         // ================= RAPID SCAN & AUTO-DETECT INVENTORY REGISTRATION =================
+        // ================= RAPID SCAN & AUTO-DETECT INVENTORY REGISTRATION =================
         window.linkPreMadeQR = async () => {
             const spot = document.getElementById("invSpot").value || "Main Warehouse";
             const inputField = document.getElementById("invScanner");
@@ -1011,7 +1026,6 @@
             // 1. Smart Auto-Detect: Read the first 2 characters
             const prefix = tagId.substring(0, 2);
             
-            // 2. The Auto-Detect Mapping Dictionary
             const ITEM_MAP = {
                 "01": "IR Transmitter module",
                 "02": "IR Receiver / sensor module",
@@ -1039,7 +1053,6 @@
 
             const detectedItemName = ITEM_MAP[prefix];
 
-            // 3. Error Handling: Stop if the prefix doesn't exist
             if(!detectedItemName) {
                 document.getElementById("invScanFeedback").innerText = `❌ Invalid Format: Unknown Prefix '${prefix}'`;
                 document.getElementById("invScanFeedback").className = "text-xs font-bold text-rose-600 text-right h-4";
@@ -1049,13 +1062,11 @@
             }
 
             try {
-                // Prevent duplicate scanning of the same physical barcode
                 const snap = await get(ref(window.db, `inventory/${tagId}`));
                 if(snap.exists()) {
                     document.getElementById("invScanFeedback").innerText = `⚠️ Tag ${tagId} is already registered!`;
                     document.getElementById("invScanFeedback").className = "text-xs font-bold text-rose-600 text-right h-4";
                 } else {
-                    // Save to the database using the AUTO-DETECTED name
                     await set(ref(window.db, `inventory/${tagId}`), { 
                         barcode: tagId, 
                         item: detectedItemName, 
@@ -1070,7 +1081,7 @@
                 alert("Error: " + e.message);
             } finally {
                 inputField.disabled = false;
-                inputField.focus(); // Keep cursor locked in the box for the next scan
+                inputField.focus(); 
             }
         };
         // ================= REPRINT BILL LOGIC (ARCHIVE SUPPORTED) =================
