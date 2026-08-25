@@ -1447,8 +1447,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
         window.snapBackSwipe = (el) => {
             if(el.value < 100) el.value = 0;
         };
-
-        // ================= SECURE INSTALLATION DONE LOGIC =================
+// ================= SECURE INSTALLATION DONE LOGIC =================
         window.completeInstallation = async () => {
             const ordId = document.getElementById('techOrdId').value;
             const otp = document.getElementById('techOtp').value.trim();
