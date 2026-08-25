@@ -35,6 +35,13 @@
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
         @keyframes pulse-banner { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
         .pulse-anim { animation: pulse-banner 2s infinite; }
+        /* iOS Style Swipe-to-Complete Slider */
+        input[type=range].swipe-slider {
+            -webkit-appearance: none; width: 100%; height: 55px; background: #e5e7eb; border-radius: 30px; outline: none; overflow: hidden; position: relative; z-index: 1;
+        }
+        input[type=range].swipe-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 55px; height: 55px; border-radius: 50%; background: #10b981; cursor: pointer; border: 4px solid #fff; box-shadow: -1000px 0 0 1000px #34d399; z-index: 2; position: relative;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -392,7 +399,69 @@
             </div>
         </div>
     </div>
+    <!-- TECHNICIAN INSTALLATION PORTAL MODAL -->
+    <div id="techModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col relative border-t-8 border-indigo-600">
+            <button onclick="document.getElementById('techModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl z-20"><i class="fas fa-times"></i></button>
+            
+            <div class="bg-indigo-50 p-6 border-b border-indigo-100 text-center">
+                <i class="fas fa-tools text-4xl text-indigo-500 mb-2"></i>
+                <h3 class="font-black text-xl text-indigo-900">Installation Portal</h3>
+                <p class="text-xs text-indigo-600 font-bold">Order: <span id="techDisplayOrd"></span></p>
+            </div>
 
+            <div class="p-6">
+                <!-- Hidden inputs to store IDs -->
+                <input type="hidden" id="techOrdId">
+                <input type="hidden" id="techMqrId">
+
+                <!-- STEP 1: MQR VERIFICATION LOCK -->
+                <div id="techStep1" class="text-center">
+                    <div class="bg-rose-50 border-2 border-rose-200 rounded-lg p-4 mb-6">
+                        <i class="fas fa-shield-alt text-3xl text-rose-500 mb-2"></i>
+                        <h4 class="font-bold text-rose-800 text-sm mb-1">Security Verification Required</h4>
+                        <p class="text-xs text-rose-600 mb-4">Scan the Master Warranty QR on the physical hardware box to verify you have the correct system.</p>
+                        <input id="techMqrInput" type="text" placeholder="Scan MQR-XXXXXX" class="w-full p-4 border-2 border-rose-300 rounded text-center font-mono font-bold text-lg uppercase outline-none focus:border-rose-500 mb-4 shadow-inner" onkeypress="if(event.key === 'Enter') verifyTechMQR()">
+                        <button onclick="verifyTechMQR()" class="bg-rose-600 hover:bg-rose-700 text-white w-full py-3 font-bold rounded shadow-md uppercase tracking-wider text-sm transition">Verify Box & Unlock</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: INSTALLATION WORKFLOW (Hidden until unlocked) -->
+                <div id="techStep2" class="hidden flex flex-col gap-4">
+                    <div class="bg-emerald-100 text-emerald-800 p-3 rounded font-bold text-sm text-center border border-emerald-300 flex justify-center items-center gap-2 mb-2">
+                        <i class="fas fa-check-circle text-xl"></i> Hardware Verified
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Signal/Wifi Strength</label>
+                            <select id="techSignal" class="w-full p-2.5 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500">
+                                <option value="Excellent">Excellent (Strong)</option>
+                                <option value="Good">Good</option>
+                                <option value="Poor">Poor (Needs repeater)</option>
+                                <option value="N/A">Not Applicable</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Customer Confirm OTP</label>
+                            <input id="techOtp" type="text" maxlength="4" placeholder="4-Digit PIN" class="w-full p-2.5 border rounded text-center font-mono font-bold outline-none bg-gray-50 focus:border-indigo-500 tracking-widest text-lg">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Technician Remarks / Notes</label>
+                        <textarea id="techNotes" rows="2" placeholder="Installation successful. Customer requested sensor on back door..." class="w-full p-3 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500"></textarea>
+                    </div>
+
+                    <!-- SWIPE TO COMPLETE UI -->
+                    <div class="mt-4 relative">
+                        <p class="absolute inset-0 flex items-center justify-center text-sm font-black text-gray-500 uppercase tracking-widest pointer-events-none z-10" style="mix-blend-mode: multiply;">Swipe To Complete <i class="fas fa-chevron-right ml-2"></i><i class="fas fa-chevron-right"></i></p>
+                        <input type="range" id="installSwipe" min="0" max="100" value="0" class="swipe-slider" oninput="handleInstallSwipe(this)" onmouseup="snapBackSwipe(this)" ontouchend="snapBackSwipe(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Staff Login Modal -->
     <div id="staffModal" class="modal-overlay hidden">
         <div class="bg-white rounded-lg p-8 max-w-sm w-full relative text-center shadow-2xl border-t-8 border-yellow-400">
@@ -679,7 +748,7 @@
                         sClass = "bg-blue-100 text-blue-800 border-blue-200";
                     } else if (statusStr.includes("Dispatched")) {
                         // NEW REPRINT & INSTALL DONE BUTTONS
-                        actionHtml = `<button onclick="window.reprintBill('${ordId}', '${v.masterQrId}')" class="bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 w-full py-1.5 rounded text-[11px] font-bold mb-1 transition"><i class="fas fa-print mr-1"></i>Reprint Bill</button>`;
+                        actionHtml += `<button onclick="window.openTechPanel('${ordId}', '${v.masterQrId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-1.5 rounded text-[11px] font-bold mb-1 shadow transition"><i class="fas fa-tools mr-1"></i>Tech Portal</button>`;
                         actionHtml += `<button onclick="window.markInstallationDone('${ordId}')" class="bg-emerald-500 hover:bg-emerald-600 text-white w-full py-1.5 rounded text-[11px] font-bold mb-1 shadow transition"><i class="fas fa-check-double mr-1"></i>Install Done</button>`;
                         sClass = "bg-purple-100 text-purple-800 border-purple-200";
                     }
@@ -1331,6 +1400,87 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 });
             } else {
                 document.getElementById('cameraScannerBox').classList.add('hidden');
+            }
+        };
+        // ================= TECHNICIAN INSTALLATION PORTAL =================
+        
+        window.openTechPanel = (ordId, mqrId) => {
+            document.getElementById('techOrdId').value = ordId;
+            document.getElementById('techMqrId').value = mqrId;
+            document.getElementById('techDisplayOrd').innerText = ordId;
+
+            // Reset the UI to Locked state
+            document.getElementById('techStep1').classList.remove('hidden');
+            document.getElementById('techStep2').classList.add('hidden');
+            document.getElementById('techMqrInput').value = '';
+            document.getElementById('techNotes').value = '';
+            document.getElementById('techOtp').value = '';
+            document.getElementById('techSignal').value = 'Excellent';
+            document.getElementById('installSwipe').value = 0;
+
+            document.getElementById('techModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('techMqrInput').focus(), 300);
+        };
+
+        window.verifyTechMQR = () => {
+            const input = document.getElementById('techMqrInput').value.trim().toUpperCase();
+            const actual = document.getElementById('techMqrId').value;
+            
+            if(input === actual) {
+                document.getElementById('techStep1').classList.add('hidden');
+                document.getElementById('techStep2').classList.remove('hidden');
+                if(navigator.vibrate) navigator.vibrate([100, 50, 100]); // Success buzz
+            } else {
+                alert("❌ SECURITY LOCK: MQR Mismatch!\n\nYou scanned the wrong system for this customer. Please check the Master QR on the box.");
+                document.getElementById('techMqrInput').value = '';
+            }
+        };
+
+        // Swipe slider dynamics
+        window.handleInstallSwipe = (el) => {
+            if(el.value > 95) {
+                el.value = 100;
+                window.completeInstallation();
+            }
+        };
+        window.snapBackSwipe = (el) => {
+            if(el.value < 100) el.value = 0;
+        };
+
+        window.completeInstallation = async () => {
+            const ordId = document.getElementById('techOrdId').value;
+            const otp = document.getElementById('techOtp').value.trim();
+            const notes = document.getElementById('techNotes').value.trim();
+            const signal = document.getElementById('techSignal').value;
+
+            if(otp.length < 4) {
+                alert("Please enter the 4-digit Customer Confirmation OTP.");
+                document.getElementById('installSwipe').value = 0;
+                return;
+            }
+
+            try {
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if(!ordSnap.exists()) return;
+                const data = ordSnap.val();
+                
+                // Overwrite with Tiny Archived Node + Tech Details
+                await set(ref(window.db, `web_orders/${ordId}`), {
+                    orderId: ordId,
+                    productName: data.productName,
+                    advancePaid: data.advancePaid || 0,
+                    masterQrId: data.masterQrId || "N/A",
+                    status: "Installation Completed",
+                    archived: true, // Hides it from Live Orders
+                    techDetails: { signal: signal, otp: otp, notes: notes, date: Date.now() }
+                });
+                
+                document.getElementById('techModal').classList.add('hidden');
+                alert("✅ Installation successfully verified, completed, and archived!");
+                
+            } catch(e) { 
+                alert("Archive Error: " + e.message); 
+                document.getElementById('installSwipe').value = 0;
             }
         };
        // ================= CRASH-PROOF BATCH & BILLING =================
