@@ -330,6 +330,7 @@
     </section>
 
     <!-- MODALS -->
+    <!-- Checkout Modal -->
     <div id="publicOrderModal" class="modal-overlay hidden">
         <div class="bg-white rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
             <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
@@ -351,7 +352,12 @@
                         <span class="text-emerald-700">Pay Now: <span id="valPayNow"></span></span>
                         <span class="text-rose-700">Balance: <span id="valPayLater"></span></span>
                     </div>
-                    <input id="ordTxn" type="text" maxlength="5" placeholder="Enter last 5 digits of UPI" class="p-3 text-center font-mono font-bold text-sm border rounded">
+                    
+                    <!-- RESTORED PAYMENT QR CODE -->
+                    <p class="text-xs font-bold text-gray-600 mb-2 uppercase">Scan QR to pay advance</p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dsohampal781%40okhdfcbank%26pn%3DKaalnetraSecurity" class="w-32 h-32 mx-auto mb-4 border border-gray-300 p-1 bg-white shadow-sm rounded" alt="UPI QR Code">
+                    
+                    <input id="ordTxn" type="text" maxlength="5" placeholder="Enter last 5 digits of UPI" class="p-3 text-center font-mono font-bold text-sm border rounded outline-none focus:border-orange-500">
                 </div>
                 <button id="btnSubmitOrder" onclick="submitPublicOrder()" class="btn-amz-yellow w-full py-4 text-sm font-bold uppercase">Confirm Order</button>
             </div>
