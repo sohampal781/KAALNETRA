@@ -299,6 +299,55 @@
             <button onclick="saveSchedule()" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded text-sm font-bold uppercase tracking-wider transition">Save & Open WhatsApp</button>
         </div>
     </div>
+    <!-- TAB 4: Warranty & RMA Management (REPLACE ENTIRE BLOCK) -->
+<div id="erp-warranty" class="erp-panel hidden max-w-7xl mx-auto">
+    <h2 class="text-2xl font-black mb-6 text-gray-800">Warranty & RMA Management</h2>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left Column: Lookup & Verify -->
+        <div class="bg-white p-6 rounded-lg border shadow-md flex flex-col">
+            <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm uppercase tracking-wider"><i class="fas fa-search text-blue-500 mr-2"></i> Scan Master QR</h3>
+            <p class="text-xs text-gray-500 mb-4">Enter the customer's Master Warranty QR (MQR-XXXXXX) to verify their policy date and authorize component repairs.</p>
+            
+            <div class="flex gap-3 mb-6">
+                <input id="claimMaster" type="text" placeholder="MQR-XXXXXX" class="flex-1 p-3 border-2 border-gray-300 rounded-lg text-center font-mono font-bold text-lg uppercase bg-gray-50 outline-none focus:border-blue-500 transition">
+                <button onclick="verifyMasterWarranty()" class="btn-amz-yellow px-8 py-3 text-sm font-bold shadow-md rounded-lg uppercase tracking-wider">Lookup Policy</button>
+            </div>
+            
+            <!-- Result Display -->
+            <div id="claimResult" class="hidden w-full border-2 border-emerald-200 rounded-lg bg-white overflow-hidden shadow-sm flex-1">
+                <div class="bg-emerald-50 p-4 border-b border-emerald-200 flex justify-between items-center">
+                    <div id="claimInfo" class="text-sm text-emerald-900"></div>
+                    <div id="claimStatusBadge"></div>
+                </div>
+                <div class="p-4">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Covered Components</h4>
+                    <ul id="claimHwList" class="space-y-2 overflow-y-auto max-h-[300px] pr-2"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Recent RMA Log -->
+        <div class="bg-white p-6 rounded-lg border shadow-md flex flex-col">
+            <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm uppercase tracking-wider"><i class="fas fa-tools text-orange-500 mr-2"></i> Recent RMA Activity Log</h3>
+            <div class="overflow-y-auto flex-1 max-h-[500px]">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-gray-50 sticky top-0 shadow-sm">
+                        <tr>
+                            <th class="p-3 border-b text-gray-600">Date Processed</th>
+                            <th class="p-3 border-b text-gray-600">Master QR</th>
+                            <th class="p-3 border-b text-gray-600">Replaced Component</th>
+                            <th class="p-3 border-b text-gray-600">RMA Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rmaLogBody">
+                        <tr><td colspan="4" class="text-center py-10 text-gray-400 italic">No recent warranty claims processed.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Firebase & Logic -->
     <script type="module">
@@ -716,7 +765,108 @@ window.calculateFinalBill = () => {
     document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
     document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
 };
+// ================= WARRANTY & RMA CHECKER LOGIC =================
+window.verifyMasterWarranty = async () => {
+    const id = document.getElementById("claimMaster").value.trim().toUpperCase();
+    if(!id) return alert("Please enter the MQR code.");
 
+    try {
+        const snap = await get(ref(window.db, `master_warranties/${id}`));
+        if(!snap.exists()) {
+            alert("Master Warranty Policy not found. Please verify the ID.");
+            document.getElementById("claimResult").classList.add("hidden");
+            return;
+        }
+        
+        const d = snap.val();
+        
+        // Calculate if 6-Month Free Warranty is active
+        const sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000;
+        const policyDate = d.timestamp || Date.now();
+        const isExpired = (Date.now() - policyDate) > sixMonthsInMs;
+        
+        // Update Info UI
+        document.getElementById("claimInfo").innerHTML = `
+            <div class="font-black mb-1">${d.customerName}</div>
+            <div class="text-xs font-bold text-gray-600">Order Ref: ${d.orderRef}</div>
+            <div class="text-xs text-gray-600">Issued: ${new Date(policyDate).toLocaleDateString('en-IN')}</div>
+        `;
+        
+        // Update Badge Status based on 6 Months
+        if(isExpired) {
+            document.getElementById("claimStatusBadge").innerHTML = `<span class="bg-rose-600 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">Warranty Expired</span>`;
+        } else {
+            document.getElementById("claimStatusBadge").innerHTML = `<span class="bg-emerald-600 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">Active 6M Free</span>`;
+        }
+
+        // Render Components with Action Buttons
+        document.getElementById("claimHwList").innerHTML = d.hardwareList.map(hw => `
+            <li class="p-3 border border-gray-200 rounded-lg bg-gray-50 flex justify-between items-center hover:bg-white hover:shadow-sm transition">
+                <div>
+                    <div class="font-bold text-gray-800 text-sm">${hw.item}</div>
+                    <div class="text-[10px] text-gray-500 font-mono mt-0.5">Physical Tag: ${hw.id}</div>
+                </div>
+                <button onclick="processRMA('${id}', '${hw.id}', '${hw.item}', ${isExpired})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-wider transition ml-2 whitespace-nowrap">Replace</button>
+            </li>
+        `).join("");
+        
+        document.getElementById("claimResult").classList.remove("hidden");
+    } catch(e) { alert("Lookup Error: " + e.message); }
+};
+
+// Process an RMA replacement action
+window.processRMA = async (masterId, tagId, itemName, isExpired) => {
+    // Confirm Action with Staff based on Expiration Status
+    if(isExpired) {
+        const proceed = confirm(`⚠️ WARRANTY EXPIRED!\n\nThis component is out of the 6-month free warranty period.\n\nDo you want to authorize a PAID repair/replacement for this '${itemName}'?`);
+        if(!proceed) return;
+    } else {
+        const proceed = confirm(`✅ ACTIVE WARRANTY!\n\nDo you want to authorize a FREE replacement for this '${itemName}'?\n\nThis will be logged in the RMA Database.`);
+        if(!proceed) return;
+    }
+
+    const rmaId = "RMA-" + Math.floor(10000 + Math.random() * 90000);
+    
+    try {
+        await set(ref(window.db, `warranty_claims/${rmaId}`), {
+            rmaId: rmaId,
+            masterQrId: masterId,
+            componentTag: tagId,
+            componentName: itemName,
+            status: isExpired ? "Paid Replacement" : "Free Warranty Replacement",
+            timestamp: Date.now()
+        });
+        alert(`✅ RMA Processed Successfully!\n\nRMA Reference: ${rmaId}`);
+    } catch(e) {
+        alert("RMA Logging Failed: " + e.message);
+    }
+};
+        // ADD THIS INSIDE function startLiveErpSync() { ... }
+onValue(ref(window.db, "warranty_claims"), (snap) => {
+    const tb = document.getElementById("rmaLogBody");
+    if(!snap.exists()) {
+        tb.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400 italic">No recent claims.</td></tr>`;
+        return;
+    }
+    
+    let claims = [];
+    snap.forEach(c => claims.push(c.val()));
+    claims.sort((a,b) => b.timestamp - a.timestamp); // Newest first
+    
+    tb.innerHTML = claims.map(c => `
+        <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+            <td class="p-3 text-gray-500 font-medium">${new Date(c.timestamp).toLocaleDateString('en-IN')}</td>
+            <td class="p-3 font-mono text-blue-700 font-bold">${c.masterQrId}</td>
+            <td class="p-3">
+                <div class="font-bold text-gray-800">${c.componentName}</div>
+                <div class="text-[10px] font-mono text-gray-400 mt-0.5">${c.componentTag}</div>
+            </td>
+            <td class="p-3">
+                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${c.status.includes('Paid') ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${c.status}</span>
+            </td>
+        </tr>
+    `).join("");
+});
        // REPLACE ENTIRE finalizeBatchDispatch FUNCTION
 window.finalizeBatchDispatch = async () => {
     const ordId = document.getElementById("dispOrderSelect").value;
