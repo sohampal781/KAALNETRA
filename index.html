@@ -71,23 +71,23 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" id="productGrid"></div>
         </main>
     </section>
-
-    <!-- SELLER CENTRAL (ERP) -->
+<!-- 3. SELLER CENTRAL (ERP) -->
     <section id="view-erp" class="hidden flex-1 bg-gray-100 flex overflow-hidden">
+        
         <!-- Sidebar -->
-        <div class="w-64 bg-white border-r shadow-xl flex flex-col h-screen sticky top-0 z-10">
+        <div class="w-64 bg-white border-r border-gray-300 shadow-xl flex flex-col h-screen sticky top-0 z-10">
             <div class="p-5 border-b bg-slate-900 text-white">
-                <div class="text-[10px] text-yellow-400 font-bold uppercase tracking-wider mb-1">Seller Central Live</div>
+                <div class="text-[10px] text-yellow-400 font-bold uppercase tracking-wider mb-1"><i class="fas fa-bolt text-yellow-400 mr-1"></i> Seller Central Live</div>
                 <div class="text-sm font-bold truncate" id="adminBadge">Admin User</div>
             </div>
             <div class="flex-1 overflow-y-auto py-4 space-y-1">
-                <button onclick="switchErpTab('orders')" id="tabbtn-orders" class="w-full text-left px-5 py-3 font-bold border-l-4 border-orange-500 bg-orange-50 text-orange-700 text-sm">
-                    <i class="fas fa-shopping-cart w-6"></i> Live Orders
+                <button onclick="switchErpTab('orders')" id="tabbtn-orders" class="w-full text-left px-5 py-3 font-bold border-l-4 border-orange-500 bg-orange-50 text-orange-700 text-sm transition">
+                    <i class="fas fa-shopping-cart w-6"></i> Live Orders <span id="badgeLiveCount" class="ml-2 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full shadow">0</span>
                 </button>
-                <button onclick="switchErpTab('inventory')" id="tabbtn-inventory" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 text-sm">
+                <button onclick="switchErpTab('inventory')" id="tabbtn-inventory" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
                     <i class="fas fa-boxes w-6"></i> Raw Material Inventory
                 </button>
-                <button onclick="switchErpTab('billing')" id="tabbtn-billing" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 text-sm">
+                <button onclick="switchErpTab('billing')" id="tabbtn-billing" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
                     <i class="fas fa-clipboard-list w-6"></i> BOM Guided Dispatch
                 </button>
                 <button onclick="switchErpTab('warranty')" id="tabbtn-warranty" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
@@ -95,25 +95,64 @@
                 </button>
             </div>
             <div class="p-4 border-t bg-gray-50">
-                <button onclick="logoutStaff()" class="w-full py-2 bg-red-100 text-red-700 border border-red-200 rounded font-bold text-sm"><i class="fas fa-sign-out-alt mr-2"></i> Sign Out</button>
+                <button onclick="logoutStaff()" class="w-full py-2 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 rounded font-bold text-sm transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
+                </button>
             </div>
         </div>
 
-        <!-- Workspace -->
-        <div class="flex-1 overflow-y-auto p-8 relative">
+        <!-- Main Workspace -->
+        <div class="flex-1 overflow-y-auto p-8 relative items-start">
             
-            <!-- Live Orders Tab -->
+            <!-- Real-time Alert Notification -->
+            <div id="liveOrderAlert" class="hidden bg-emerald-600 text-white p-4 rounded-lg shadow-xl mb-6 flex justify-between items-center border-l-4 border-emerald-300 pulse-anim">
+                <div class="flex items-center">
+                    <i class="fas fa-bell text-2xl mr-4 text-emerald-200"></i>
+                    <div>
+                        <div class="font-black text-lg">New Customer Order Received!</div>
+                        <div class="text-sm text-emerald-100">The order table below has been updated automatically.</div>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('liveOrderAlert').classList.add('hidden')" class="text-white hover:text-emerald-200 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- TAB 1: Live Orders (KPI Cards moved INSIDE this tab so they don't break other tabs) -->
             <div id="erp-orders" class="erp-panel block max-w-7xl mx-auto">
-                <h2 class="text-2xl font-black text-gray-800 mb-6">Customer Orders</h2>
+                
+                <!-- KPI Dashboard Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500"><div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Total Revenue</div><div class="text-3xl font-black mt-2 text-gray-800" id="dashRevenue">₹0</div></div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-yellow-500"><div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Pending Orders</div><div class="text-3xl font-black mt-2 text-gray-800" id="dashPending">0</div></div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-green-500"><div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Dispatched</div><div class="text-3xl font-black mt-2 text-gray-800" id="dashDispatched">0</div></div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-purple-500"><div class="text-gray-500 text-xs font-bold uppercase tracking-wider">Warehouse Stock</div><div class="text-3xl font-black mt-2 text-gray-800" id="dashStock">0</div></div>
+                </div>
+
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-800">Customer Orders</h2>
+                        <p class="text-sm text-gray-500 mt-1">Real-time synchronized order stream</p>
+                    </div>
+                    <button onclick="window.forceRefreshOrders()" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded font-bold text-sm shadow transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Force Refresh Table
+                    </button>
+                </div>
                 <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
                     <table class="w-full">
-                        <thead class="bg-gray-50 border-b"><tr><th>Order Ref</th><th>Customer Info</th><th>System Model</th><th>Advance Paid</th><th>Status</th><th class="text-center w-36">Actions</th></tr></thead>
-                        <tbody id="tblOrders"><tr><td colspan="6" class="text-center py-12 text-gray-400 italic">Connecting to Firebase...</td></tr></tbody>
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th>Order Ref</th>
+                                <th>Customer & Contact</th>
+                                <th>System Model</th>
+                                <th>Advance Paid</th>
+                                <th>Status</th>
+                                <th class="text-center w-36">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblOrders"><tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium"><i class="fas fa-spinner fa-spin mr-2"></i> Connecting to Firebase...</td></tr></tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- Inventory Tab (RAW MATERIALS) -->
+<!-- TAB 2: Inventory -->
             <div id="erp-inventory" class="erp-panel hidden max-w-7xl mx-auto">
                 <h2 class="text-2xl font-black mb-6 text-gray-800">Raw Material & Component Inventory</h2>
                 
@@ -125,8 +164,8 @@
                     </div>
                 </div>
 
-                <!-- Registration Block -->
                 <div class="bg-white p-6 rounded-lg border shadow-md mb-8">
+                    <h3 class="font-bold text-lg border-b pb-3 mb-4 text-gray-700"><i class="fas fa-plus-circle text-emerald-500 mr-2"></i>Register New Stock Items</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                         <select id="invName" class="w-full p-3 border rounded-md text-sm outline-none bg-gray-50 font-bold text-gray-800">
                             <!-- Standardized BOM Items from Sheet -->
@@ -153,21 +192,23 @@
                             <option value="RFID Tags">21. RFID Tags</option>
                             <option value="RFID Scanner">22. RFID Scanner</option>
                         </select>
-                        <input id="invCost" type="number" placeholder="Component Cost (₹)" class="w-full p-3 border rounded-md text-sm outline-none">
-                        <input id="invSpot" type="text" placeholder="Rack Spot (e.g. Bin A1)" class="w-full p-3 border rounded-md text-sm outline-none">
+                        <!-- CHANGED: Cost replaced with Quantity -->
+                        <input id="invQty" type="number" placeholder="Quantity (e.g. 5)" min="1" class="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:border-orange-500">
+                        <input id="invSpot" type="text" placeholder="Rack Spot (e.g. Bin A1)" class="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:border-orange-500">
                     </div>
-                    <button onclick="registerAsset()" class="btn-amz-yellow px-8 py-3 text-sm shadow-md font-bold uppercase tracking-wider w-full md:w-auto">Save Component & Print Tag</button>
+                    <button onclick="registerAsset()" class="btn-amz-yellow px-8 py-3 text-sm shadow-md font-bold uppercase tracking-wider w-full md:w-auto">Generate QR Tags & Save</button>
                 </div>
 
                 <div class="bg-white rounded-lg border shadow-md overflow-hidden">
                     <table class="w-full">
-                        <thead><tr><th>Tag Barcode</th><th>Raw Material Name</th><th>Medicine-Shop Location</th><th>Cost</th><th>Status</th><th class="text-center">Action</th></tr></thead>
+                        <!-- CHANGED: Removed Cost Column -->
+                        <thead><tr><th>Tag Barcode</th><th>Raw Material Name</th><th>Medicine-Shop Location</th><th>Status</th><th class="text-center">Action</th></tr></thead>
                         <tbody id="tblInventory"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Dispatch Tab (GUIDED BOM PICKING) -->
+            <!-- TAB 3: Dispatch -->
             <div id="erp-billing" class="erp-panel hidden max-w-7xl mx-auto">
                 <h2 class="text-2xl font-black mb-2 text-gray-800">Guided BOM Dispatch Process</h2>
                 <p class="text-sm text-gray-600 mb-6">Select an order. The system will automatically map the required raw materials based on the product version.</p>
@@ -181,32 +222,30 @@
 
                 <!-- Guided Picking UI -->
                 <div id="dispatchWorkspace" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    
-                    <!-- Left: Current Action -->
                     <div class="bg-blue-50 p-8 border-2 border-blue-200 rounded-lg shadow-inner flex flex-col justify-center text-center relative overflow-hidden">
-                        <!-- REPLACE THIS BLOCK INSIDE THE DISPATCH WORKSPACE -->
-<div id="pickingCompleteMsg" class="hidden z-10 w-full">
-    <i class="fas fa-check-circle text-6xl text-emerald-500 mb-4 drop-shadow-md"></i>
-    <h3 class="text-2xl font-black text-gray-900 mb-4">All Components Collected!</h3>
-    
-    <!-- NEW: Billing & Discount Calculator -->
-    <div class="bg-white p-4 rounded-lg border-2 border-emerald-100 text-left mb-6 shadow-md w-full max-w-sm mx-auto">
-        <h4 class="font-bold text-gray-800 border-b pb-2 mb-3 text-sm">Invoice Configuration</h4>
-        <div class="flex justify-between mb-2 text-sm"><span class="text-gray-600">System Cost:</span> <span class="font-bold text-gray-800" id="billSystemCost">₹0</span></div>
-        <div class="flex justify-between mb-3 text-sm"><span class="text-gray-600">Installation:</span> <span class="font-bold text-gray-800">₹2,000</span></div>
-        
-        <div class="flex justify-between mb-4 items-center bg-gray-50 p-2 rounded border">
-            <span class="text-gray-700 font-bold text-sm">Apply Discount (₹):</span> 
-            <input type="number" id="billDiscount" value="0" min="0" class="w-24 p-1.5 border border-gray-300 rounded text-right outline-none focus:border-blue-500 font-mono font-bold" oninput="calculateFinalBill()">
-        </div>
-        
-        <div class="flex justify-between border-t border-gray-300 pt-3 text-lg font-black text-rose-600">
-            <span>Grand Total:</span> <span id="billGrandTotal">₹0</span>
-        </div>
-    </div>
+                        
+                        <div id="pickingCompleteMsg" class="hidden z-10 w-full">
+                            <i class="fas fa-check-circle text-6xl text-emerald-500 mb-4 drop-shadow-md"></i>
+                            <h3 class="text-2xl font-black text-gray-900 mb-4">All Components Collected!</h3>
+                            
+                            <!-- Billing & Discount Calculator -->
+                            <div class="bg-white p-4 rounded-lg border-2 border-emerald-100 text-left mb-6 shadow-md w-full max-w-sm mx-auto">
+                                <h4 class="font-bold text-gray-800 border-b pb-2 mb-3 text-sm">Invoice Configuration</h4>
+                                <div class="flex justify-between mb-2 text-sm"><span class="text-gray-600">System Cost:</span> <span class="font-bold text-gray-800" id="billSystemCost">₹0</span></div>
+                                <div class="flex justify-between mb-3 text-sm"><span class="text-gray-600">Installation:</span> <span class="font-bold text-gray-800">₹2,000</span></div>
+                                
+                                <div class="flex justify-between mb-4 items-center bg-gray-50 p-2 rounded border">
+                                    <span class="text-gray-700 font-bold text-sm">Apply Discount (₹):</span> 
+                                    <input type="number" id="billDiscount" value="0" min="0" class="w-24 p-1.5 border border-gray-300 rounded text-right outline-none focus:border-blue-500 font-mono font-bold" oninput="calculateFinalBill()">
+                                </div>
+                                
+                                <div class="flex justify-between border-t border-gray-300 pt-3 text-lg font-black text-rose-600">
+                                    <span>Grand Total:</span> <span id="billGrandTotal">₹0</span>
+                                </div>
+                            </div>
 
-    <button onclick="finalizeBatchDispatch()" class="btn-amz-yellow w-full py-4 text-lg font-black uppercase tracking-widest border-2 border-yellow-500 shadow-xl hover:scale-105 transition transform">Finalize & Print Invoice</button>
-</div>
+                            <button onclick="finalizeBatchDispatch()" class="btn-amz-yellow w-full py-4 text-lg font-black uppercase tracking-widest border-2 border-yellow-500 shadow-xl hover:scale-105 transition transform">Finalize & Print Invoice</button>
+                        </div>
                         
                         <div id="activePickingStep" class="z-10">
                             <h4 class="text-sm font-bold text-blue-800 uppercase tracking-widest mb-2">Next Component to Pick:</h4>
@@ -223,7 +262,6 @@
                         </div>
                     </div>
 
-                    <!-- Right: BOM Checklist -->
                     <div class="bg-white border rounded-lg shadow-md overflow-hidden flex flex-col max-h-[600px]">
                         <div class="bg-gray-100 p-4 border-b flex justify-between items-center">
                             <h3 class="font-bold text-gray-800 uppercase text-sm"><i class="fas fa-clipboard-list mr-2"></i> Bill of Materials Checklist</h3>
@@ -232,6 +270,55 @@
                         <div class="flex-1 overflow-y-auto p-0">
                             <table class="w-full">
                                 <tbody id="bomChecklistBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Warranty & RMA Management -->
+            <div id="erp-warranty" class="erp-panel hidden max-w-7xl mx-auto">
+                <h2 class="text-2xl font-black mb-6 text-gray-800">Warranty & RMA Management</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left Column: Lookup & Verify -->
+                    <div class="bg-white p-6 rounded-lg border shadow-md flex flex-col">
+                        <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm uppercase tracking-wider"><i class="fas fa-search text-blue-500 mr-2"></i> Scan Master QR</h3>
+                        <p class="text-xs text-gray-500 mb-4">Enter the customer's Master Warranty QR (MQR-XXXXXX) to verify their policy date and authorize component repairs.</p>
+                        
+                        <div class="flex gap-3 mb-6">
+                            <input id="claimMaster" type="text" placeholder="MQR-XXXXXX" class="flex-1 p-3 border-2 border-gray-300 rounded-lg text-center font-mono font-bold text-lg uppercase bg-gray-50 outline-none focus:border-blue-500 transition">
+                            <button onclick="verifyMasterWarranty()" class="btn-amz-yellow px-8 py-3 text-sm font-bold shadow-md rounded-lg uppercase tracking-wider">Lookup Policy</button>
+                        </div>
+                        
+                        <div id="claimResult" class="hidden w-full border-2 border-emerald-200 rounded-lg bg-white overflow-hidden shadow-sm flex-1">
+                            <div class="bg-emerald-50 p-4 border-b border-emerald-200 flex justify-between items-center">
+                                <div id="claimInfo" class="text-sm text-emerald-900"></div>
+                                <div id="claimStatusBadge"></div>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Covered Components</h4>
+                                <ul id="claimHwList" class="space-y-2 overflow-y-auto max-h-[300px] pr-2"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Recent RMA Log -->
+                    <div class="bg-white p-6 rounded-lg border shadow-md flex flex-col">
+                        <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm uppercase tracking-wider"><i class="fas fa-tools text-orange-500 mr-2"></i> Recent RMA Activity Log</h3>
+                        <div class="overflow-y-auto flex-1 max-h-[500px]">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-gray-50 sticky top-0 shadow-sm">
+                                    <tr>
+                                        <th class="p-3 border-b text-gray-600">Date Processed</th>
+                                        <th class="p-3 border-b text-gray-600">Master QR</th>
+                                        <th class="p-3 border-b text-gray-600">Replaced Component</th>
+                                        <th class="p-3 border-b text-gray-600">RMA Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rmaLogBody">
+                                    <tr><td colspan="4" class="text-center py-10 text-gray-400 italic">No recent warranty claims processed.</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -537,23 +624,36 @@
                 tb.innerHTML = rowsHtml;
             });
 
+           // Listen Inventory
             onValue(ref(window.db, "inventory"), (snap) => {
                 const tb = document.getElementById("tblInventory");
+                let stock = 0; 
                 allInventory = [];
-                if(!snap.exists()) { tb.innerHTML = ""; updateBuildEstimator([]); return; }
+                
+                if(!snap.exists()) {
+                    tb.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400 italic">No inventory registered.</td></tr>`;
+                    document.getElementById("dashStock").innerText = 0;
+                    return;
+                }
                 
                 let invHtml = "";
                 snap.forEach(c => {
-                    const v = c.val();
+                    const v = c.val() || {};
                     allInventory.push(v);
-                    invHtml += `<tr class="border-b hover-row">
-                            <td class="font-mono font-bold">${v.barcode}</td><td class="font-bold text-xs">${v.item}</td>
-                            <td class="text-xs"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>${v.location}</td><td class="font-mono text-sm">₹${v.cost}</td>
-                            <td><span class="font-bold text-xs px-2 py-1 rounded border ${v.status==='Sold'?'text-red-600 bg-red-50':'text-green-700 bg-green-50'}">${v.status}</span></td>
-                            <td class="text-center"><button onclick="window.deleteInventory('${v.barcode}')" class="text-red-500 hover:bg-red-50 p-2 rounded"><i class="fas fa-trash"></i></button></td>
+                    const s = v.status || "In Stock";
+                    if(s === "In Stock") stock++;
+                    const sClass = s === 'Sold' ? 'text-red-600 bg-red-50' : 'text-green-700 bg-green-50';
+                    invHtml += `
+                        <tr class="border-b border-gray-100 hover-row">
+                            <td class="font-mono font-bold text-gray-800">${v.barcode || 'N/A'}</td>
+                            <td class="font-bold text-xs text-gray-700">${v.item || 'N/A'}</td>
+                            <td class="text-xs text-gray-500"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>${v.location || 'Warehouse'}</td>
+                            <td><span class="font-bold text-xs px-2 py-1 rounded border ${sClass}">${s}</span></td>
+                            <td class="text-center"><button onclick="window.deleteInventory('${v.barcode}')" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash"></i></button></td>
                         </tr>`;
                 });
                 tb.innerHTML = invHtml;
+                document.getElementById("dashStock").innerText = stock;
                 updateBuildEstimator(allInventory);
             });
         }
@@ -627,29 +727,82 @@
             } catch(e) { alert(e.message); }
         };
 
-        // ================= INVENTORY COMPONENT REGISTRATION =================
+        // ================= WAREHOUSE COMPONENT REGISTRATION (BATCH PRINT) =================
         window.registerAsset = async () => {
             const name = document.getElementById("invName").value;
-            const cost = document.getElementById("invCost").value;
+            const qty = parseInt(document.getElementById("invQty").value);
             const spot = document.getElementById("invSpot").value || "Main Warehouse";
-            const tagId = "KN-" + Math.floor(100000 + Math.random() * 900000);
 
-            if(!cost) return alert("Enter Cost Price.");
-            await set(ref(window.db, `inventory/${tagId}`), { barcode: tagId, item: name, cost: cost, location: spot, status: "In Stock", timestamp: Date.now() });
-            
-            // Print Tag
-            const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
-            const doc = iframe.contentWindow.document; doc.open();
-            doc.write(`<html><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;">
-                <div style="width:80mm;padding:5mm;text-align:center;border:2px dashed #000;">
-                    <div style="font-weight:900;border-bottom:2px solid #000;margin-bottom:10px;">KAALNETRA RAW MATERIAL</div>
-                    <div style="font-weight:bold;margin-bottom:10px;font-size:12px;text-transform:uppercase;">${name}</div>
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${tagId}" style="width:40mm;height:40mm;margin-bottom:10px;border:1px solid #ccc;">
-                    <div style="font-family:monospace;font-weight:900;font-size:16px;">${tagId}</div>
-                </div></body></html>`); doc.close();
-            setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
-            
-            document.getElementById("invCost").value = ""; document.getElementById("invSpot").value = "";
+            if(!qty || qty < 1) return alert("Please enter a valid Quantity.");
+
+            const btn = document.activeElement;
+            const originalText = btn.innerText;
+            btn.innerText = "Generating Tags..."; btn.disabled = true;
+
+            let printHtml = "";
+
+            try {
+                // Loop based on the Quantity entered
+                for(let i = 0; i < qty; i++) {
+                    const tagId = "KN-" + Math.floor(100000 + Math.random() * 900000);
+
+                    // Save to Firebase
+                    await set(ref(window.db, `inventory/${tagId}`), { 
+                        barcode: tagId, 
+                        item: name, 
+                        location: spot, 
+                        status: "In Stock", 
+                        timestamp: Date.now() 
+                    });
+
+                    // Append the large-font thermal print block for this specific tag
+                    printHtml += `
+                        <div style="width: 100%; text-align: center; page-break-after: always; padding-top: 10px; padding-bottom: 20px;">
+                            <h1 style="font-size: 30pt; font-weight: 900; margin: 0 0 10px 0; border-bottom: 4px solid #000; display: inline-block; padding-bottom: 5px;">KAALNETRA</h1>
+                            <h2 style="font-size: 24pt; font-weight: 900; margin: 10px 0; text-transform: uppercase; line-height: 1.2;">${name}</h2>
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${tagId}" style="width: 250px; height: 250px; border: 4px solid #000; padding: 10px; margin: 15px 0;">
+                            <div style="font-size: 40pt; font-family: monospace; font-weight: 900; letter-spacing: 2px; margin: 10px 0;">${tagId}</div>
+                            <div style="font-size: 18pt; margin-top: 15px; border-top: 2px solid #000; padding-top: 10px; font-weight: bold;">LOC: ${spot}</div>
+                        </div>
+                    `;
+                }
+
+                // Inject into iframe and print with ZERO margins
+                const iframe = document.createElement('iframe'); 
+                iframe.style.display = 'none'; 
+                document.body.appendChild(iframe);
+                const doc = iframe.contentWindow.document; 
+                doc.open();
+                doc.write(`
+                    <html>
+                    <head>
+                        <style>
+                            @page { size: auto; margin: 0mm; }
+                            body { margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-family: 'Arial Black', sans-serif; color: black; background: white; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printHtml}
+                    </body>
+                    </html>
+                `); 
+                doc.close();
+
+                // Wait slightly longer for multiple QR codes to render, then print
+                setTimeout(() => { 
+                    iframe.contentWindow.print(); 
+                    setTimeout(() => document.body.removeChild(iframe), 1000); 
+                }, 1500);
+                
+                // Clear the form fields
+                document.getElementById("invQty").value = ""; 
+                document.getElementById("invSpot").value = "";
+
+            } catch (e) {
+                alert("Error generating inventory tags: " + e.message);
+            } finally {
+                btn.innerText = originalText; btn.disabled = false;
+            }
         };
 
         // ================= GUIDED BOM DISPATCH LOGIC =================
