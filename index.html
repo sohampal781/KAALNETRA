@@ -2122,7 +2122,9 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 btn.innerHTML = orig; btn.disabled = false;
             }
         };
-        // Gradients to make the generated banners "Eye Catchy"
+        // ================= STOREFRONT LIVE SYNC & ANIMATION =================
+        
+        // Gradients for auto-generated banners/offers
         const BGT_GRADIENTS = [
             "bg-gradient-to-r from-purple-600 to-indigo-600",
             "bg-gradient-to-r from-rose-500 to-pink-600",
@@ -2131,46 +2133,65 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             "bg-gradient-to-r from-orange-500 to-red-600"
         ];
 
-        // Live Listener for Banners (10) & Offers (3)
+        // Single Unified Live Listener for Banners & Offers (Right-to-Left Marquee)
         onValue(ref(window.db, "storefront"), (snap) => {
             const data = snap.val() || {};
             const banners = data.banners || {};
             const offers = data.offers || {};
 
-            // 1. Sync Public Banners
+            // 1. Sync Public Banners (Smooth Right-to-Left Marquee)
             const bannerArr = Object.values(banners).sort((a,b) => b.timestamp - a.timestamp);
             const carousel = document.getElementById("publicBannerCarousel");
             if(carousel) {
                 if (bannerArr.length > 0) {
-                    carousel.innerHTML = bannerArr.map((b, i) => `
-                        <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out ${i === 0 ? 'opacity-100' : 'opacity-0'} banner-slide">
-                            <div class="w-full h-full ${b.gradient || 'bg-gray-900'} flex flex-col items-center justify-center text-center px-6">
-                                <h2 class="text-3xl md:text-5xl font-black text-white tracking-wide drop-shadow-xl leading-tight uppercase max-w-4xl">${b.text}</h2>
+                    const bannerSpans = bannerArr.map(b => `
+                        <span class="inline-flex items-center px-8 py-4 ${b.gradient || 'bg-slate-800'} text-white font-black text-2xl md:text-3xl rounded-xl shadow-lg uppercase tracking-wide border border-white/20 mx-4">
+                            ${b.text}
+                        </span>
+                    `).join("");
+
+                    carousel.innerHTML = `
+                        <div class="w-full h-32 bg-slate-900 flex items-center overflow-hidden marquee-wrapper border-y border-slate-800 shadow-inner">
+                            <div class="marquee-content">
+                                ${bannerSpans}
+                                ${bannerSpans} <!-- Seamless infinite loop duplication -->
                             </div>
                         </div>
-                    `).join("");
-                    window.startBannerCarousel();
+                    `;
                 } else {
                     carousel.innerHTML = `
-                        <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-gray-900 to-black flex flex-col items-center justify-center text-center text-white px-4">
-                            <h2 class="text-4xl md:text-6xl font-black mb-3 text-yellow-400 tracking-wider drop-shadow-lg uppercase">The Eye That Never Sleeps</h2>
+                        <div class="w-full h-32 bg-gradient-to-r from-slate-900 via-gray-900 to-black flex items-center justify-center text-center text-white px-4">
+                            <h2 class="text-2xl md:text-4xl font-black text-yellow-400 tracking-wider drop-shadow-lg uppercase">The Eye That Never Sleeps</h2>
                         </div>
                     `;
                 }
             }
 
-            // 2. Sync Public Offers Grid
+            // 2. Sync Public Offers Grid (Smooth Right-to-Left Sliding Cards)
             const offerArr = Object.values(offers).sort((a,b) => b.timestamp - a.timestamp);
             const pubOffersGrid = document.getElementById("publicOffersGrid");
             if(pubOffersGrid) {
-                pubOffersGrid.innerHTML = offerArr.map(o => `
-                    <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 p-6 flex items-center justify-center text-center h-32 md:h-40 transform transition hover:-translate-y-1 hover:shadow-2xl">
-                        <h3 class="text-white font-black text-lg md:text-xl drop-shadow-md leading-snug">${o.text}</h3>
-                    </div>
-                `).join("");
+                if (offerArr.length > 0) {
+                    const offerCards = offerArr.map(o => `
+                        <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 p-6 flex items-center justify-center text-center h-28 md:h-32 min-w-[320px] md:min-w-[380px] mx-3">
+                            <h3 class="text-white font-black text-base md:text-lg drop-shadow-md leading-snug">${o.text}</h3>
+                        </div>
+                    `).join("");
+
+                    pubOffersGrid.innerHTML = `
+                        <div class="marquee-wrapper bg-slate-100 py-4 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="marquee-content">
+                                ${offerCards}
+                                ${offerCards} <!-- Seamless infinite loop duplication -->
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    pubOffersGrid.innerHTML = "";
+                }
             }
 
-            // 3. Sync Admin Banners
+            // 3. Sync Admin Banners List (Max 10)
             const adminBannerList = document.getElementById("adminBannersList");
             const btnBanner = document.getElementById("btnUploadBanner");
             if(adminBannerList) {
@@ -2190,7 +2211,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 `).join("");
             }
 
-            // 4. Sync Admin Offers
+            // 4. Sync Admin Offers List (Max 3)
             const adminOfferList = document.getElementById("adminOffersList");
             const btnOffer = document.getElementById("btnUploadOffer");
             if(adminOfferList) {
@@ -2228,7 +2249,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
 
             try {
                 const itemId = type.toUpperCase() + "-" + Date.now();
-                // Pick a random vibrant gradient
                 const randomGrad = BGT_GRADIENTS[Math.floor(Math.random() * BGT_GRADIENTS.length)];
                 
                 await set(ref(window.db, `storefront/${dbNode}/${itemId}`), {
@@ -2237,7 +2257,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     gradient: randomGrad,
                     timestamp: Date.now()
                 });
-                inputEl.value = ""; // Clear box on success
+                inputEl.value = "";
             } catch(e) {
                 alert("Failed to publish: " + e.message);
             } finally {
