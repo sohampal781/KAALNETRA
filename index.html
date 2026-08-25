@@ -1063,16 +1063,21 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 `).join("");
             });
         // ================= NEW: BILLING CALCULATOR =================
+       // ================= NEW: BILLING CALCULATOR =================
         window.calculateFinalBill = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
             if(!ordId) return;
             
-            // Failsafe: Pull directly from Database to prevent undefined errors
             const snap = await get(ref(window.db, `web_orders/${ordId}`));
             if(!snap.exists()) return;
             
             const orderData = snap.val();
-            const systemCost = parseInt(orderData.totalPrice || 0); 
+            
+            // CRITICAL FIX: Look up the exact price from the CATALOG
+            const productDef = CATALOG.find(p => p.name === orderData.productName);
+            // Fallback to (advance + balance) if catalog lookup fails for any reason
+            const systemCost = productDef ? productDef.price : (parseInt(orderData.advancePaid || 0) + parseInt(orderData.balanceDue || 0)); 
+            
             const installCost = 2000; // Fixed Installation charge
             let discount = parseInt(document.getElementById("billDiscount").value) || 0;
             
@@ -1084,8 +1089,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
             document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
         };
-       // REPLACE ENTIRE finalizeBatchDispatch FUNCTION
-// ================= CRASH-PROOF BATCH & BILLING =================
+       // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
             if(!ordId) return alert("Select an order first.");
@@ -1094,7 +1098,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             btn.innerText = "Processing Invoice..."; btn.disabled = true;
 
             try {
-                // FETCH DIRECTLY FROM DB TO PREVENT CRASHES
                 const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
                 if(!ordSnap.exists()) return alert("Error: Order not found in database.");
                 const orderData = ordSnap.val();
@@ -1111,8 +1114,10 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     hardwareLogForInternal.push({ id: tagId, item: req.componentName });
                 }
                 
-                // 2. Fetch Pricing Data for Bill
-                const systemCost = parseInt(orderData.totalPrice || 0);
+                // 2. CRITICAL FIX: Accurate Pricing Lookup
+                const productDef = CATALOG.find(p => p.name === orderData.productName);
+                const systemCost = productDef ? productDef.price : (parseInt(orderData.advancePaid || 0) + parseInt(orderData.balanceDue || 0));
+                
                 const installCost = 2000;
                 const discount = parseInt(document.getElementById("billDiscount").value) || 0;
                 const grandTotal = systemCost + installCost - discount;
