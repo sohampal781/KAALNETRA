@@ -181,12 +181,29 @@
                     
                     <!-- Left: Current Action -->
                     <div class="bg-blue-50 p-8 border-2 border-blue-200 rounded-lg shadow-inner flex flex-col justify-center text-center relative overflow-hidden">
-                        <div id="pickingCompleteMsg" class="hidden z-10">
-                            <i class="fas fa-check-circle text-7xl text-emerald-500 mb-4 drop-shadow-md"></i>
-                            <h3 class="text-3xl font-black text-gray-900 mb-2">All Components Collected!</h3>
-                            <p class="text-gray-600 mb-8 font-medium">The system is ready to be batched and sealed.</p>
-                            <button onclick="finalizeBatchDispatch()" class="btn-amz-yellow w-full py-4 text-lg font-black uppercase tracking-widest border-2 border-yellow-500 shadow-xl hover:scale-105 transition transform">Finalize & Print Master QR</button>
-                        </div>
+                        <!-- REPLACE THIS BLOCK INSIDE THE DISPATCH WORKSPACE -->
+<div id="pickingCompleteMsg" class="hidden z-10 w-full">
+    <i class="fas fa-check-circle text-6xl text-emerald-500 mb-4 drop-shadow-md"></i>
+    <h3 class="text-2xl font-black text-gray-900 mb-4">All Components Collected!</h3>
+    
+    <!-- NEW: Billing & Discount Calculator -->
+    <div class="bg-white p-4 rounded-lg border-2 border-emerald-100 text-left mb-6 shadow-md w-full max-w-sm mx-auto">
+        <h4 class="font-bold text-gray-800 border-b pb-2 mb-3 text-sm">Invoice Configuration</h4>
+        <div class="flex justify-between mb-2 text-sm"><span class="text-gray-600">System Cost:</span> <span class="font-bold text-gray-800" id="billSystemCost">₹0</span></div>
+        <div class="flex justify-between mb-3 text-sm"><span class="text-gray-600">Installation:</span> <span class="font-bold text-gray-800">₹2,000</span></div>
+        
+        <div class="flex justify-between mb-4 items-center bg-gray-50 p-2 rounded border">
+            <span class="text-gray-700 font-bold text-sm">Apply Discount (₹):</span> 
+            <input type="number" id="billDiscount" value="0" min="0" class="w-24 p-1.5 border border-gray-300 rounded text-right outline-none focus:border-blue-500 font-mono font-bold" oninput="calculateFinalBill()">
+        </div>
+        
+        <div class="flex justify-between border-t border-gray-300 pt-3 text-lg font-black text-rose-600">
+            <span>Grand Total:</span> <span id="billGrandTotal">₹0</span>
+        </div>
+    </div>
+
+    <button onclick="finalizeBatchDispatch()" class="btn-amz-yellow w-full py-4 text-lg font-black uppercase tracking-widest border-2 border-yellow-500 shadow-xl hover:scale-105 transition transform">Finalize & Print Invoice</button>
+</div>
                         
                         <div id="activePickingStep" class="z-10">
                             <h4 class="text-sm font-bold text-blue-800 uppercase tracking-widest mb-2">Next Component to Pick:</h4>
@@ -655,9 +672,11 @@
                 document.getElementById("scannerInput").value = "";
                 document.getElementById("scannerInput").focus();
             } else {
-                document.getElementById("activePickingStep").classList.add("hidden");
-                document.getElementById("pickingCompleteMsg").classList.remove("hidden");
-            }
+    document.getElementById("activePickingStep").classList.add("hidden");
+    document.getElementById("pickingCompleteMsg").classList.remove("hidden");
+    // Add this line here:
+    window.calculateFinalBill(); 
+}
         }
 
         window.handleComponentScan = async () => {
@@ -680,55 +699,129 @@
             activeDispatchStep++;
             renderDispatchUI();
         };
+        // NEW: Auto-calculate the final bill amount
+window.calculateFinalBill = () => {
+    const ordId = document.getElementById("dispOrderSelect").value;
+    if(!ordId || !allOrders[ordId]) return;
+    
+    const systemCost = parseInt(allOrders[ordId].totalPrice || 0); 
+    const installCost = 2000; // Fixed Installation charge
+    let discount = parseInt(document.getElementById("billDiscount").value) || 0;
+    
+    // Prevent discount from exceeding total cost
+    if (discount > (systemCost + installCost)) discount = systemCost + installCost;
+    
+    const grandTotal = systemCost + installCost - discount;
+    
+    document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
+    document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
+};
 
-        window.finalizeBatchDispatch = async () => {
-            const ordId = document.getElementById("dispOrderSelect").value;
-            const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
-            const updates = {};
-            let hardwareLogForBill = [];
+       // REPLACE ENTIRE finalizeBatchDispatch FUNCTION
+window.finalizeBatchDispatch = async () => {
+    const ordId = document.getElementById("dispOrderSelect").value;
+    const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
+    const updates = {};
+    let hardwareLogForInternal = [];
 
-            for(let req of activeDispatchBOM) {
-                const tagId = req.scannedTag;
-                updates[`inventory/${tagId}/status`] = "Sold";
-                updates[`inventory/${tagId}/masterQrRef`] = masterId;
-                hardwareLogForBill.push({ id: tagId, item: req.componentName });
-            }
+    // 1. Mark individual raw materials as Sold in Firebase internally
+    for(let req of activeDispatchBOM) {
+        const tagId = req.scannedTag;
+        updates[`inventory/${tagId}/status`] = "Sold";
+        updates[`inventory/${tagId}/masterQrRef`] = masterId;
+        hardwareLogForInternal.push({ id: tagId, item: req.componentName });
+    }
+    
+    // 2. Fetch Pricing Data
+    const orderData = allOrders[ordId];
+    const systemCost = parseInt(orderData.totalPrice || 0);
+    const installCost = 2000;
+    const discount = parseInt(document.getElementById("billDiscount").value) || 0;
+    const grandTotal = systemCost + installCost - discount;
+
+    // 3. Save to Firebase
+    updates[`master_warranties/${masterId}`] = { 
+        masterId: masterId, 
+        orderRef: ordId, 
+        customerName: orderData.customerName, 
+        hardwareList: hardwareLogForInternal, // We save components to DB for tech support, but hide from customer bill
+        billing: { systemCost, installCost, discount, grandTotal },
+        timestamp: Date.now() 
+    };
+    updates[`web_orders/${ordId}/status`] = "Dispatched & Billed";
+    updates[`web_orders/${ordId}/masterQrId`] = masterId;
+
+    try {
+        await update(ref(window.db), updates);
+        
+        // 4. Print Clean Supermarket/Retail Style Invoice
+        const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
+        const doc = iframe.contentWindow.document; doc.open();
+        
+        let discountHtml = discount > 0 ? `
+            <tr style="border-bottom:1px solid #ccc; color: #d93025;">
+                <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
+                <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
+            </tr>` : '';
+
+        doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
+            <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE</h1>
             
-            updates[`master_warranties/${masterId}`] = { masterId: masterId, orderRef: ordId, customerName: allOrders[ordId].customerName, hardwareList: hardwareLogForBill, timestamp: Date.now() };
-            updates[`web_orders/${ordId}/status`] = "Dispatched (Batched)";
-            updates[`web_orders/${ordId}/masterQrId`] = masterId;
-
-            try {
-                await update(ref(window.db), updates);
-                
-                // Print A4 Invoice
-                let rows = hardwareLogForBill.map((it, i) => `<tr style="border-bottom:1px solid #ccc;"><td style="padding:12px;font-size:11pt;">${i+1}</td><td style="padding:12px;font-size:11pt;font-weight:bold;">${it.item}</td><td style="padding:12px;font-size:11pt;font-family:monospace;">${it.id}</td></tr>`).join("");
-                const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
-                const doc = iframe.contentWindow.document; doc.open();
-                doc.write(`<html><body style="font-family:sans-serif;padding:30px;color:#111;">
-                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA SYSTEM BATCH INVOICE</h1>
-                    <div style="border:2px solid #ccc;padding:15px;margin-bottom:20px;font-size:12pt;background:#f9f9f9;">
-                        <strong>Order Ref:</strong> ${ordId} | <strong>System:</strong> ${allOrders[ordId].productName}<br>
-                        <strong>Customer:</strong> ${allOrders[ordId].customerName}
-                    </div>
-                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
-                        <thead><tr style="border-bottom:2px solid #111;"><th>#</th><th>Component / Raw Material</th><th>Scanned Tag ID</th></tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                    <div style="text-align:center;border:2px dashed #111;padding:20px; width: 60%; margin: 0 auto;">
-                        <h2 style="margin-top:0;">MASTER WARRANTY QR</h2>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${masterId}" style="margin:10px 0;border:2px solid #111;">
-                        <div style="font-family:monospace;font-size:20pt;font-weight:bold;letter-spacing:2px;">${masterId}</div>
-                    </div></body></html>`);
-                doc.close();
-                setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
-                
-                document.getElementById("dispatchWorkspace").classList.add("hidden");
-                document.getElementById("dispOrderSelect").value = "";
-                activeDispatchBOM = [];
-                
-            } catch(e) { alert("Batching Failed: " + e.message); }
-        };
+            <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
+                <div>
+                    <strong>Customer Name:</strong> ${orderData.customerName}<br>
+                    <strong>Contact Phone:</strong> ${orderData.phone}<br>
+                </div>
+                <div style="text-align:right;">
+                    <strong>Invoice / Order Ref:</strong> ${ordId}<br>
+                    <strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}
+                </div>
+            </div>
+            
+            <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
+                <thead>
+                    <tr style="border-bottom:3px solid #111; background:#eee;">
+                        <th style="padding:12px; font-size:12pt;">Description</th>
+                        <th style="padding:12px; font-size:12pt; text-align:right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid #ccc;">
+                        <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName}</td>
+                        <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${systemCost.toLocaleString('en-IN')}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #ccc;">
+                        <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
+                        <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
+                    </tr>
+                    ${discountHtml}
+                </tbody>
+                <tfoot>
+                    <tr style="background:#111; color:white;">
+                        <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
+                        <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            
+            <div style="text-align:center;border:3px dashed #111;padding:30px; width: 70%; margin: 0 auto;">
+                <h2 style="margin-top:0; font-size:18pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
+                <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${masterId}" style="margin:0 auto;border:2px solid #111;">
+                <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
+            </div>
+        </body></html>`);
+        doc.close();
+        setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
+        
+        // Reset View
+        document.getElementById("dispatchWorkspace").classList.add("hidden");
+        document.getElementById("dispOrderSelect").value = "";
+        document.getElementById("billDiscount").value = "0";
+        activeDispatchBOM = [];
+        
+    } catch(e) { alert("Batching & Billing Failed: " + e.message); }
+};
     </script>
 </body>
 </html>
