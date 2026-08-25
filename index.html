@@ -1060,25 +1060,50 @@
 }
         }
 
+        // ================= FAST-FORWARD COMPONENT SCANNER =================
         window.handleComponentScan = async () => {
-            const inputTag = document.getElementById("scannerInput").value.trim().toUpperCase();
-            if(!inputTag) return alert("Please scan or type a tag barcode.");
+            const inputField = document.getElementById("scannerInput");
+            const inputTag = inputField.value.trim().toUpperCase();
+            
+            // If empty (e.g., accidental enter press), do nothing
+            if(!inputTag) return; 
             
             const currentReq = activeDispatchBOM[activeDispatchStep];
             
-            const snap = await get(ref(window.db, `inventory/${inputTag}`));
-            if(!snap.exists()) return alert("Error: Tag not found in database.");
-            
-            const itemData = snap.val();
-            if(itemData.status !== "In Stock") return alert(`Error: This component is already marked as ${itemData.status}.`);
-            if(itemData.item !== currentReq.componentName) return alert(`Mismatch! You scanned a '${itemData.item}'. You need to pick a '${currentReq.componentName}'.`);
+            try {
+                const snap = await get(ref(window.db, `inventory/${inputTag}`));
+                
+                // Error Handling (Instantly clears box for next scan)
+                if(!snap.exists()) {
+                    inputField.value = "";
+                    return alert("Error: Tag not found in database.");
+                }
+                
+                const itemData = snap.val();
+                if(itemData.status !== "In Stock") {
+                    inputField.value = "";
+                    return alert(`Error: This component is already marked as ${itemData.status}.`);
+                }
+                if(itemData.item !== currentReq.componentName) {
+                    inputField.value = "";
+                    return alert(`Mismatch! You scanned a '${itemData.item}'. You need to pick a '${currentReq.componentName}'.`);
+                }
+                if(activeDispatchBOM.some(b => b.scannedTag === inputTag)) {
+                    inputField.value = "";
+                    return alert("You already scanned this exact tag for this order.");
+                }
 
-            if(activeDispatchBOM.some(b => b.scannedTag === inputTag)) return alert("You already scanned this exact tag for this order.");
+                // ✅ SUCCESS! Tick and Fast-Forward
+                activeDispatchBOM[activeDispatchStep].scannedTag = inputTag;
+                activeDispatchBOM[activeDispatchStep].isCollected = true;
+                activeDispatchStep++;
+                
+                // Renders next step, clears box, and refocuses cursor automatically
+                renderDispatchUI(); 
 
-            activeDispatchBOM[activeDispatchStep].scannedTag = inputTag;
-            activeDispatchBOM[activeDispatchStep].isCollected = true;
-            activeDispatchStep++;
-            renderDispatchUI();
+            } catch (e) {
+                alert("Database Error: " + e.message);
+            }
         };
         // NEW: Auto-calculate the final bill amount
 window.calculateFinalBill = () => {
@@ -1255,33 +1280,41 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
             document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
         };
-        // ================= LIVE CAMERA SCANNING LOGIC =================
+        // ================= CONTINUOUS LIVE CAMERA SCANNER =================
         let html5QrCode;
+        let isProcessingScan = false;
 
         window.startCameraScanner = () => {
             const scannerBox = document.getElementById('cameraScannerBox');
             scannerBox.classList.remove('hidden');
             
-            // Initialize the Html5Qrcode instance
             html5QrCode = new Html5Qrcode("qr-reader");
-            
-            // Configure scanner for standard QR/Barcodes
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
             
-            // Start the back-facing camera
-            html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-                // Success: Play sound/vibrate if mobile, input the text, and stop camera
+            html5QrCode.start({ facingMode: "environment" }, config, async (decodedText) => {
+                
+                // Smart Cooldown Lock: Prevents scanning the same code 10 times a second
+                if (isProcessingScan) return;
+                isProcessingScan = true;
+                
                 if (navigator.vibrate) navigator.vibrate(200); 
                 document.getElementById('scannerInput').value = decodedText;
-                window.stopCameraScanner();
                 
-                // Automatically submit the code
-                window.handleComponentScan();
+                // Auto submit the scan
+                await window.handleComponentScan();
+                
+                // Check if we are done packing the whole box
+                if (activeDispatchStep >= activeDispatchBOM.length) {
+                    window.stopCameraScanner(); // Auto-close camera when finished
+                }
+                
+                // Unlock scanner after 1.5 seconds so you can aim at the next tag
+                setTimeout(() => { isProcessingScan = false; }, 1500);
                 
             }, (errorMessage) => {
-                // Ignore background errors while seeking a QR code
+                // Ignore background seeking errors
             }).catch((err) => {
-                alert("Camera Access Error: Ensure you have given browser permissions to use the camera.");
+                alert("Camera Access Error: Please ensure you have given browser permissions.");
                 window.stopCameraScanner();
             });
         };
@@ -1291,6 +1324,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 html5QrCode.stop().then(() => {
                     html5QrCode.clear();
                     document.getElementById('cameraScannerBox').classList.add('hidden');
+                    isProcessingScan = false;
                 }).catch(err => {
                     console.error("Failed to stop camera.", err);
                     document.getElementById('cameraScannerBox').classList.add('hidden');
