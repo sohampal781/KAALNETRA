@@ -465,8 +465,9 @@
                                 <option value="N/A">Not Applicable</option>
                             </select>
                         </div>
+                        <!-- REPLACE THE OTP DIV INSIDE THE TECH MODAL -->
                         <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Customer Confirm OTP</label>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Customer OTP (Last 4 of UPI)</label>
                             <input id="techOtp" type="text" maxlength="4" placeholder="4-Digit PIN" class="w-full p-2.5 border rounded text-center font-mono font-bold outline-none bg-gray-50 focus:border-indigo-500 tracking-widest text-lg">
                         </div>
                     </div>
@@ -1447,17 +1448,16 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
         window.snapBackSwipe = (el) => {
             if(el.value < 100) el.value = 0;
         };
-// ================= SECURE INSTALLATION DONE LOGIC =================
-        // ================= SECURE INSTALLATION DONE LOGIC =================
+// ================= SECURE INSTALLATION DONE LOGIC (4-DIGIT) =================
         window.completeInstallation = async () => {
             const ordId = document.getElementById('techOrdId').value;
             const otp = document.getElementById('techOtp').value.trim();
             const notes = document.getElementById('techNotes').value.trim();
             const signal = document.getElementById('techSignal').value;
 
-            // 1. Check if length is exactly 5
-            if(otp.length !== 5) {
-                alert("Please enter the 5-digit Customer Confirmation OTP (Last 5 of their UPI payment).");
+            // 1. Check if length is exactly 4
+            if(otp.length !== 4) {
+                alert("Please enter the 4-digit Customer Confirmation OTP (Last 4 of their UPI payment).");
                 document.getElementById('installSwipe').value = 0;
                 return;
             }
@@ -1468,6 +1468,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 const data = ordSnap.val();
                 
                 // 2. SECURITY LOCK: Verify against the original UPI transaction
+                // (Note: It still checks the database variable we previously named txnIdLast5)
                 if(data.txnIdLast5 && otp !== data.txnIdLast5) {
                     alert("❌ OTP MISMATCH! The entered PIN does not match the customer's UPI transaction ID.");
                     document.getElementById('installSwipe').value = 0;
