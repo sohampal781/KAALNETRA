@@ -42,19 +42,31 @@
         input[type=range].swipe-slider::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none; width: 55px; height: 55px; border-radius: 50%; background: #10b981; cursor: pointer; border: 4px solid #fff; box-shadow: -1000px 0 0 1000px #34d399; z-index: 2; position: relative;
         }
-        @keyframes marquee-rtl {
+        @keyframes marqueeRTL {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
-        .animate-marquee {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee-rtl 25s linear infinite;
-        }
-        .marquee-container {
-            overflow: hidden;
+        .marquee-wrapper {
+            display: flex;
             width: 100%;
-            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-flex;
+            gap: 3rem;
+            animation: marqueeRTL 20s linear infinite;
+        }
+        .marquee-content:hover {
+            animation-play-state: paused; /* Pauses on hover so customers can read it */
+        }
+
+        /* iOS Style Swipe-to-Complete Slider */
+        input[type=range].swipe-slider {
+            -webkit-appearance: none; width: 100%; height: 55px; background: #e5e7eb; border-radius: 30px; outline: none; overflow: hidden; position: relative; z-index: 1;
+        }
+        input[type=range].swipe-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 55px; height: 55px; border-radius: 50%; background: #10b981; cursor: pointer; border: 4px solid #fff; box-shadow: -1000px 0 0 1000px #34d399; z-index: 2; position: relative;
         }
     </style>
 </head>
@@ -1923,9 +1935,9 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                         ${p.badge}
                     </div>
                     
-                    <!-- Product Image -->
-                    <div class="h-48 bg-slate-50 flex items-center justify-center overflow-hidden border-b relative">
-                        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300/f8fafc/334155?text=No+Image'">
+                    <!-- Product Image (Fixed: object-contain prevents cropping) -->
+                    <div class="h-48 bg-slate-100 flex items-center justify-center overflow-hidden border-b relative">
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-contain p-3" onerror="this.src='https://via.placeholder.com/400x300/f8fafc/334155?text=No+Image'">
                         <!-- Discount Tag -->
                         <div class="absolute bottom-2 right-2 bg-red-600 text-white text-[11px] font-black px-2 py-1 rounded shadow-md border border-red-700">
                             ${p.discount}% OFF
@@ -1944,7 +1956,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             `).join("");
         };
         window.renderCatalog(CATALOG);
-        window.renderCatalog(CATALOG); // Render default catalog
 
         window.compressImage = (file, maxWidth, quality) => {
             return new Promise((resolve) => {
@@ -1983,49 +1994,56 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 slides[nextIdx].classList.remove('opacity-0'); slides[nextIdx].classList.add('opacity-100');
             }, 4000);
         };
-        // Live Listener for Banners & Offers with Right-to-Left Sliding Effect
+        // Live Listener for Banners & Offers with Right-to-Left Marquee Animation
         onValue(ref(window.db, "storefront"), (snap) => {
             const data = snap.val() || {};
             const banners = data.banners || {};
             const offers = data.offers || {};
 
-            // 1. Sync Public Banners (Right-to-Left Marquee)
+            // 1. Sync Public Banners (Smooth Right-to-Left Marquee)
             const bannerArr = Object.values(banners).sort((a,b) => b.timestamp - a.timestamp);
             const carousel = document.getElementById("publicBannerCarousel");
             if(carousel) {
                 if (bannerArr.length > 0) {
-                    const marqueeText = bannerArr.map(b => b.text).join(" &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; ");
+                    const bannerSpans = bannerArr.map(b => `
+                        <span class="inline-flex items-center px-8 py-4 ${b.gradient || 'bg-slate-800'} text-white font-black text-2xl md:text-3xl rounded-xl shadow-lg uppercase tracking-wide border border-white/20 mx-4">
+                            ${b.text}
+                        </span>
+                    `).join("");
+
                     carousel.innerHTML = `
-                        <div class="w-full h-full bg-gradient-to-r from-slate-900 via-gray-900 to-black flex items-center overflow-hidden marquee-container py-6">
-                            <div class="animate-marquee text-2xl md:text-4xl font-black text-yellow-400 tracking-wider drop-shadow-lg uppercase">
-                                ${marqueeText}
+                        <div class="w-full h-32 bg-slate-900 flex items-center overflow-hidden marquee-wrapper border-y border-slate-800 shadow-inner">
+                            <div class="marquee-content">
+                                ${bannerSpans}
+                                ${bannerSpans} <!-- Duplicated to create a seamless infinite loop loop -->
                             </div>
                         </div>
                     `;
                 } else {
                     carousel.innerHTML = `
-                        <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-gray-900 to-black flex flex-col items-center justify-center text-center text-white px-4">
-                            <h2 class="text-4xl md:text-6xl font-black mb-3 text-yellow-400 tracking-wider drop-shadow-lg uppercase">The Eye That Never Sleeps</h2>
+                        <div class="w-full h-32 bg-gradient-to-r from-slate-900 via-gray-900 to-black flex items-center justify-center text-center text-white px-4">
+                            <h2 class="text-2xl md:text-4xl font-black text-yellow-400 tracking-wider drop-shadow-lg uppercase">The Eye That Never Sleeps</h2>
                         </div>
                     `;
                 }
             }
 
-            // 2. Sync Public Offers Grid (Right-to-Left Sliding Cards)
+            // 2. Sync Public Offers Grid (Smooth Right-to-Left Sliding Cards)
             const offerArr = Object.values(offers).sort((a,b) => b.timestamp - a.timestamp);
             const pubOffersGrid = document.getElementById("publicOffersGrid");
             if(pubOffersGrid) {
                 if (offerArr.length > 0) {
-                    const offersHtml = offerArr.map(o => `
-                        <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 p-6 flex items-center justify-center text-center h-28 md:h-32 min-w-[300px] md:min-w-[350px] mx-3 inline-flex">
+                    const offerCards = offerArr.map(o => `
+                        <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 p-6 flex items-center justify-center text-center h-28 md:h-32 min-w-[320px] md:min-w-[380px] mx-3">
                             <h3 class="text-white font-black text-base md:text-lg drop-shadow-md leading-snug">${o.text}</h3>
                         </div>
                     `).join("");
 
                     pubOffersGrid.innerHTML = `
-                        <div class="marquee-container bg-slate-100 py-3 rounded-xl border border-gray-200">
-                            <div class="animate-marquee">
-                                ${offersHtml}
+                        <div class="marquee-wrapper bg-slate-100 py-4 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="marquee-content">
+                                ${offerCards}
+                                ${offerCards} <!-- Duplicated for smooth infinite loop -->
                             </div>
                         </div>
                     `;
@@ -2034,7 +2052,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 }
             }
 
-            // 3. Sync Admin Banners (Limit 10)
+            // 3. Sync Admin Banners List
             const adminBannerList = document.getElementById("adminBannersList");
             const btnBanner = document.getElementById("btnUploadBanner");
             if(adminBannerList) {
@@ -2054,7 +2072,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 `).join("");
             }
 
-            // 4. Sync Admin Offers (Limit 3)
+            // 4. Sync Admin Offers List
             const adminOfferList = document.getElementById("adminOffersList");
             const btnOffer = document.getElementById("btnUploadOffer");
             if(adminOfferList) {
