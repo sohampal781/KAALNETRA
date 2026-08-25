@@ -6,6 +6,7 @@
     <title>Kaalnetra Security Systems | Official Store & ERP</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -1049,111 +1050,147 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     </tr>
                 `).join("");
             });
+        // ================= NEW: BILLING CALCULATOR =================
+        window.calculateFinalBill = async () => {
+            const ordId = document.getElementById("dispOrderSelect").value;
+            if(!ordId) return;
+            
+            // Failsafe: Pull directly from Database to prevent undefined errors
+            const snap = await get(ref(window.db, `web_orders/${ordId}`));
+            if(!snap.exists()) return;
+            
+            const orderData = snap.val();
+            const systemCost = parseInt(orderData.totalPrice || 0); 
+            const installCost = 2000; // Fixed Installation charge
+            let discount = parseInt(document.getElementById("billDiscount").value) || 0;
+            
+            // Prevent discount from exceeding total cost
+            if (discount > (systemCost + installCost)) discount = systemCost + installCost;
+            
+            const grandTotal = systemCost + installCost - discount;
+            
+            document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
+            document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
+        };
        // REPLACE ENTIRE finalizeBatchDispatch FUNCTION
-window.finalizeBatchDispatch = async () => {
-    const ordId = document.getElementById("dispOrderSelect").value;
-    const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
-    const updates = {};
-    let hardwareLogForInternal = [];
+// ================= CRASH-PROOF BATCH & BILLING =================
+        window.finalizeBatchDispatch = async () => {
+            const ordId = document.getElementById("dispOrderSelect").value;
+            if(!ordId) return alert("Select an order first.");
 
-    // 1. Mark individual raw materials as Sold in Firebase internally
-    for(let req of activeDispatchBOM) {
-        const tagId = req.scannedTag;
-        updates[`inventory/${tagId}/status`] = "Sold";
-        updates[`inventory/${tagId}/masterQrRef`] = masterId;
-        hardwareLogForInternal.push({ id: tagId, item: req.componentName });
-    }
-    
-    // 2. Fetch Pricing Data
-    const orderData = allOrders[ordId];
-    const systemCost = parseInt(orderData.totalPrice || 0);
-    const installCost = 2000;
-    const discount = parseInt(document.getElementById("billDiscount").value) || 0;
-    const grandTotal = systemCost + installCost - discount;
+            const btn = document.activeElement;
+            btn.innerText = "Processing Invoice..."; btn.disabled = true;
 
-    // 3. Save to Firebase
-    updates[`master_warranties/${masterId}`] = { 
-        masterId: masterId, 
-        orderRef: ordId, 
-        customerName: orderData.customerName, 
-        hardwareList: hardwareLogForInternal, // We save components to DB for tech support, but hide from customer bill
-        billing: { systemCost, installCost, discount, grandTotal },
-        timestamp: Date.now() 
-    };
-    updates[`web_orders/${ordId}/status`] = "Dispatched & Billed";
-    updates[`web_orders/${ordId}/masterQrId`] = masterId;
+            try {
+                // FETCH DIRECTLY FROM DB TO PREVENT CRASHES
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if(!ordSnap.exists()) return alert("Error: Order not found in database.");
+                const orderData = ordSnap.val();
 
-    try {
-        await update(ref(window.db), updates);
-        
-        // 4. Print Clean Supermarket/Retail Style Invoice
-        const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
-        const doc = iframe.contentWindow.document; doc.open();
-        
-        let discountHtml = discount > 0 ? `
-            <tr style="border-bottom:1px solid #ccc; color: #d93025;">
-                <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
-                <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
-            </tr>` : '';
+                const masterId = "MQR-" + Math.floor(100000 + Math.random() * 900000);
+                const updates = {};
+                let hardwareLogForInternal = [];
 
-        doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
-            <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE</h1>
-            
-            <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
-                <div>
-                    <strong>Customer Name:</strong> ${orderData.customerName}<br>
-                    <strong>Contact Phone:</strong> ${orderData.phone}<br>
-                </div>
-                <div style="text-align:right;">
-                    <strong>Invoice / Order Ref:</strong> ${ordId}<br>
-                    <strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}
-                </div>
-            </div>
-            
-            <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
-                <thead>
-                    <tr style="border-bottom:3px solid #111; background:#eee;">
-                        <th style="padding:12px; font-size:12pt;">Description</th>
-                        <th style="padding:12px; font-size:12pt; text-align:right;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border-bottom:1px solid #ccc;">
-                        <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName}</td>
-                        <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${systemCost.toLocaleString('en-IN')}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid #ccc;">
-                        <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
-                        <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
-                    </tr>
-                    ${discountHtml}
-                </tbody>
-                <tfoot>
-                    <tr style="background:#111; color:white;">
-                        <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
-                        <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
-                    </tr>
-                </tfoot>
-            </table>
-            
-            <div style="text-align:center;border:3px dashed #111;padding:30px; width: 70%; margin: 0 auto;">
-                <h2 style="margin-top:0; font-size:18pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
-                <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${masterId}" style="margin:0 auto;border:2px solid #111;">
-                <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
-            </div>
-        </body></html>`);
-        doc.close();
-        setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
-        
-        // Reset View
-        document.getElementById("dispatchWorkspace").classList.add("hidden");
-        document.getElementById("dispOrderSelect").value = "";
-        document.getElementById("billDiscount").value = "0";
-        activeDispatchBOM = [];
-        
-    } catch(e) { alert("Batching & Billing Failed: " + e.message); }
-};
+                // 1. Mark individual raw materials as Sold in Firebase
+                for(let req of activeDispatchBOM) {
+                    const tagId = req.scannedTag;
+                    updates[`inventory/${tagId}/status`] = "Sold";
+                    updates[`inventory/${tagId}/masterQrRef`] = masterId;
+                    hardwareLogForInternal.push({ id: tagId, item: req.componentName });
+                }
+                
+                // 2. Fetch Pricing Data for Bill
+                const systemCost = parseInt(orderData.totalPrice || 0);
+                const installCost = 2000;
+                const discount = parseInt(document.getElementById("billDiscount").value) || 0;
+                const grandTotal = systemCost + installCost - discount;
+
+                // 3. Save to Firebase
+                updates[`master_warranties/${masterId}`] = { 
+                    masterId: masterId, 
+                    orderRef: ordId, 
+                    customerName: orderData.customerName, 
+                    hardwareList: hardwareLogForInternal,
+                    billing: { systemCost, installCost, discount, grandTotal },
+                    timestamp: Date.now() 
+                };
+                updates[`web_orders/${ordId}/status`] = "Dispatched & Billed";
+                updates[`web_orders/${ordId}/masterQrId`] = masterId;
+
+                await update(ref(window.db), updates);
+                
+                // 4. Print Clean Supermarket/Retail Style Invoice
+                const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
+                const doc = iframe.contentWindow.document; doc.open();
+                
+                let discountHtml = discount > 0 ? `
+                    <tr style="border-bottom:1px solid #ccc; color: #d93025;">
+                        <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
+                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
+                    </tr>` : '';
+
+                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
+                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE</h1>
+                    
+                    <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
+                        <div>
+                            <strong>Customer Name:</strong> ${orderData.customerName}<br>
+                            <strong>Contact Phone:</strong> ${orderData.phone}<br>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong>Invoice / Order Ref:</strong> ${ordId}<br>
+                            <strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}
+                        </div>
+                    </div>
+                    
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
+                        <thead>
+                            <tr style="border-bottom:3px solid #111; background:#eee;">
+                                <th style="padding:12px; font-size:12pt;">Description</th>
+                                <th style="padding:12px; font-size:12pt; text-align:right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #ccc;">
+                                <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName}</td>
+                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${systemCost.toLocaleString('en-IN')}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #ccc;">
+                                <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
+                                <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
+                            </tr>
+                            ${discountHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#111; color:white;">
+                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
+                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div style="text-align:center;border:3px dashed #111;padding:30px; width: 70%; margin: 0 auto;">
+                        <h2 style="margin-top:0; font-size:18pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
+                        <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${masterId}" style="margin:0 auto;border:2px solid #111;">
+                        <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
+                    </div>
+                </body></html>`);
+                doc.close();
+                setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
+                
+                // Reset View
+                document.getElementById("dispatchWorkspace").classList.add("hidden");
+                document.getElementById("dispOrderSelect").value = "";
+                document.getElementById("billDiscount").value = "0";
+                activeDispatchBOM = [];
+                
+            } catch(e) { 
+                alert("Batching & Billing Failed: " + e.message); 
+            } finally {
+                btn.innerText = "Finalize & Print Invoice"; btn.disabled = false;
+            }
+        };
     </script>
 </body>
 </html>
