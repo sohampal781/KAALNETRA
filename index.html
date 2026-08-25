@@ -248,17 +248,45 @@
                             <button onclick="finalizeBatchDispatch()" class="btn-amz-yellow w-full py-4 text-lg font-black uppercase tracking-widest border-2 border-yellow-500 shadow-xl hover:scale-105 transition transform">Finalize & Print Invoice</button>
                         </div>
                         
-                        <div id="activePickingStep" class="z-10">
+                        <!-- NEW UPGRADED 3-OPTION SCANNER UI -->
+                        <div id="activePickingStep" class="z-10 w-full">
                             <h4 class="text-sm font-bold text-blue-800 uppercase tracking-widest mb-2">Next Component to Pick:</h4>
-                            <h3 class="text-2xl font-black text-gray-900 mb-6 border-b-2 border-blue-200 pb-4 inline-block px-8" id="targetComponentName">Loading...</h3>
+                            <h3 class="text-2xl font-black text-gray-900 mb-6 border-b-2 border-blue-200 pb-4 inline-block px-8 w-full" id="targetComponentName">Loading...</h3>
                             
-                            <div class="bg-white border-2 border-gray-200 rounded-xl p-6 mb-8 shadow-md">
-                                <p class="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wider">Suggested Tag in Stock:</p>
-                                <div class="text-3xl font-mono font-black text-orange-600 tracking-widest mb-3" id="targetComponentTag">KN-XXXXXX</div>
-                                <div class="bg-yellow-100 text-yellow-800 p-3 rounded font-bold text-lg border border-yellow-300"><i class="fas fa-map-marker-alt text-blue-500 mr-2"></i> Go to Location: <span id="targetComponentLoc" class="font-black text-blue-900">Shelf A</span></div>
+                            <div class="bg-white border-2 border-gray-200 rounded-xl p-4 mb-6 shadow-md">
+                                <p class="text-xs text-gray-500 font-bold mb-1 uppercase tracking-wider">Suggested Tag in Stock:</p>
+                                <div class="text-2xl font-mono font-black text-orange-600 tracking-widest mb-2" id="targetComponentTag">KN-XXXXXX</div>
+                                <div class="bg-yellow-100 text-yellow-800 p-2 rounded font-bold text-sm border border-yellow-300"><i class="fas fa-map-marker-alt text-blue-500 mr-2"></i> LOC: <span id="targetComponentLoc" class="font-black text-blue-900">Shelf A</span></div>
                             </div>
                             
-                            <input id="scannerInput" type="text" placeholder="Scan or Type Component Tag..." class="w-full p-4 border-2 border-blue-400 rounded-lg text-center font-mono font-bold text-xl uppercase outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition mb-4 shadow-inner">
+                            <!-- 3 Scanning Options Panel -->
+                            <div class="bg-slate-100 border border-slate-300 rounded-lg p-4 mb-6 text-left shadow-inner">
+                                <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3"><i class="fas fa-crosshairs mr-1"></i> Input Method</h4>
+                                
+                                <!-- Live Camera Window (Hidden until activated) -->
+                                <div id="cameraScannerBox" class="hidden mb-4 rounded-lg overflow-hidden border-2 border-blue-500 bg-black">
+                                    <div id="qr-reader" style="width:100%; min-height: 200px;"></div>
+                                    <button onclick="stopCameraScanner()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 font-bold text-sm uppercase tracking-wider"><i class="fas fa-times-circle mr-2"></i>Close Camera</button>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex gap-2 mb-3">
+                                    <button onclick="startCameraScanner()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded border shadow-md font-bold text-xs uppercase transition">
+                                        <i class="fas fa-camera text-lg block mb-1"></i> Live Camera
+                                    </button>
+                                    <button onclick="document.getElementById('scannerInput').focus()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded border shadow-sm font-bold text-xs uppercase transition">
+                                        <i class="fas fa-barcode text-lg block mb-1"></i> Hardware Scanner
+                                    </button>
+                                </div>
+
+                                <!-- Manual Text / Hardware Scanner Input -->
+                                <div class="relative">
+                                    <i class="fas fa-keyboard absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input id="scannerInput" type="text" placeholder="Manual Write or Scan..." class="w-full pl-10 p-3 border-2 border-gray-400 rounded bg-white text-center font-mono font-bold text-lg uppercase outline-none focus:border-blue-600 transition shadow-inner" onkeypress="if(event.key === 'Enter') handleComponentScan()">
+                                </div>
+                                <p class="text-[10px] text-gray-500 mt-2 text-center italic">Physical scanner will auto-submit upon successful scan.</p>
+                            </div>
+                            
                             <button onclick="handleComponentScan()" class="btn-amz-orange w-full py-4 font-black shadow-lg text-base uppercase tracking-wider border-2 border-orange-600">Verify & Collect Component</button>
                         </div>
                     </div>
@@ -1225,6 +1253,50 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             
             document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
             document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
+        };
+        // ================= LIVE CAMERA SCANNING LOGIC =================
+        let html5QrCode;
+
+        window.startCameraScanner = () => {
+            const scannerBox = document.getElementById('cameraScannerBox');
+            scannerBox.classList.remove('hidden');
+            
+            // Initialize the Html5Qrcode instance
+            html5QrCode = new Html5Qrcode("qr-reader");
+            
+            // Configure scanner for standard QR/Barcodes
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            // Start the back-facing camera
+            html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+                // Success: Play sound/vibrate if mobile, input the text, and stop camera
+                if (navigator.vibrate) navigator.vibrate(200); 
+                document.getElementById('scannerInput').value = decodedText;
+                window.stopCameraScanner();
+                
+                // Automatically submit the code
+                window.handleComponentScan();
+                
+            }, (errorMessage) => {
+                // Ignore background errors while seeking a QR code
+            }).catch((err) => {
+                alert("Camera Access Error: Ensure you have given browser permissions to use the camera.");
+                window.stopCameraScanner();
+            });
+        };
+
+        window.stopCameraScanner = () => {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    document.getElementById('cameraScannerBox').classList.add('hidden');
+                }).catch(err => {
+                    console.error("Failed to stop camera.", err);
+                    document.getElementById('cameraScannerBox').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('cameraScannerBox').classList.add('hidden');
+            }
         };
        // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
