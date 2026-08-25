@@ -107,6 +107,10 @@
                     <i class="fas fa-truck-fast w-6"></i> Field Technician App
                 </button>
             </div>
+            <!-- ADD THIS BELOW THE TECHNICIAN APP BUTTON -->
+                <button onclick="switchErpTab('generator')" id="tabbtn-generator" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
+                    <i class="fas fa-print w-6"></i> Bulk Tag Printer
+                </button>
             <div class="p-4 border-t bg-gray-50">
                 <button onclick="logoutStaff()" class="w-full py-2 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 rounded font-bold text-sm transition">
                     <i class="fas fa-sign-out-alt mr-2"></i> Sign Out
@@ -293,7 +297,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- TAB 4: Warranty & RMA Management -->
             <div id="erp-warranty" class="erp-panel hidden max-w-7xl mx-auto">
                 <h2 class="text-2xl font-black mb-6 text-gray-800">Warranty & RMA Management</h2>
@@ -360,11 +363,37 @@
                     <!-- Cards will auto-populate here -->
                 </div>
             </div>
-
+            <!-- TAB 6: Bulk Tag Printer -->
+            <div id="erp-generator" class="erp-panel hidden max-w-7xl mx-auto pb-10">
+                <div class="bg-white p-6 rounded-lg border shadow-md flex flex-col">
+                    <h2 class="text-2xl font-black mb-2 text-gray-800">Batch Tag Printer</h2>
+                    <p class="text-sm text-gray-600 mb-6">Select the components and enter the quantity to print. The system automatically tracks the printed count for each component and generates sequential 12-digit IDs starting with the component's unique 2-digit prefix to completely prevent duplicates.</p>
+                    
+                    <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                        <table class="w-full text-left text-sm border-collapse bg-white">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 border-b text-center w-16">Select</th>
+                                    <th class="p-3 border-b w-24 text-center">Prefix</th>
+                                    <th class="p-3 border-b">Component Name</th>
+                                    <th class="p-3 border-b w-48 text-center">Quantity to Print</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tagPrintTableBody">
+                                <!-- Populated automatically by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="generateAndPrintTags()" class="btn-amz-yellow px-8 py-4 text-lg font-black uppercase tracking-widest shadow-xl hover:scale-105 transition transform">
+                            <i class="fas fa-print mr-2"></i> Print Selected Tags
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
-
-    <!-- MODALS -->
     <!-- Checkout Modal -->
     <div id="publicOrderModal" class="modal-overlay hidden">
         <div class="bg-white rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
@@ -606,6 +635,175 @@
         
         let activeDispatchBOM = [];
         let activeDispatchStep = 0;
+        // ================= TAB 6: BATCH TAG GENERATION & PRINTING =================
+        const PREFIX_MAP = {
+            "01": "IR Transmitter module",
+            "02": "IR Receiver / sensor module",
+            "03": "High-power siren / buzzer",
+            "04": "LED status indicators",
+            "05": "12V SMPS / power adapter",
+            "06": "Voltage regulator / buck converter",
+            "07": "ABS / metal enclosure",
+            "08": "Terminal blocks and connectors",
+            "09": "Wires and cables",
+            "10": "Switch / power switch",
+            "11": "Mounting brackets, screws, clamps",
+            "12": "Heavy-duty bypass switch",
+            "13": "ESP8266 NodeMCU",
+            "14": "Bypass status LED",
+            "15": "Relay module",
+            "16": "Switch mounting plate",
+            "17": "Labeling for NORMAL / BYPASS",
+            "18": "Custom PCB / perfboard",
+            "19": "Reset/programming switch",
+            "20": "Raspberi pi",
+            "21": "RFID Tags",
+            "22": "RFID Scanner"
+        };
+
+        // Render the 22 rows on load
+        function initTagPrinter() {
+            const tbody = document.getElementById("tagPrintTableBody");
+            let html = "";
+            for (const [prefix, name] of Object.entries(PREFIX_MAP)) {
+                html += `
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition cursor-pointer" onclick="document.getElementById('chk_${prefix}').click()">
+                        <td class="p-3 text-center"><input type="checkbox" id="chk_${prefix}" onclick="event.stopPropagation()" class="w-5 h-5 text-blue-600 rounded cursor-pointer print-chk"></td>
+                        <td class="p-3 text-center font-mono font-black text-gray-500 bg-gray-50 border-r border-l border-gray-100">${prefix}</td>
+                        <td class="p-3 font-bold text-gray-800">${name}</td>
+                        <td class="p-3" onclick="event.stopPropagation()">
+                            <input type="number" id="qty_${prefix}" min="1" value="10" class="w-full p-2 border rounded-md text-center outline-none focus:border-blue-500 font-bold text-gray-700">
+                        </td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+        initTagPrinter();
+
+        // Print Execution
+        window.generateAndPrintTags = async () => {
+            const btn = document.activeElement;
+            const origText = btn.innerHTML;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Generating & Saving...`;
+            btn.disabled = true;
+
+            try {
+                let tagsToPrint = [];
+                const updates = {};
+                
+                // 1. Loop through all 22 components to see which are ticked
+                for (const prefix of Object.keys(PREFIX_MAP)) {
+                    const chk = document.getElementById(`chk_${prefix}`);
+                    if (chk && chk.checked) {
+                        const qty = parseInt(document.getElementById(`qty_${prefix}`).value) || 0;
+                        if (qty > 0) {
+                            
+                            // 2. Fetch current sequence counter from Database to prevent duplicates
+                            const countSnap = await get(ref(window.db, `tag_counters/${prefix}`));
+                            let currentCount = countSnap.exists() ? parseInt(countSnap.val()) : 0;
+                            
+                            for (let i = 0; i < qty; i++) {
+                                currentCount++;
+                                
+                                // Format: Prefix (2) + Sequence (10) = 12 digits (e.g. 010000000105)
+                                const sequencePart = currentCount.toString().padStart(10, '0');
+                                const tagId = `${prefix}${sequencePart}`;
+                                tagsToPrint.push(tagId);
+                            }
+                            
+                            // 3. Queue the database update so the next batch starts higher
+                            updates[`tag_counters/${prefix}`] = currentCount;
+                        }
+                    }
+                }
+
+                if (tagsToPrint.length === 0) {
+                    alert("Please tick the checkbox next to at least one component to print.");
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 4. Save new max counters to Firebase instantly
+                await update(ref(window.db), updates);
+
+                // 5. Build Print HTML (Matches your PDF styling)
+                let printHtml = "";
+                tagsToPrint.forEach(tagId => {
+                    printHtml += `
+                        <div class="label-page">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${tagId}" class="qr-code">
+                            <svg class="barcode"
+                                jsbarcode-format="CODE128"
+                                jsbarcode-value="${tagId}"
+                                jsbarcode-textmargin="5"
+                                jsbarcode-height="80"
+                                jsbarcode-width="3"
+                                jsbarcode-fontsize="30"
+                                jsbarcode-margin="0"
+                                jsbarcode-fontoptions="bold">
+                            </svg>
+                        </div>
+                    `;
+                });
+
+                // 6. Inject into hidden iFrame for silent printing
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                const doc = iframe.contentWindow.document;
+                doc.open();
+                doc.write(`
+                    <html>
+                    <head>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"><\/script>
+                        <style>
+                            @page { size: auto; margin: 0mm; }
+                            body { margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; background: white; }
+                            .label-page {
+                                width: 100%;
+                                page-break-after: always;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                padding-top: 15px;
+                                padding-bottom: 15px;
+                            }
+                            .qr-code { width: 220px; height: 220px; margin-bottom: 15px; }
+                            .barcode { width: 100%; max-width: 250px; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printHtml}
+                        <script>
+                            window.onload = function() {
+                                // Renders all Barcodes on the page
+                                JsBarcode(".barcode").init(); 
+                                // Wait 1 second to ensure QR codes load, then print
+                                setTimeout(() => { window.print(); }, 1000);
+                            };
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                doc.close();
+
+                // Clean up iframe after print dialog
+                setTimeout(() => { document.body.removeChild(iframe); }, 3000);
+                
+                // Uncheck all boxes to prevent accidental double-printing
+                document.querySelectorAll('.print-chk').forEach(c => c.checked = false);
+                alert(`✅ Successfully generated, saved, and sent ${tagsToPrint.length} tags to the printer!`);
+
+            } catch (e) {
+                alert("Print Error: " + e.message);
+            } finally {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        };
 
         function renderCatalog(items) {
             document.getElementById("productGrid").innerHTML = items.map(p => `
