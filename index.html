@@ -597,47 +597,84 @@
             if(tab === 'billing') populateDispatchDropdown();
         };
 
-        function startLiveErpSync() {
+       function startLiveErpSync() {
             onValue(ref(window.db, "web_orders"), (snap) => {
                 const tb = document.getElementById("tblOrders");
+                let pendingCount = 0, dispatchCount = 0, revenue = 0;
                 allOrders = {};
+                
                 if (!snap.exists()) {
-                    tb.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic">No orders.</td></tr>`;
+                    tb.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium">No orders in database.</td></tr>`;
+                    document.getElementById("badgeLiveCount").innerText = "0";
+                    document.getElementById("dashPending").innerText = "0";
+                    document.getElementById("dashDispatched").innerText = "0";
+                    document.getElementById("dashRevenue").innerText = "₹0";
                     return;
                 }
 
                 let arr = []; 
-                snap.forEach(c => { arr.push(c.val()); allOrders[c.key] = c.val(); }); 
+                snap.forEach(c => { 
+                    const orderData = c.val();
+                    // FILTER: Do not load Archived/Completed orders to reduce UI load
+                    if(!orderData.archived) {
+                        arr.push(orderData); 
+                        allOrders[c.key] = orderData; 
+                    }
+                }); 
                 arr.reverse();
-
+                
+                document.getElementById("badgeLiveCount").innerText = arr.length;
                 let rowsHtml = "";
-                arr.forEach(v => {
+
+                for(let i=0; i<arr.length; i++) {
+                    const v = arr[i] || {};
+                    const statusStr = v.status || "Pending Verification";
+                    const advance = parseInt(v.advancePaid || 0);
+                    const ordId = v.orderId || "UNKNOWN";
+                    
+                    if (statusStr.includes("Pending")) pendingCount++;
+                    if (statusStr.includes("Dispatched")) dispatchCount++;
+                    if (!statusStr.includes("Pending")) revenue += advance;
+
                     let actionHtml = "";
-                    if (v.status === "Pending Verification") {
-                        actionHtml = `<button onclick="window.verifyOrder('${v.orderId}')" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-1.5 rounded text-[11px] font-bold mb-1 shadow">Verify Pay</button>`;
-                    } else if (v.status === "Verified & Ready For Dispatch") {
-                        actionHtml = `<button onclick="window.openScheduleModal('${v.orderId}', '${v.phone}', '${v.customerName}')" class="bg-orange-500 hover:bg-orange-600 text-white w-full py-1.5 rounded text-[11px] font-bold mb-1 shadow"><i class="fab fa-whatsapp mr-1"></i>Schedule</button>`;
-                    } else if (v.status.includes("Scheduled")) {
+                    let sClass = "bg-gray-100 text-gray-800 border-gray-200";
+
+                    if (statusStr.includes("Pending")) {
+                        actionHtml = `<button onclick="window.verifyOrder('${ordId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow">Verify Pay</button>`;
+                        sClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+                    } else if (statusStr === "Verified & Ready For Dispatch" || statusStr.includes("Verified")) {
+                        actionHtml = `<button onclick="window.openScheduleModal('${ordId}', '${v.phone}', '${v.customerName}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow"><i class="fab fa-whatsapp mr-1"></i>Schedule</button>`;
+                        sClass = "bg-green-100 text-green-800 border-green-200";
+                    } else if (statusStr.includes("Scheduled")) {
                         actionHtml = `<span class="text-[10px] text-gray-500 font-bold block mb-1">Scheduled:<br>${v.installDate}</span>`;
-                    } else {
-                        actionHtml = `<span class="text-[10px] font-bold text-emerald-600 block mb-1"><i class="fas fa-check-circle"></i> Closed</span>`;
+                        sClass = "bg-blue-100 text-blue-800 border-blue-200";
+                    } else if (statusStr.includes("Dispatched")) {
+                        // NEW REPRINT & INSTALL DONE BUTTONS
+                        actionHtml = `<button onclick="window.reprintBill('${ordId}', '${v.masterQrId}')" class="bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 w-full py-1.5 rounded text-[11px] font-bold mb-1 transition"><i class="fas fa-print mr-1"></i>Reprint Bill</button>`;
+                        actionHtml += `<button onclick="window.markInstallationDone('${ordId}')" class="bg-emerald-500 hover:bg-emerald-600 text-white w-full py-1.5 rounded text-[11px] font-bold mb-1 shadow transition"><i class="fas fa-check-double mr-1"></i>Install Done</button>`;
+                        sClass = "bg-purple-100 text-purple-800 border-purple-200";
                     }
 
-                    actionHtml += `<button onclick="window.deleteOrder('${v.orderId}')" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 w-full py-1 rounded text-[11px] font-bold">Delete</button>`;
+                    actionHtml += `<button onclick="window.deleteOrder('${ordId}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded text-[11px] font-bold transition w-full mt-1"><i class="fas fa-trash mr-1"></i>Delete</button>`;
 
-                    rowsHtml += `<tr class="hover-row border-b">
-                            <td class="font-mono font-bold text-blue-800">${v.orderId}</td>
-                            <td><div class="font-bold text-sm">${v.customerName}</div><div class="text-xs font-mono text-gray-500">${v.phone}</div></td>
-                            <td class="text-xs font-bold">${v.productName}</td>
-                            <td><div class="font-black text-emerald-700">₹${v.advancePaid}</div></td>
-                            <td><span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${v.status.includes("Pending")?'bg-yellow-100 text-yellow-800':'bg-green-100 text-green-800'}">${v.status}</span></td>
+                    rowsHtml += `
+                        <tr class="hover-row border-b border-gray-100">
+                            <td class="font-mono font-bold text-blue-800">${ordId}</td>
+                            <td><div class="font-bold text-sm text-gray-800">${v.customerName || "N/A"}</div><div class="text-[10px] text-gray-500 font-mono mt-0.5">${v.phone || "N/A"}</div></td>
+                            <td class="text-xs font-bold text-gray-700">${v.productName || "System"}</td>
+                            <td><div class="font-black text-emerald-700">₹${advance}</div><div class="text-[10px] text-gray-400 font-mono mt-0.5">UPI: *${v.txnIdLast5 || 'N/A'}</div></td>
+                            <td><span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${sClass}">${statusStr}</span></td>
                             <td class="text-center align-top w-28">${actionHtml}</td>
                         </tr>`;
-                });
+                }
+                
                 tb.innerHTML = rowsHtml;
+                document.getElementById("dashPending").innerText = pendingCount;
+                document.getElementById("dashDispatched").innerText = dispatchCount;
+                document.getElementById("dashRevenue").innerText = "₹" + revenue.toLocaleString('en-IN');
             });
 
-           // Listen Inventory
+            // Listen Inventory
             onValue(ref(window.db, "inventory"), (snap) => {
                 const tb = document.getElementById("tblInventory");
                 let stock = 0; 
@@ -817,7 +854,104 @@
                 btn.innerText = originalText; btn.disabled = false;
             }
         };
+        // ================= REPRINT BILL LOGIC =================
+        window.reprintBill = async (ordId, masterId) => {
+            if(!masterId || masterId === "undefined") return alert("Master QR ID is missing. Cannot reprint.");
+            
+            try {
+                // Fetch the exact stored billing configuration from the Master Warranty log
+                const snap = await get(ref(window.db, `master_warranties/${masterId}`));
+                if(!snap.exists()) return alert("Billing record not found in database.");
+                
+                const data = snap.val();
+                const orderData = allOrders[ordId] || {}; // Fallback for name/phone if available
+                
+                const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
+                const doc = iframe.contentWindow.document; doc.open();
+                
+                let discountHtml = (data.billing && data.billing.discount > 0) ? `
+                    <tr style="border-bottom:1px solid #ccc; color: #d93025;">
+                        <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
+                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${data.billing.discount.toLocaleString('en-IN')}</td>
+                    </tr>` : '';
 
+                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
+                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE (REPRINT)</h1>
+                    
+                    <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
+                        <div>
+                            <strong>Customer Name:</strong> ${data.customerName}<br>
+                            <strong>Contact Phone:</strong> ${orderData.phone || 'N/A'}<br>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong>Invoice / Order Ref:</strong> ${ordId}<br>
+                            <strong>Date:</strong> ${new Date(data.timestamp).toLocaleDateString('en-IN')}
+                        </div>
+                    </div>
+                    
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
+                        <thead>
+                            <tr style="border-bottom:3px solid #111; background:#eee;">
+                                <th style="padding:12px; font-size:12pt;">Description</th>
+                                <th style="padding:12px; font-size:12pt; text-align:right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #ccc;">
+                                <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName || 'Security System'}</td>
+                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${data.billing ? data.billing.systemCost.toLocaleString('en-IN') : 0}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #ccc;">
+                                <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
+                                <td style="padding:12px;font-size:12pt;text-align:right;">₹${data.billing ? data.billing.installCost.toLocaleString('en-IN') : 0}</td>
+                            </tr>
+                            ${discountHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:#111; color:white;">
+                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
+                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${data.billing ? data.billing.grandTotal.toLocaleString('en-IN') : 0}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    
+                    <div style="text-align:center;border:3px dashed #111;padding:30px; width: 70%; margin: 0 auto;">
+                        <h2 style="margin-top:0; font-size:18pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
+                        <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${data.masterId}" style="margin:0 auto;border:2px solid #111;">
+                        <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${data.masterId}</div>
+                    </div>
+                </body></html>`);
+                doc.close();
+                setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
+            } catch(e) {
+                alert("Reprint Failed: " + e.message);
+            }
+        };
+
+        // ================= INSTALLATION DONE / ARCHIVE LOGIC =================
+        window.markInstallationDone = async (ordId) => {
+            if(!confirm(`Mark installation complete for ${ordId}?\n\nThis will remove heavy customer data and hide the order from your active queue to reduce system load.`)) return;
+            
+            try {
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if(!ordSnap.exists()) return;
+                const data = ordSnap.val();
+                
+                // Replace the heavy object with a tiny, minimized footprint.
+                await set(ref(window.db, `web_orders/${ordId}`), {
+                    orderId: ordId,
+                    productName: data.productName,
+                    advancePaid: data.advancePaid || 0,
+                    masterQrId: data.masterQrId || "N/A",
+                    status: "Installation Completed",
+                    archived: true // This flag hides it from the UI loop
+                });
+                
+            } catch(e) { 
+                alert("Archive Error: " + e.message); 
+            }
+        };
         // ================= GUIDED BOM DISPATCH LOGIC =================
         function populateDispatchDropdown() {
             const select = document.getElementById("dispOrderSelect");
