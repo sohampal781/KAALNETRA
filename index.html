@@ -526,10 +526,16 @@
         // ================= PUBLIC CHECKOUT =================
         window.openOrderModal = (id) => {
             currentOrderProduct = CATALOG.find(p => p.id === id);
+            
+            // Just update the product name (since you removed the summary prices)
             document.getElementById("orderProdName").innerText = currentOrderProduct.name;
+            
             const slider = document.getElementById("ordSlider");
-            slider.min = 0; slider.max = currentOrderProduct.price; slider.step = 500;
+            slider.min = 0; 
+            slider.max = currentOrderProduct.price; 
+            slider.step = 500;
             slider.value = currentOrderProduct.price * 0.1;
+            
             window.updateSliderUI();
             document.getElementById("publicOrderModal").classList.remove("hidden");
         };
