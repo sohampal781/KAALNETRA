@@ -94,20 +94,19 @@
         </div>
     </header>
     <!-- 2. PUBLIC STOREFRONT -->
-    <section id="view-storefront" class="flex-1 bg-white">
-        <!-- Banners will render here -->
-        <div id="publicBannerCarousel" class="w-full h-64 md:h-96 relative overflow-hidden bg-black"></div>
+    <section id="view-storefront" class="flex-1 bg-white overflow-hidden">
+        <!-- Full-Width Banner Marquee -->
+        <div id="publicBannerCarousel" class="w-full"></div>
         
+        <!-- Full-Width Offers Marquee Strip -->
+        <div id="publicOffersGrid" class="w-full my-2"></div>
+        
+        <!-- Constrained Product Catalog Section -->
         <div class="max-w-7xl mx-auto w-full p-6 mt-4">
-            <!-- Offers will render here -->
-            <div id="publicOffersGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10"></div>
-            
             <h2 class="text-3xl font-black mb-8 text-center text-gray-800">Available Security Systems</h2>
-            
-            <!-- THIS IS THE MISSING GRID THE JS IS LOOKING FOR -->
             <div id="productGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
         </div>
-    </section>    
+    </section>   
 <!-- 3. SELLER CENTRAL (ERP) -->
     <section id="view-erp" class="hidden flex-1 bg-gray-100 flex overflow-hidden">
         
@@ -1994,13 +1993,13 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 slides[nextIdx].classList.remove('opacity-0'); slides[nextIdx].classList.add('opacity-100');
             }, 4000);
         };
-        // Live Listener for Banners & Offers with Right-to-Left Marquee Animation
+        // Live Listener for Banners & Offers (Full-Screen Width Marquee)
         onValue(ref(window.db, "storefront"), (snap) => {
             const data = snap.val() || {};
             const banners = data.banners || {};
             const offers = data.offers || {};
 
-            // 1. Sync Public Banners (Smooth Right-to-Left Marquee)
+            // 1. Sync Public Banners (Full-Width Right-to-Left Marquee)
             const bannerArr = Object.values(banners).sort((a,b) => b.timestamp - a.timestamp);
             const carousel = document.getElementById("publicBannerCarousel");
             if(carousel) {
@@ -2015,7 +2014,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                         <div class="w-full h-32 bg-slate-900 flex items-center overflow-hidden marquee-wrapper border-y border-slate-800 shadow-inner">
                             <div class="marquee-content">
                                 ${bannerSpans}
-                                ${bannerSpans} <!-- Duplicated to create a seamless infinite loop loop -->
+                                ${bannerSpans}
                             </div>
                         </div>
                     `;
@@ -2028,22 +2027,22 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 }
             }
 
-            // 2. Sync Public Offers Grid (Smooth Right-to-Left Sliding Cards)
+            // 2. Sync Public Offers Grid (Full-Width Right-to-Left Sliding Band)
             const offerArr = Object.values(offers).sort((a,b) => b.timestamp - a.timestamp);
             const pubOffersGrid = document.getElementById("publicOffersGrid");
             if(pubOffersGrid) {
                 if (offerArr.length > 0) {
                     const offerCards = offerArr.map(o => `
-                        <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 p-6 flex items-center justify-center text-center h-28 md:h-32 min-w-[320px] md:min-w-[380px] mx-3">
-                            <h3 class="text-white font-black text-base md:text-lg drop-shadow-md leading-snug">${o.text}</h3>
+                        <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 px-8 py-4 flex items-center justify-center text-center h-20 min-w-[320px] md:min-w-[400px] mx-4">
+                            <h3 class="text-white font-black text-base md:text-lg drop-shadow-md leading-snug uppercase">${o.text}</h3>
                         </div>
                     `).join("");
 
                     pubOffersGrid.innerHTML = `
-                        <div class="marquee-wrapper bg-slate-100 py-4 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="marquee-content">
+                        <div class="w-full h-28 bg-slate-900 flex items-center overflow-hidden marquee-wrapper border-b border-slate-800 shadow-inner">
+                            <div class="marquee-content" style="animation-direction: reverse; animation-duration: 25s;">
                                 ${offerCards}
-                                ${offerCards} <!-- Duplicated for smooth infinite loop -->
+                                ${offerCards}
                             </div>
                         </div>
                     `;
@@ -2052,7 +2051,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 }
             }
 
-            // 3. Sync Admin Banners List
+            // 3. Sync Admin Banners List (Max 10)
             const adminBannerList = document.getElementById("adminBannersList");
             const btnBanner = document.getElementById("btnUploadBanner");
             if(adminBannerList) {
@@ -2072,7 +2071,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 `).join("");
             }
 
-            // 4. Sync Admin Offers List
+            // 4. Sync Admin Offers List (Max 3)
             const adminOfferList = document.getElementById("adminOffersList");
             const btnOffer = document.getElementById("btnUploadOffer");
             if(adminOfferList) {
