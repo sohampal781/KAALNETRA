@@ -449,36 +449,27 @@
                         <button onclick="verifyTechMQR()" class="bg-rose-600 hover:bg-rose-700 text-white w-full py-3 font-bold rounded shadow-md uppercase tracking-wider text-sm transition">Verify Box & Unlock</button>
                     </div>
                 </div>
-
-                <!-- STEP 2: INSTALLATION WORKFLOW (Hidden until unlocked) -->
+<!-- STEP 2: INSTALLATION WORKFLOW (Hidden until unlocked) -->
                 <div id="techStep2" class="hidden flex flex-col gap-4">
                     <div class="bg-emerald-100 text-emerald-800 p-3 rounded font-bold text-sm text-center border border-emerald-300 flex justify-center items-center gap-2 mb-2">
                         <i class="fas fa-check-circle text-xl"></i> Hardware Verified
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Signal/Wifi Strength</label>
-                            <select id="techSignal" class="w-full p-2.5 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500">
-                                <option value="Excellent">Excellent (Strong)</option>
-                                <option value="Good">Good</option>
-                                <option value="Poor">Poor (Needs repeater)</option>
-                                <option value="N/A">Not Applicable</option>
-                            </select>
-                        </div>
-                        <!-- REPLACE THE OTP DIV INSIDE THE TECH MODAL -->
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Customer OTP (Last 4 of UPI)</label>
-                            <input id="techOtp" type="text" maxlength="4" placeholder="4-Digit PIN" class="w-full p-2.5 border rounded text-center font-mono font-bold outline-none bg-gray-50 focus:border-indigo-500 tracking-widest text-lg">
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Signal/Wifi Strength</label>
+                        <select id="techSignal" class="w-full p-2.5 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500">
+                            <option value="Excellent">Excellent (Strong)</option>
+                            <option value="Good">Good</option>
+                            <option value="Poor">Poor (Needs repeater)</option>
+                            <option value="N/A">Not Applicable</option>
+                        </select>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-gray-600 mb-1">Technician Remarks / Notes</label>
-                        <textarea id="techNotes" rows="2" placeholder="Installation successful. Customer requested sensor on back door..." class="w-full p-3 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500"></textarea>
+                        <textarea id="techNotes" rows="2" placeholder="Installation successful..." class="w-full p-3 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500"></textarea>
                     </div>
 
-                    <!-- SWIPE TO COMPLETE UI -->
                     <div class="mt-4 relative">
                         <p class="absolute inset-0 flex items-center justify-center text-sm font-black text-gray-500 uppercase tracking-widest pointer-events-none z-10" style="mix-blend-mode: multiply;">Swipe To Complete <i class="fas fa-chevron-right ml-2"></i><i class="fas fa-chevron-right"></i></p>
                         <input type="range" id="installSwipe" min="0" max="100" value="0" class="swipe-slider" oninput="handleInstallSwipe(this)" onmouseup="snapBackSwipe(this)" ontouchend="snapBackSwipe(this)">
@@ -1406,7 +1397,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             }
         };
         // ================= TECHNICIAN INSTALLATION PORTAL =================
-        
+        // ================= TECHNICIAN INSTALLATION PORTAL =================
         window.openTechPanel = (ordId, mqrId) => {
             document.getElementById('techOrdId').value = ordId;
             document.getElementById('techMqrId').value = mqrId;
@@ -1417,7 +1408,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             document.getElementById('techStep2').classList.add('hidden');
             document.getElementById('techMqrInput').value = '';
             document.getElementById('techNotes').value = '';
-            document.getElementById('techOtp').value = '';
             document.getElementById('techSignal').value = 'Excellent';
             document.getElementById('installSwipe').value = 0;
 
@@ -1425,6 +1415,40 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             setTimeout(() => document.getElementById('techMqrInput').focus(), 300);
         };
 
+        // ================= SECURE INSTALLATION DONE LOGIC =================
+        window.completeInstallation = async () => {
+            const ordId = document.getElementById('techOrdId').value;
+            const notes = document.getElementById('techNotes').value.trim();
+            const signal = document.getElementById('techSignal').value;
+
+            try {
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if(!ordSnap.exists()) return;
+                const data = ordSnap.val();
+                
+                // SECURE ARCHIVE: Create a tiny footprint and wipe the heavy data permanently
+                await set(ref(window.db, `web_orders/${ordId}`), {
+                    orderId: ordId,
+                    productName: data.productName,
+                    advancePaid: data.advancePaid || 0,
+                    masterQrId: data.masterQrId || "N/A",
+                    status: "Installation Completed",
+                    archived: true, // Hides it from Live Orders
+                    techDetails: { 
+                        signal: signal, 
+                        notes: notes, 
+                        date: Date.now() 
+                    }
+                });
+                
+                document.getElementById('techModal').classList.add('hidden');
+                alert("✅ Installation successfully verified, completed, and securely archived!");
+                
+            } catch(e) { 
+                alert("Archive Error: " + e.message); 
+                document.getElementById('installSwipe').value = 0;
+            }
+        };
         window.verifyTechMQR = () => {
             const input = document.getElementById('techMqrInput').value.trim().toUpperCase();
             const actual = document.getElementById('techMqrId').value;
@@ -1449,57 +1473,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
         window.snapBackSwipe = (el) => {
             if(el.value < 100) el.value = 0;
         };
-// ================= SECURE INSTALLATION DONE LOGIC (4-DIGIT) =================
-        window.completeInstallation = async () => {
-            const ordId = document.getElementById('techOrdId').value;
-            const otp = document.getElementById('techOtp').value.trim();
-            const notes = document.getElementById('techNotes').value.trim();
-            const signal = document.getElementById('techSignal').value;
 
-            // 1. Check if length is exactly 4
-            if(otp.length !== 4) {
-                alert("Please enter the 4-digit Customer Confirmation OTP (Last 4 of their UPI payment).");
-                document.getElementById('installSwipe').value = 0;
-                return;
-            }
-
-            try {
-                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
-                if(!ordSnap.exists()) return;
-                const data = ordSnap.val();
-                
-                // 2. SECURITY LOCK: Verify against the original UPI transaction
-                // (Note: It still checks the database variable we previously named txnIdLast5)
-                if(data.txnIdLast5 && otp !== data.txnIdLast5) {
-                    alert("❌ OTP MISMATCH! The entered PIN does not match the customer's UPI transaction ID.");
-                    document.getElementById('installSwipe').value = 0;
-                    return;
-                }
-                
-                // 3. SECURE ARCHIVE: Create a tiny footprint and wipe the UPI data permanently
-                await set(ref(window.db, `web_orders/${ordId}`), {
-                    orderId: ordId,
-                    productName: data.productName,
-                    advancePaid: data.advancePaid || 0,
-                    masterQrId: data.masterQrId || "N/A",
-                    status: "Installation Completed",
-                    archived: true, // Hides it from Live Orders
-                    techDetails: { 
-                        signal: signal, 
-                        otpVerified: true, // Just log that it passed, don't save the actual digits 
-                        notes: notes, 
-                        date: Date.now() 
-                    }
-                });
-                
-                document.getElementById('techModal').classList.add('hidden');
-                alert("✅ Installation successfully verified, completed, and securely archived!");
-                
-            } catch(e) { 
-                alert("Archive Error: " + e.message); 
-                document.getElementById('installSwipe').value = 0;
-            }
-        };
         // ================= ERP LIVE SYNC & TECH APP DATA =================
         function startLiveErpSync() {
             onValue(ref(window.db, "web_orders"), (snap) => {
