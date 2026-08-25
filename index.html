@@ -177,38 +177,44 @@
                     </table>
                 </div>
             </div>
-<!-- TAB 2: Inventory -->
-            <!-- TAB 2: Inventory -->
-            <div id="erp-inventory" class="erp-panel hidden max-w-7xl mx-auto">
-                <h2 class="text-2xl font-black mb-6 text-gray-800">Raw Material & Component Inventory</h2>
-                
-                <div class="mb-8">
-                    <h3 class="font-bold text-gray-700 mb-3 uppercase tracking-wider text-sm"><i class="fas fa-industry mr-2 text-blue-500"></i> Manufacturing Capacity Estimator</h3>
-                    <div id="buildEstimatorGrid" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
-                </div>
-                <!-- NEW: RAPID SCAN & AUTO-DETECT REGISTRATION -->
+            <!-- NEW: RAPID SCAN & AUTO-DETECT REGISTRATION -->
                 <div class="bg-white p-6 rounded-lg border shadow-md mb-8">
                     <h3 class="font-bold text-lg border-b pb-3 mb-4 text-gray-700"><i class="fas fa-barcode text-emerald-500 mr-2"></i>Rapid Scan Pre-Made QR Codes</h3>
-                    <p class="text-xs text-gray-500 mb-4">Set the location, then rapid-scan your 12-digit QR codes. The system will automatically detect the item based on the first two digits (01 to 12).</p>
+                    <p class="text-xs text-gray-500 mb-4">Set the location, then rapid-scan your tags. The system will automatically detect the item based on the first two digits.</p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
-                        <input id="invSpot" type="text" placeholder="Rack Spot (e.g. Bin A1)" class="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:border-emerald-500">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Target Location</label>
+                            <input id="invSpot" type="text" placeholder="Rack Spot (e.g. Bin A1)" class="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:border-emerald-500">
+                        </div>
                         
-                        <!-- THE NEW SCAN INPUT -->
-                        <div class="relative">
-                            <input id="invScanner" type="text" placeholder="Scan 12-Digit QR Here..." class="w-full p-3 border-2 border-emerald-400 rounded-md text-center font-mono font-bold outline-none focus:border-emerald-600 bg-emerald-50 shadow-inner" onkeypress="if(event.key === 'Enter') linkPreMadeQR()">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Input Method</label>
+                            <!-- Camera / Hardware Scanner Toggle -->
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="startInvCamera()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded border shadow-md font-bold text-xs uppercase transition">
+                                    <i class="fas fa-camera text-lg block mb-1"></i> Live Camera
+                                </button>
+                                <button onclick="document.getElementById('invScanner').focus()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded border shadow-sm font-bold text-xs uppercase transition">
+                                    <i class="fas fa-barcode text-lg block mb-1"></i> Hardware Scanner
+                                </button>
+                            </div>
+                            
+                            <!-- Live Camera Window (Hidden until activated) -->
+                            <div id="invCameraBox" class="hidden mb-4 rounded-lg overflow-hidden border-2 border-emerald-500 bg-black">
+                                <div id="inv-qr-reader" style="width:100%; min-height: 200px;"></div>
+                                <button onclick="stopInvCamera()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 font-bold text-sm uppercase tracking-wider"><i class="fas fa-times-circle mr-2"></i>Close Camera</button>
+                            </div>
+
+                            <!-- Manual/Hardware Input -->
+                            <div class="relative">
+                                <i class="fas fa-keyboard absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input id="invScanner" type="text" placeholder="Scan Tag Here..." class="w-full pl-10 p-3 border-2 border-emerald-400 rounded-md text-center font-mono font-bold outline-none focus:border-emerald-600 bg-emerald-50 shadow-inner" onkeypress="if(event.key === 'Enter') linkPreMadeQR()">
+                            </div>
                         </div>
                     </div>
                     <p id="invScanFeedback" class="text-xs font-bold text-emerald-600 text-right h-4"></p>
                 </div>
-                <div class="bg-white rounded-lg border shadow-md overflow-hidden">
-                    <table class="w-full">
-                        <thead><tr><th>Tag Barcode</th><th>Raw Material Name</th><th>Medicine-Shop Location</th><th>Status</th><th class="text-center">Action</th></tr></thead>
-                        <tbody id="tblInventory"></tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- TAB 3: Dispatch -->
             <div id="erp-billing" class="erp-panel hidden max-w-7xl mx-auto">
                 <h2 class="text-2xl font-black mb-2 text-gray-800">Guided BOM Dispatch Process</h2>
@@ -2066,6 +2072,55 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 alert("Image sync failed: " + e.message); 
             } finally {
                 btn.innerHTML = orig; btn.disabled = false;
+            }
+        };
+        // ================= CONTINUOUS INVENTORY CAMERA =================
+        let invHtml5QrCode;
+        let isInvProcessingScan = false;
+
+        window.startInvCamera = () => {
+            const scannerBox = document.getElementById('invCameraBox');
+            scannerBox.classList.remove('hidden');
+            
+            // Note: We use a different ID here ("inv-qr-reader") so it doesn't conflict with the Dispatch camera
+            invHtml5QrCode = new Html5Qrcode("inv-qr-reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            invHtml5QrCode.start({ facingMode: "environment" }, config, async (decodedText) => {
+                
+                // Smart Cooldown Lock: Prevents scanning the exact same code 10 times a second
+                if (isInvProcessingScan) return;
+                isInvProcessingScan = true;
+                
+                if (navigator.vibrate) navigator.vibrate(200); 
+                document.getElementById('invScanner').value = decodedText;
+                
+                // Auto submit the scan to the database
+                await window.linkPreMadeQR();
+                
+                // Keep the camera OPEN. Just unlock the scanner after 1.5 seconds so you can aim at the next tag!
+                setTimeout(() => { isInvProcessingScan = false; }, 1500);
+                
+            }, (errorMessage) => {
+                // Ignore background tracking errors
+            }).catch((err) => {
+                alert("Camera Access Error: Please ensure you have given browser permissions.");
+                window.stopInvCamera();
+            });
+        };
+
+        window.stopInvCamera = () => {
+            if (invHtml5QrCode) {
+                invHtml5QrCode.stop().then(() => {
+                    invHtml5QrCode.clear();
+                    document.getElementById('invCameraBox').classList.add('hidden');
+                    isInvProcessingScan = false;
+                }).catch(err => {
+                    console.error("Failed to stop camera.", err);
+                    document.getElementById('invCameraBox').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('invCameraBox').classList.add('hidden');
             }
         };
        // ================= CRASH-PROOF BATCH & BILLING =================
