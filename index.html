@@ -102,6 +102,10 @@
                 <button onclick="switchErpTab('warranty')" id="tabbtn-warranty" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
                     <i class="fas fa-shield-alt w-6"></i> Warranty & RMA Claims
                 </button>
+                <!-- ADD THIS BELOW THE WARRANTY BUTTON -->
+                <button onclick="switchErpTab('technician')" id="tabbtn-technician" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
+                    <i class="fas fa-truck-fast w-6"></i> Field Technician App
+                </button>
             </div>
             <div class="p-4 border-t bg-gray-50">
                 <button onclick="logoutStaff()" class="w-full py-2 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 rounded font-bold text-sm transition">
@@ -360,6 +364,24 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+            <!-- TAB 5: Field Technician App (Amazon Delivery Style) -->
+            <div id="erp-technician" class="erp-panel hidden max-w-7xl mx-auto pb-10">
+                <div class="bg-indigo-600 text-white p-6 rounded-xl shadow-lg mb-6 flex justify-between items-center bg-gradient-to-r from-indigo-700 to-indigo-500">
+                    <div>
+                        <h2 class="text-2xl font-black tracking-wide"><i class="fas fa-route mr-2"></i> My Active Route</h2>
+                        <p class="text-indigo-200 text-sm mt-1 font-medium">Assigned systems ready for physical installation.</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-black drop-shadow-md" id="techJobCount">0</div>
+                        <div class="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Pending Jobs</div>
+                    </div>
+                </div>
+                
+                <!-- Delivery App Style Card Grid -->
+                <div id="techJobsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards will auto-populate here -->
                 </div>
             </div>
 
@@ -845,7 +867,51 @@
 
         // ================= ACTIONS =================
         window.verifyOrder = async (id) => { if(confirm(`Verify payment for ${id}?`)) await update(ref(window.db, `web_orders/${id}`), { status: "Verified & Ready For Dispatch" }); };
-        window.deleteOrder = async (id) => { if(confirm(`DELETE order ${id}?`)) await remove(ref(window.db, `web_orders/${id}`)); };
+        // ================= SMART CANCEL & RESTOCK ORDER =================
+        window.deleteOrder = async (ordId) => { 
+            if(!confirm(`CANCEL & DELETE order ${ordId}?\n\nIf this order has already been dispatched, all physical hardware components will automatically be returned to their original inventory locations.`)) return; 
+            
+            try {
+                // 1. Fetch the exact order data
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if (!ordSnap.exists()) return;
+                const orderData = ordSnap.val();
+
+                const updates = {};
+
+                // 2. Check if a Master QR exists (meaning items were already picked & sold)
+                if (orderData.masterQrId && orderData.masterQrId !== "N/A") {
+                    const mqrId = orderData.masterQrId;
+                    const mqrSnap = await get(ref(window.db, `master_warranties/${mqrId}`));
+                    
+                    if (mqrSnap.exists()) {
+                        const mqrData = mqrSnap.val();
+                        
+                        // 3. Return all hardware tags back to 'In Stock'
+                        if (mqrData.hardwareList) {
+                            for (let hw of mqrData.hardwareList) {
+                                updates[`inventory/${hw.id}/status`] = "In Stock";
+                                updates[`inventory/${hw.id}/masterQrRef`] = null; // Erase the sold link
+                            }
+                        }
+                        
+                        // 4. Delete the Master Warranty invoice record
+                        updates[`master_warranties/${mqrId}`] = null;
+                    }
+                }
+
+                // 5. Delete the actual order
+                updates[`web_orders/${ordId}`] = null;
+
+                // Execute all database updates instantly in one secure transaction
+                await update(ref(window.db), updates);
+                
+                alert(`✅ Order ${ordId} successfully canceled!\nAll associated components (if any) have been restored to inventory.`);
+                
+            } catch (e) {
+                alert("Cancellation Error: " + e.message);
+            }
+        };
         window.deleteInventory = async (id) => { if(confirm(`Delete tag ${id}?`)) await remove(ref(window.db, `inventory/${id}`)); };
 
         window.openScheduleModal = (orderId, phone, name) => {
@@ -953,7 +1019,7 @@
                 btn.innerText = originalText; btn.disabled = false;
             }
         };
-        // ================= REPRINT BILL LOGIC =================
+        // ================= REPRINT BILL LOGIC (ARCHIVE SUPPORTED) =================
         window.reprintBill = async (ordId, masterId) => {
             if(!masterId || masterId === "undefined") return alert("Master QR ID is missing. Cannot reprint.");
             
@@ -961,9 +1027,11 @@
                 // Fetch the exact stored billing configuration from the Master Warranty log
                 const snap = await get(ref(window.db, `master_warranties/${masterId}`));
                 if(!snap.exists()) return alert("Billing record not found in database.");
-                
                 const data = snap.val();
-                const orderData = allOrders[ordId] || {}; // Fallback for name/phone if available
+                
+                // Fetch order directly from DB so we can reprint even if it's Archived/Hidden
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                const orderData = ordSnap.exists() ? ordSnap.val() : {}; 
                 
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
@@ -975,7 +1043,7 @@
                     </tr>` : '';
 
                 doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
-                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE (REPRINT)</h1>
+                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE (DUPLICATE)</h1>
                     
                     <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
                         <div>
@@ -1027,7 +1095,51 @@
                 alert("Reprint Failed: " + e.message);
             }
         };
+        // ================= WARRANTY & RMA CHECKER LOGIC =================
+        window.verifyMasterWarranty = async () => {
+            const id = document.getElementById("claimMaster").value.trim().toUpperCase();
+            if(!id) return alert("Please enter the MQR code.");
 
+            try {
+                const snap = await get(ref(window.db, `master_warranties/${id}`));
+                if(!snap.exists()) {
+                    alert("Master Warranty Policy not found. Please verify the ID.");
+                    document.getElementById("claimResult").classList.add("hidden");
+                    return;
+                }
+                
+                const d = snap.val();
+                const sixMonthsInMs = 6 * 30 * 24 * 60 * 60 * 1000;
+                const policyDate = d.timestamp || Date.now();
+                const isExpired = (Date.now() - policyDate) > sixMonthsInMs;
+                
+                // ADDED THE REPRINT INVOICE BUTTON HERE
+                document.getElementById("claimInfo").innerHTML = `
+                    <div class="font-black mb-1 text-base">${d.customerName}</div>
+                    <div class="text-xs font-bold text-gray-600 mb-0.5">Order Ref: ${d.orderRef}</div>
+                    <div class="text-xs text-gray-600 mb-3">Issued: ${new Date(policyDate).toLocaleDateString('en-IN')}</div>
+                    <button onclick="window.reprintBill('${d.orderRef}', '${id}')" class="bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-300 px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition shadow-sm whitespace-nowrap"><i class="fas fa-print mr-1"></i> Reprint Invoice</button>
+                `;
+                
+                if(isExpired) {
+                    document.getElementById("claimStatusBadge").innerHTML = `<span class="bg-rose-600 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">Warranty Expired</span>`;
+                } else {
+                    document.getElementById("claimStatusBadge").innerHTML = `<span class="bg-emerald-600 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm">Active 6M Free</span>`;
+                }
+
+                document.getElementById("claimHwList").innerHTML = d.hardwareList.map(hw => `
+                    <li class="p-3 border border-gray-200 rounded-lg bg-gray-50 flex justify-between items-center hover:bg-white hover:shadow-sm transition">
+                        <div>
+                            <div class="font-bold text-gray-800 text-sm">${hw.item}</div>
+                            <div class="text-[10px] text-gray-500 font-mono mt-0.5">Physical Tag: ${hw.id}</div>
+                        </div>
+                        <button onclick="processRMA('${id}', '${hw.id}', '${hw.item}', ${isExpired})" class="bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-wider transition ml-2 whitespace-nowrap">Replace</button>
+                    </li>
+                `).join("");
+                
+                document.getElementById("claimResult").classList.remove("hidden");
+            } catch(e) { alert("Lookup Error: " + e.message); }
+        };
         // ================= INSTALLATION DONE / ARCHIVE LOGIC =================
         window.markInstallationDone = async (ordId) => {
             if(!confirm(`Mark installation complete for ${ordId}?\n\nThis will remove heavy customer data and hide the order from your active queue to reduce system load.`)) return;
@@ -1498,6 +1610,182 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 document.getElementById('installSwipe').value = 0;
             }
         };
+        // ================= ERP LIVE SYNC & TECH APP DATA =================
+        function startLiveErpSync() {
+            onValue(ref(window.db, "web_orders"), (snap) => {
+                const tb = document.getElementById("tblOrders");
+                const techList = document.getElementById("techJobsList");
+                let pendingCount = 0, dispatchCount = 0, revenue = 0, techJobCount = 0;
+                allOrders = {};
+                
+                if (!snap.exists()) {
+                    tb.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-gray-400 italic font-medium">No orders in database.</td></tr>`;
+                    techList.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400"><i class="fas fa-mug-hot text-5xl mb-4 block text-gray-300"></i><p class="font-bold text-lg">No pending jobs.</p></div>`;
+                    document.getElementById("badgeLiveCount").innerText = "0";
+                    document.getElementById("dashPending").innerText = "0";
+                    document.getElementById("dashDispatched").innerText = "0";
+                    document.getElementById("dashRevenue").innerText = "₹0";
+                    document.getElementById("techJobCount").innerText = "0";
+                    return;
+                }
+
+                let arr = []; 
+                snap.forEach(c => { 
+                    const orderData = c.val();
+                    if(!orderData.archived) {
+                        arr.push(orderData); 
+                        allOrders[c.key] = orderData; 
+                    }
+                }); 
+                arr.reverse();
+                
+                document.getElementById("badgeLiveCount").innerText = arr.length;
+                let rowsHtml = "";
+                let techHtml = "";
+
+                for(let i=0; i<arr.length; i++) {
+                    const v = arr[i] || {};
+                    const statusStr = v.status || "Pending Verification";
+                    const advance = parseInt(v.advancePaid || 0);
+                    const ordId = v.orderId || "UNKNOWN";
+                    
+                    if (statusStr.includes("Pending")) pendingCount++;
+                    if (statusStr.includes("Dispatched")) dispatchCount++;
+                    if (!statusStr.includes("Pending")) revenue += advance;
+
+                    // Build Main Admin Table Row
+                    let actionHtml = "";
+                    let sClass = "bg-gray-100 text-gray-800 border-gray-200";
+
+                    if (statusStr.includes("Pending")) {
+                        actionHtml = `<button onclick="window.verifyOrder('${ordId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow">Verify Pay</button>`;
+                        sClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+                    } else if (statusStr === "Verified & Ready For Dispatch" || statusStr.includes("Verified")) {
+                        actionHtml = `<button onclick="window.openScheduleModal('${ordId}', '${v.phone}', '${v.customerName}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow"><i class="fab fa-whatsapp mr-1"></i>Schedule</button>`;
+                        sClass = "bg-green-100 text-green-800 border-green-200";
+                    } else if (statusStr.includes("Scheduled")) {
+                        actionHtml = `<span class="text-[10px] text-gray-500 font-bold block mb-1">Scheduled:<br>${v.installDate}</span>`;
+                        sClass = "bg-blue-100 text-blue-800 border-blue-200";
+                    } else if (statusStr.includes("Dispatched")) {
+                        actionHtml += `<button onclick="window.reprintBill('${ordId}', '${v.masterQrId}')" class="bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 w-full py-1.5 rounded text-[11px] font-bold mb-1 transition"><i class="fas fa-print mr-1"></i>Reprint Bill</button>`;
+                        actionHtml += `<div class="text-[9px] text-indigo-600 font-bold mt-1 bg-indigo-50 border border-indigo-100 p-1 rounded uppercase">Sent to Tech App</div>`;
+                        sClass = "bg-purple-100 text-purple-800 border-purple-200";
+
+                        // ==== NEW: BUILD TECHNICIAN APP CARD ====
+                        techJobCount++;
+                        techHtml += `
+                            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col relative transform transition hover:scale-[1.02]">
+                                <div class="bg-slate-900 text-white p-3 flex justify-between items-center shadow-inner">
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-300"><i class="fas fa-box mr-1"></i> Job ID: <span class="text-white">${ordId}</span></span>
+                                    <span class="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider shadow-sm">${v.installDate || "ASAP"}</span>
+                                </div>
+                                <div class="p-5 flex-1 relative">
+                                    <h3 class="font-black text-xl text-gray-900 mb-1 leading-tight">${v.customerName || "Customer"}</h3>
+                                    <p class="text-xs text-gray-500 font-medium mb-4 pr-4"><i class="fas fa-map-marker-alt text-red-500 mr-1 text-sm"></i> ${v.address || "Address not provided"}</p>
+                                    
+                                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-5 flex justify-between items-center shadow-sm">
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] text-blue-500 font-bold uppercase tracking-wider mb-0.5">Contact</span>
+                                            <span class="text-sm font-black text-blue-900">${v.phone}</span>
+                                        </div>
+                                        <a href="tel:${v.phone}" class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-full text-lg shadow-md hover:bg-blue-700 hover:shadow-lg transition">
+                                            <i class="fas fa-phone-alt"></i>
+                                        </a>
+                                    </div>
+
+                                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">System Payload</div>
+                                    <div class="text-sm font-bold text-indigo-700 bg-indigo-50 border-l-4 border-indigo-500 p-2 rounded-r">${v.productName}</div>
+                                </div>
+                                <div class="p-3 bg-gray-50 border-t border-gray-100">
+                                    <button onclick="window.openTechPanel('${ordId}', '${v.masterQrId}')" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white py-4 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl transition flex justify-center items-center gap-2 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
+                                        <i class="fas fa-tools"></i> Start Installation
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    actionHtml += `<button onclick="window.deleteOrder('${ordId}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1 rounded text-[11px] font-bold transition w-full mt-1"><i class="fas fa-trash mr-1"></i>Delete</button>`;
+
+                    rowsHtml += `
+                        <tr class="hover-row border-b border-gray-100">
+                            <td class="font-mono font-bold text-blue-800">${ordId}</td>
+                            <td><div class="font-bold text-sm text-gray-800">${v.customerName || "N/A"}</div><div class="text-[10px] text-gray-500 font-mono mt-0.5">${v.phone || "N/A"}</div></td>
+                            <td class="text-xs font-bold text-gray-700">${v.productName || "System"}</td>
+                            <td><div class="font-black text-emerald-700">₹${advance}</div><div class="text-[10px] text-gray-400 font-mono mt-0.5">UPI: *${v.txnIdLast5 || 'N/A'}</div></td>
+                            <td><span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${sClass}">${statusStr}</span></td>
+                            <td class="text-center align-top w-28">${actionHtml}</td>
+                        </tr>`;
+                }
+                
+                // Update Admin UI
+                tb.innerHTML = rowsHtml;
+                document.getElementById("dashPending").innerText = pendingCount;
+                document.getElementById("dashDispatched").innerText = dispatchCount;
+                document.getElementById("dashRevenue").innerText = "₹" + revenue.toLocaleString('en-IN');
+                
+                // Update Technician UI
+                document.getElementById("techJobCount").innerText = techJobCount;
+                if(techJobCount === 0) {
+                    techList.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400"><i class="fas fa-clipboard-check text-6xl mb-4 block text-gray-300"></i><p class="font-bold text-xl text-gray-500">All caught up!</p><p class="text-sm mt-2">No pending installations in your queue.</p></div>`;
+                } else {
+                    techList.innerHTML = techHtml;
+                }
+            });
+
+            // Listen Inventory
+            onValue(ref(window.db, "inventory"), (snap) => {
+                const tb = document.getElementById("tblInventory");
+                let stock = 0; 
+                allInventory = [];
+                
+                if(!snap.exists()) {
+                    tb.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400 italic">No inventory registered.</td></tr>`;
+                    document.getElementById("dashStock").innerText = 0;
+                    return;
+                }
+                
+                let invHtml = "";
+                snap.forEach(c => {
+                    const v = c.val() || {};
+                    allInventory.push(v);
+                    const s = v.status || "In Stock";
+                    if(s === "In Stock") stock++;
+                    const sClass = s === 'Sold' ? 'text-red-600 bg-red-50' : 'text-green-700 bg-green-50';
+                    invHtml += `
+                        <tr class="border-b border-gray-100 hover-row">
+                            <td class="font-mono font-bold text-gray-800">${v.barcode || 'N/A'}</td>
+                            <td class="font-bold text-xs text-gray-700">${v.item || 'N/A'}</td>
+                            <td class="text-xs text-gray-500"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i>${v.location || 'Warehouse'}</td>
+                            <td><span class="font-bold text-xs px-2 py-1 rounded border ${sClass}">${s}</span></td>
+                            <td class="text-center"><button onclick="window.deleteInventory('${v.barcode}')" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash"></i></button></td>
+                        </tr>`;
+                });
+                tb.innerHTML = invHtml;
+                document.getElementById("dashStock").innerText = stock;
+                updateBuildEstimator(allInventory);
+            });
+
+            // Listen RMA
+            onValue(ref(window.db, "warranty_claims"), (snap) => {
+                const tb = document.getElementById("rmaLogBody");
+                if(!snap.exists()) {
+                    tb.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400 italic">No recent claims.</td></tr>`;
+                    return;
+                }
+                let claims = [];
+                snap.forEach(c => claims.push(c.val()));
+                claims.sort((a,b) => b.timestamp - a.timestamp);
+                tb.innerHTML = claims.map(c => `
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="p-3 text-gray-500 font-medium">${new Date(c.timestamp).toLocaleDateString('en-IN')}</td>
+                        <td class="p-3 font-mono text-blue-700 font-bold">${c.masterQrId}</td>
+                        <td class="p-3"><div class="font-bold text-gray-800">${c.componentName}</div><div class="text-[10px] font-mono text-gray-400 mt-0.5">${c.componentTag}</div></td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${c.status.includes('Paid') ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${c.status}</span></td>
+                    </tr>
+                `).join("");
+            });
+        }
        // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
