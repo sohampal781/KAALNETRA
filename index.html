@@ -117,10 +117,11 @@
             <div id="liveOrderAlert" class="hidden bg-emerald-600 text-white p-4 rounded-lg shadow-xl mb-6 flex justify-between items-center border-l-4 border-emerald-300 pulse-anim">
                 <div class="flex items-center">
                     <i class="fas fa-bell text-2xl mr-4 text-emerald-200"></i>
-                    <div>
-                        <div class="font-black text-lg">New Customer Order Received!</div>
-                        <div class="text-sm text-emerald-100">The order table below has been updated automatically.</div>
-                    </div>
+                    <!-- REPLACE THIS SPECIFIC OTP DIV INSIDE THE TECH MODAL -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Customer OTP (Last 5 of UPI)</label>
+                            <input id="techOtp" type="text" maxlength="5" placeholder="5-Digit PIN" class="w-full p-2.5 border rounded text-center font-mono font-bold outline-none bg-gray-50 focus:border-indigo-500 tracking-widest text-lg">
+                        </div>
                 </div>
                 <button onclick="document.getElementById('liveOrderAlert').classList.add('hidden')" class="text-white hover:text-emerald-200 text-2xl"><i class="fas fa-times"></i></button>
             </div>
@@ -1447,14 +1448,16 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             if(el.value < 100) el.value = 0;
         };
 
+        // ================= SECURE INSTALLATION DONE LOGIC =================
         window.completeInstallation = async () => {
             const ordId = document.getElementById('techOrdId').value;
             const otp = document.getElementById('techOtp').value.trim();
             const notes = document.getElementById('techNotes').value.trim();
             const signal = document.getElementById('techSignal').value;
 
-            if(otp.length < 4) {
-                alert("Please enter the 4-digit Customer Confirmation OTP.");
+            // 1. Check if length is exactly 5
+            if(otp.length !== 5) {
+                alert("Please enter the 5-digit Customer Confirmation OTP (Last 5 of their UPI payment).");
                 document.getElementById('installSwipe').value = 0;
                 return;
             }
@@ -1464,7 +1467,14 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 if(!ordSnap.exists()) return;
                 const data = ordSnap.val();
                 
-                // Overwrite with Tiny Archived Node + Tech Details
+                // 2. SECURITY LOCK: Verify against the original UPI transaction
+                if(data.txnIdLast5 && otp !== data.txnIdLast5) {
+                    alert("❌ OTP MISMATCH! The entered PIN does not match the customer's UPI transaction ID.");
+                    document.getElementById('installSwipe').value = 0;
+                    return;
+                }
+                
+                // 3. SECURE ARCHIVE: Create a tiny footprint and wipe the UPI data permanently
                 await set(ref(window.db, `web_orders/${ordId}`), {
                     orderId: ordId,
                     productName: data.productName,
@@ -1472,11 +1482,16 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     masterQrId: data.masterQrId || "N/A",
                     status: "Installation Completed",
                     archived: true, // Hides it from Live Orders
-                    techDetails: { signal: signal, otp: otp, notes: notes, date: Date.now() }
+                    techDetails: { 
+                        signal: signal, 
+                        otpVerified: true, // Just log that it passed, don't save the actual digits 
+                        notes: notes, 
+                        date: Date.now() 
+                    }
                 });
                 
                 document.getElementById('techModal').classList.add('hidden');
-                alert("✅ Installation successfully verified, completed, and archived!");
+                alert("✅ Installation successfully verified, completed, and securely archived!");
                 
             } catch(e) { 
                 alert("Archive Error: " + e.message); 
