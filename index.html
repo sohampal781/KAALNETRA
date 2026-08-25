@@ -697,22 +697,16 @@
                     if (chk && chk.checked) {
                         const qty = parseInt(document.getElementById(`qty_${prefix}`).value);
                         
-                        // Enforce minimum 1, no maximum limit
                         if (qty > 0) {
-                            // Fetch current sequence counter from Database to completely prevent duplicates
                             const countSnap = await get(ref(window.db, `tag_counters/${prefix}`));
                             let currentCount = countSnap.exists() ? parseInt(countSnap.val()) : 0;
                             
                             for (let i = 0; i < qty; i++) {
                                 currentCount++;
-                                
-                                // Clean 8-Digit Format: Prefix (2) + Sequence (6) = 8 digits (Matches your PDF)
                                 const sequencePart = currentCount.toString().padStart(6, '0');
                                 const tagId = `${prefix}${sequencePart}`;
                                 tagsToPrint.push(tagId);
                             }
-                            
-                            // Queue the database update so the next batch starts perfectly higher
                             updates[`tag_counters/${prefix}`] = currentCount;
                         }
                     }
@@ -725,7 +719,7 @@
                     return;
                 }
 
-                // 2. Open the NEW TAB immediately (Browsers require this to happen directly after a click to avoid popup blockers)
+                // 2. Open the NEW TAB immediately
                 const printWindow = window.open('', '_blank');
                 if (!printWindow) {
                     alert("⚠️ Pop-up blocked! Please allow pop-ups for this site to print the tags.");
@@ -737,7 +731,7 @@
                 // 3. Save new max counters to Firebase instantly
                 await update(ref(window.db), updates);
 
-                // 4. Build Print HTML matching the provided PDF styling exactly
+                // 4. Build Print HTML (EXACT PDF MATCH)
                 let printHtml = "";
                 tagsToPrint.forEach(tagId => {
                     printHtml += `
@@ -747,10 +741,10 @@
                                 <svg class="barcode"
                                     jsbarcode-format="CODE128"
                                     jsbarcode-value="${tagId}"
-                                    jsbarcode-textmargin="6"
-                                    jsbarcode-height="75"
-                                    jsbarcode-width="3"
-                                    jsbarcode-fontsize="32"
+                                    jsbarcode-textmargin="2"
+                                    jsbarcode-height="85"
+                                    jsbarcode-width="3.5"
+                                    jsbarcode-fontsize="40"
                                     jsbarcode-margin="0"
                                     jsbarcode-fontoptions="bold">
                                 </svg>
@@ -767,40 +761,45 @@
                         <title>Kaalnetra Batch Print - ${tagsToPrint.length} Tags</title>
                         <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"><\/script>
                         <style>
-                            @page { size: auto; margin: 3mm; }
-                            body { margin: 0; padding: 0; background: white; font-family: sans-serif; }
+                            /* Tightly packed layout for mini thermal printers */
+                            @page { size: auto; margin: 0mm; }
+                            body { margin: 0; padding: 0; background: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+                            
                             .label-page {
                                 width: 100%;
                                 page-break-after: always;
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
-                                padding-top: 15px;
+                                padding: 10px 0; /* Minimal padding */
                             }
-                            /* This box matches your PDF border style exactly */
+                            
                             .label-box {
-                                border: 4px solid #000;
-                                padding: 15px;
-                                width: 280px;
-                                text-align: center;
-                                background: #fff;
+                                /* Removed outer border to match PDF style */
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                width: 280px; 
                             }
-                            .qr-code { width: 230px; height: 230px; margin-bottom: 10px; }
-                            .barcode { width: 100%; max-width: 260px; }
+                            
+                            .qr-code { 
+                                width: 240px; 
+                                height: 240px; 
+                                margin-bottom: 5px; /* Minimal gap between QR and Barcode */
+                            }
+                            
+                            .barcode { 
+                                width: 100%; 
+                                max-width: 270px; 
+                            }
                         </style>
                     </head>
                     <body>
                         ${printHtml}
                         <script>
-                            // window.onload guarantees EVERY image is fully downloaded before the print menu opens
                             window.onload = function() {
-                                // Render all Barcodes on the page
                                 JsBarcode(".barcode").init(); 
-                                
-                                // Give the browser half a second to draw the barcodes, then open Print Menu
-                                setTimeout(() => { 
-                                    window.print(); 
-                                }, 500);
+                                setTimeout(() => { window.print(); }, 500);
                             };
                         <\/script>
                     </body>
@@ -808,9 +807,12 @@
                 `);
                 printWindow.document.close();
                 
-                // Uncheck all boxes to prevent accidental double-printing
                 document.querySelectorAll('.print-chk').forEach(c => c.checked = false);
-                alert(`✅ Successfully generated and saved ${tagsToPrint.length} tags to the database!`);
+                
+                // Wait briefly before confirming success to ensure the print tab had time to open
+                setTimeout(() => {
+                    alert(`✅ Successfully generated and saved ${tagsToPrint.length} tags to the database!`);
+                }, 1000);
 
             } catch (e) {
                 alert("Print Error: " + e.message);
