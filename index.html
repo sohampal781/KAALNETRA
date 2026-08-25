@@ -124,7 +124,7 @@
                     <!-- REPLACE THIS SPECIFIC OTP DIV INSIDE THE TECH MODAL -->
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">Customer OTP (Last 5 of UPI)</label>
-                            <input id="techOtp" type="text" maxlength="5" placeholder="5-Digit PIN" class="w-full p-2.5 border rounded text-center font-mono font-bold outline-none bg-gray-50 focus:border-indigo-500 tracking-widest text-lg">
+                            <input id="techOtp" type="text" maxlength="5" placeholder="5-Digit UPI PIN" class="w-full p-2.5 border rounded text-center font-mono font-bold outline-none bg-gray-50 focus:border-indigo-500 tracking-widest text-lg">
                         </div>
                 </div>
                 <button onclick="document.getElementById('liveOrderAlert').classList.add('hidden')" class="text-white hover:text-emerald-200 text-2xl"><i class="fas fa-times"></i></button>
@@ -1448,6 +1448,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             if(el.value < 100) el.value = 0;
         };
 // ================= SECURE INSTALLATION DONE LOGIC =================
+        // ================= SECURE INSTALLATION DONE LOGIC =================
         window.completeInstallation = async () => {
             const ordId = document.getElementById('techOrdId').value;
             const otp = document.getElementById('techOtp').value.trim();
