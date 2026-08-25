@@ -175,37 +175,12 @@
                     <h3 class="font-bold text-gray-700 mb-3 uppercase tracking-wider text-sm"><i class="fas fa-industry mr-2 text-blue-500"></i> Manufacturing Capacity Estimator</h3>
                     <div id="buildEstimatorGrid" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
                 </div>
-
-                <!-- NEW: RAPID SCAN & LINK REGISTRATION -->
+                <!-- NEW: RAPID SCAN & AUTO-DETECT REGISTRATION -->
                 <div class="bg-white p-6 rounded-lg border shadow-md mb-8">
                     <h3 class="font-bold text-lg border-b pb-3 mb-4 text-gray-700"><i class="fas fa-barcode text-emerald-500 mr-2"></i>Rapid Scan Pre-Made QR Codes</h3>
-                    <p class="text-xs text-gray-500 mb-4">Select the component and location, then use your hardware scanner to rapidly scan your pre-made 12-digit QR codes. They will auto-save instantly.</p>
+                    <p class="text-xs text-gray-500 mb-4">Set the location, then rapid-scan your 12-digit QR codes. The system will automatically detect the item based on the first two digits (01 to 12).</p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
-                        <select id="invName" class="w-full p-3 border rounded-md text-sm outline-none bg-gray-50 font-bold text-gray-800">
-                            <option value="IR Transmitter module">1. IR Transmitter module</option>
-                            <option value="IR Receiver / sensor module">2. IR Receiver / sensor module</option>
-                            <option value="High-power siren / buzzer">3. High-power siren / buzzer</option>
-                            <option value="LED status indicators">4. LED status indicators</option>
-                            <option value="12V SMPS / power adapter">5. 12V SMPS / power adapter</option>
-                            <option value="Voltage regulator / buck converter">6. Voltage regulator / buck converter</option>
-                            <option value="ABS / metal enclosure">7. ABS / metal enclosure</option>
-                            <option value="Terminal blocks and connectors">8. Terminal blocks and connectors</option>
-                            <option value="Wires and cables">9. Wires and cables</option>
-                            <option value="Switch / power switch">10. Switch / power switch</option>
-                            <option value="Mounting brackets, screws, clamps">11. Mounting brackets, screws, clamps</option>
-                            <option value="Heavy-duty bypass switch">12. Heavy-duty bypass switch</option>
-                            <option value="ESP8266 NodeMCU">13. ESP8266 NodeMCU</option>
-                            <option value="Bypass status LED">14. Bypass status LED</option>
-                            <option value="Relay module">15. Relay module</option>
-                            <option value="Switch mounting plate">16. Switch mounting plate</option>
-                            <option value="Labeling for NORMAL / BYPASS">17. Labeling for NORMAL / BYPASS</option>
-                            <option value="Custom PCB / perfboard">18. Custom PCB / perfboard</option>
-                            <option value="Reset/programming switch">19. Reset/programming switch</option>
-                            <option value="Raspberi pi">20. Raspberi pi</option>
-                            <option value="RFID Tags">21. RFID Tags</option>
-                            <option value="RFID Scanner">22. RFID Scanner</option>
-                        </select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
                         <input id="invSpot" type="text" placeholder="Rack Spot (e.g. Bin A1)" class="w-full p-3 border border-gray-300 rounded-md text-sm outline-none focus:border-emerald-500">
                         
                         <!-- THE NEW SCAN INPUT -->
@@ -215,7 +190,6 @@
                     </div>
                     <p id="invScanFeedback" class="text-xs font-bold text-emerald-600 text-right h-4"></p>
                 </div>
-
                 <div class="bg-white rounded-lg border shadow-md overflow-hidden">
                     <table class="w-full">
                         <thead><tr><th>Tag Barcode</th><th>Raw Material Name</th><th>Medicine-Shop Location</th><th>Status</th><th class="text-center">Action</th></tr></thead>
@@ -824,10 +798,8 @@
                 window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
             } catch(e) { alert(e.message); }
         };
-
-        // ================= RAPID SCAN & LINK INVENTORY REGISTRATION =================
+        // ================= RAPID SCAN & AUTO-DETECT INVENTORY REGISTRATION =================
         window.linkPreMadeQR = async () => {
-            const name = document.getElementById("invName").value;
             const spot = document.getElementById("invSpot").value || "Main Warehouse";
             const inputField = document.getElementById("invScanner");
             const tagId = inputField.value.trim().toUpperCase();
@@ -838,22 +810,62 @@
             inputField.value = ""; 
             inputField.disabled = true;
 
+            // 1. Smart Auto-Detect: Read the first 2 characters
+            const prefix = tagId.substring(0, 2);
+            
+            // 2. The Auto-Detect Mapping Dictionary
+            const ITEM_MAP = {
+                "01": "IR Transmitter module",
+                "02": "IR Receiver / sensor module",
+                "03": "High-power siren / buzzer",
+                "04": "LED status indicators",
+                "05": "12V SMPS / power adapter",
+                "06": "Voltage regulator / buck converter",
+                "07": "ABS / metal enclosure",
+                "08": "Terminal blocks and connectors",
+                "09": "Wires and cables",
+                "10": "Switch / power switch",
+                "11": "Mounting brackets, screws, clamps",
+                "12": "Heavy-duty bypass switch",
+                "13": "ESP8266 NodeMCU",
+                "14": "Bypass status LED",
+                "15": "Relay module",
+                "16": "Switch mounting plate",
+                "17": "Labeling for NORMAL / BYPASS",
+                "18": "Custom PCB / perfboard",
+                "19": "Reset/programming switch",
+                "20": "Raspberi pi",
+                "21": "RFID Tags",
+                "22": "RFID Scanner"
+            };
+
+            const detectedItemName = ITEM_MAP[prefix];
+
+            // 3. Error Handling: Stop if the prefix doesn't exist
+            if(!detectedItemName) {
+                document.getElementById("invScanFeedback").innerText = `❌ Invalid Format: Unknown Prefix '${prefix}'`;
+                document.getElementById("invScanFeedback").className = "text-xs font-bold text-rose-600 text-right h-4";
+                inputField.disabled = false;
+                inputField.focus();
+                return;
+            }
+
             try {
-                // Prevent duplicate scanning
+                // Prevent duplicate scanning of the same physical barcode
                 const snap = await get(ref(window.db, `inventory/${tagId}`));
                 if(snap.exists()) {
                     document.getElementById("invScanFeedback").innerText = `⚠️ Tag ${tagId} is already registered!`;
                     document.getElementById("invScanFeedback").className = "text-xs font-bold text-rose-600 text-right h-4";
                 } else {
-                    // Save the pre-made 12-digit code to the database
+                    // Save to the database using the AUTO-DETECTED name
                     await set(ref(window.db, `inventory/${tagId}`), { 
                         barcode: tagId, 
-                        item: name, 
+                        item: detectedItemName, 
                         location: spot, 
                         status: "In Stock", 
                         timestamp: Date.now() 
                     });
-                    document.getElementById("invScanFeedback").innerText = `✅ Tag ${tagId} saved as ${name}!`;
+                    document.getElementById("invScanFeedback").innerText = `✅ Auto-Saved: ${detectedItemName}`;
                     document.getElementById("invScanFeedback").className = "text-xs font-bold text-emerald-600 text-right h-4";
                 }
             } catch (e) {
