@@ -1568,35 +1568,85 @@
                 inputField.disabled = false; inputField.focus(); 
             }
         };
-        // ================= REPRINT BILL LOGIC (ARCHIVE SUPPORTED) =================
+        // ================= FINAL INVOICE & REPRINT LOGIC =================
         window.reprintBill = async (ordId, masterId) => {
-            if(!masterId || masterId === "undefined") return alert("Master QR ID is missing. Cannot reprint.");
+            if(!masterId || masterId === "undefined") return alert("Master QR ID is missing.");
             
             try {
-                // Fetch the exact stored billing configuration from the Master Warranty log
+                // Fetch Billing Data
                 const snap = await get(ref(window.db, `master_warranties/${masterId}`));
                 if(!snap.exists()) return alert("Billing record not found in database.");
                 const data = snap.val();
                 
-                // Fetch order directly from DB so we can reprint even if it's Archived/Hidden
+                // Fetch Order Data (for Signatures, Addons, and Up-to-date Status)
                 const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
                 const orderData = ordSnap.exists() ? ordSnap.val() : {}; 
                 
-                const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
-                const doc = iframe.contentWindow.document; doc.open();
-                
-                let discountHtml = (data.billing && data.billing.discount > 0) ? `
+                // Protect variables against undefined errors
+                let signatureHtml = "";
+                let stampHtml = "";
+                let addonsHtml = "";
+                let discountHtml = "";
+
+                // Calculate base product cost
+                let baseCost = 0;
+                const pName = orderData.productName || "";
+                if (pName.includes("Version 1")) baseCost = 15000;
+                else if (pName.includes("Version 2")) baseCost = 20000;
+                else if (pName.includes("Version 3")) baseCost = 21000;
+                else if (pName.includes("Version 4")) baseCost = 26000;
+                else if (pName.includes("Industrial")) baseCost = 27000;
+
+                // Build Addons row
+                if (orderData.addons) {
+                    if (orderData.addons.autoChangeover) addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: Auto Changeover DC Voltage</td><td style="padding:12px;font-size:12pt;text-align:right;">₹5,000</td></tr>`;
+                    if (orderData.addons.ups) addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: UPS Support</td><td style="padding:12px;font-size:12pt;text-align:right;">₹2,000</td></tr>`;
+                }
+
+                // Billing Math
+                let discount = data.billing ? (data.billing.discount || 0) : 0;
+                let installCost = data.billing ? (data.billing.installCost || 2000) : 2000;
+                let grandTotal = data.billing ? (data.billing.grandTotal || 0) : 0;
+
+                if (discount > 0) {
+                    discountHtml = `
                     <tr style="border-bottom:1px solid #ccc; color: #d93025;">
                         <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
-                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${data.billing.discount.toLocaleString('en-IN')}</td>
-                    </tr>` : '';
+                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
+                    </tr>`;
+                }
 
-                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
-                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE (DUPLICATE)</h1>
+                // STAMP & SIGNATURE (Only prints if the technician completed the job)
+                if (orderData.status === "Installation Completed") {
+                    stampHtml = `
+                        <div style="position:absolute; top:35%; left:50%; transform:translate(-50%, -50%) rotate(-35deg); opacity:0.15; pointer-events:none; z-index:0;">
+                            <h1 style="font-size:120px; font-weight:900; color:#10b981; margin:0; border:15px solid #10b981; padding:20px; border-radius:30px; text-transform:uppercase; font-family:sans-serif; letter-spacing: 10px; white-space:nowrap;">FULL PAID</h1>
+                        </div>
+                    `;
                     
-                    <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
+                    if (orderData.techDetails && orderData.techDetails.signature) {
+                        signatureHtml = `
+                            <div style="margin-top: 20px; float: left; width: 45%; text-align: left;">
+                                <p style="font-size:10pt; color:#555; margin-bottom:2px; font-weight:bold;">Customer Acknowledgement:</p>
+                                <p style="font-size:8pt; color:#777; margin-top:0; margin-bottom:5px;">I confirm all devices are installed and working perfectly.</p>
+                                <img src="${orderData.techDetails.signature}" style="max-height: 80px; max-width: 100%; border-bottom: 2px solid #111;">
+                                <p style="font-size:12pt; font-weight:bold; margin-top:5px;">Customer Signature</p>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Render Final PDF Document
+                const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
+                const doc = iframe.contentWindow.document; doc.open();
+
+                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;position:relative;">
+                    ${stampHtml}
+                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;position:relative;z-index:1;">KAALNETRA OFFICIAL INVOICE</h1>
+                    
+                    <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;position:relative;z-index:1;">
                         <div>
-                            <strong>Customer Name:</strong> ${data.customerName}<br>
+                            <strong>Customer Name:</strong> ${orderData.customerName || data.customerName}<br>
                             <strong>Contact Phone:</strong> ${orderData.phone || 'N/A'}<br>
                         </div>
                         <div style="text-align:right;">
@@ -1605,7 +1655,7 @@
                         </div>
                     </div>
                     
-                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;position:relative;z-index:1;">
                         <thead>
                             <tr style="border-bottom:3px solid #111; background:#eee;">
                                 <th style="padding:12px; font-size:12pt;">Description</th>
@@ -1613,35 +1663,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="border-bottom:1px solid #ccc;">
+                            <tr style="border-bottom:1px solid #eee;">
                                 <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName || 'Security System'}</td>
-                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${data.billing ? data.billing.systemCost.toLocaleString('en-IN') : 0}</td>
+                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${baseCost.toLocaleString('en-IN')}</td>
                             </tr>
+                            ${addonsHtml}
                             <tr style="border-bottom:1px solid #ccc;">
                                 <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
-                                <td style="padding:12px;font-size:12pt;text-align:right;">₹${data.billing ? data.billing.installCost.toLocaleString('en-IN') : 0}</td>
+                                <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
                             </tr>
                             ${discountHtml}
                         </tbody>
                         <tfoot>
                             <tr style="background:#111; color:white;">
                                 <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
-                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${data.billing ? data.billing.grandTotal.toLocaleString('en-IN') : 0}</td>
+                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
                             </tr>
                         </tfoot>
                     </table>
                     
-                    <div style="text-align:center;border:3px dashed #111;padding:30px; width: 70%; margin: 0 auto;">
-                        <h2 style="margin-top:0; font-size:18pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
-                        <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${data.masterId}" style="margin:0 auto;border:2px solid #111;">
-                        <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${data.masterId}</div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;position:relative;z-index:1;">
                         ${signatureHtml}
-                        <div style="text-align:right; width: 50%;">
+                        <div style="text-align:right; width: ${signatureHtml ? '50%' : '100%'};">
                             <h2 style="margin-top:0; font-size:16pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
-                            <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service.</p>
+                            <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${masterId}" style="float:right; border:2px solid #111;">
                             <div style="clear:both;"></div>
                             <div style="font-family:monospace;font-size:18pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
@@ -2846,14 +2891,39 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 else if (data.status.includes("Completed")) { statusColor = "bg-emerald-100 text-emerald-800 border-emerald-200"; statusIcon = "fa-shield-check"; }
 
                 // Check if Installation date exists
+                // Calculate Installation & 6-Month Warranty Expiry Logic
                 let scheduleHtml = "";
-                if(data.installDate && data.installTime) {
+                
+                if (data.status === "Installation Completed" && data.techDetails && data.techDetails.date) {
+                    const installTimeMs = data.techDetails.date;
+                    const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
+                    const isExpired = (Date.now() - installTimeMs) > sixMonthsMs;
+                    
+                    const warrantyBadge = isExpired 
+                        ? `<span class="bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest"><i class="fas fa-times-circle mr-1"></i> 6 Months Over (Warranty Expired)</span>`
+                        : `<span class="bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest"><i class="fas fa-shield-check mr-1"></i> Active 6-Month Warranty</span>`;
+
                     scheduleHtml = `
-                        <div class="mt-4 bg-slate-50 p-3 rounded-lg border border-gray-200 shadow-sm flex items-center gap-3">
-                            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center shadow-inner"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="mt-5 bg-white border-2 border-emerald-100 p-5 rounded-xl shadow-md flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner"><i class="fas fa-home text-xl"></i></div>
+                                <div>
+                                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Successfully Installed On</div>
+                                    <div class="text-base font-black text-gray-800">${new Date(installTimeMs).toLocaleDateString('en-IN')}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                ${warrantyBadge}
+                            </div>
+                        </div>
+                    `;
+                } else if (data.installDate && data.installTime) {
+                    scheduleHtml = `
+                        <div class="mt-5 bg-slate-50 p-5 rounded-xl border-2 border-purple-100 shadow-md flex items-center gap-4">
+                            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center shadow-inner"><i class="fas fa-calendar-alt text-xl"></i></div>
                             <div>
-                                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Installation Scheduled</div>
-                                <div class="text-sm font-black text-gray-800">${data.installDate} at ${data.installTime}</div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Installation Scheduled</div>
+                                <div class="text-base font-black text-gray-800">${data.installDate} between ${data.installTime}</div>
                             </div>
                         </div>
                     `;
@@ -2861,20 +2931,20 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
 
                 // Render Found Order
                 resultBox.innerHTML = `
-                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500 rounded-full opacity-5 -mt-10 -mr-10"></div>
-                    <div class="flex justify-between items-start mb-3 border-b border-gray-100 pb-3 relative z-10">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full opacity-5 -mt-10 -mr-10"></div>
+                    <div class="flex justify-between items-start mb-4 border-b border-gray-100 pb-4 relative z-10">
                         <div>
-                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Ref</div>
-                            <div class="text-lg font-black text-blue-900 font-mono tracking-wider">${data.orderId}</div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Order Ref</div>
+                            <div class="text-xl font-black text-blue-900 font-mono tracking-wider">${data.orderId}</div>
                         </div>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm ${statusColor}">
+                        <span class="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border shadow-sm ${statusColor}">
                             <i class="fas ${statusIcon} mr-1"></i> ${data.status}
                         </span>
                     </div>
-                    <h4 class="font-bold text-sm text-gray-800 mb-3 leading-snug relative z-10"><i class="fas fa-box text-gray-400 mr-2"></i>${data.productName}</h4>
-                    <div class="flex justify-between text-xs bg-white border border-gray-100 p-2 rounded relative z-10">
-                        <span class="text-gray-500 font-medium">Advance Paid: <b class="text-emerald-600 ml-1">₹${(data.advancePaid || 0).toLocaleString('en-IN')}</b></span>
-                        <span class="text-gray-500 font-medium">Balance Due: <b class="text-rose-600 ml-1">₹${(data.balanceDue || 0).toLocaleString('en-IN')}</b></span>
+                    <h4 class="font-bold text-base text-gray-800 mb-4 leading-snug relative z-10"><i class="fas fa-box text-gray-400 mr-2"></i>${data.productName}</h4>
+                    <div class="flex justify-between text-sm bg-slate-50 border border-gray-200 p-3 rounded-lg relative z-10 font-bold">
+                        <span class="text-gray-600">Advance Paid: <b class="text-emerald-600 ml-1">₹${(data.advancePaid || 0).toLocaleString('en-IN')}</b></span>
+                        <span class="text-gray-600">Balance Due: <b class="text-rose-600 ml-1">₹${(data.balanceDue || 0).toLocaleString('en-IN')}</b></span>
                     </div>
                     ${scheduleHtml}
                 `;
@@ -2971,13 +3041,13 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 alert("Database Error: " + e.message);
             }
         };
-       // ================= CRASH-PROOF BATCH & BILLING =================
+       // ================= CRASH-PROOF BATCH & MQR STICKER =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
             if(!ordId) return alert("Select an order first.");
 
             const btn = document.activeElement;
-            btn.innerText = "Processing Invoice..."; btn.disabled = true;
+            btn.innerText = "Processing MQR..."; btn.disabled = true;
 
             try {
                 const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
@@ -2988,7 +3058,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 const updates = {};
                 let hardwareLogForInternal = [];
 
-                // 1. Mark individual raw materials as Sold in Firebase
+                // 1. Mark individual raw materials as Sold
                 for(let req of activeDispatchBOM) {
                     const tagId = req.scannedTag;
                     updates[`inventory/${tagId}/status`] = "Sold";
@@ -2996,7 +3066,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     hardwareLogForInternal.push({ id: tagId, item: req.componentName });
                 }
                 
-                // 2. Base Cost Calculation
+                // 2. Base Cost & Addon Calculations for the background database
                 let baseCost = 0;
                 const pName = orderData.productName || "";
                 if (pName.includes("Version 1")) baseCost = 15000;
@@ -3005,19 +3075,10 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 else if (pName.includes("Version 4")) baseCost = 26000;
                 else if (pName.includes("Industrial")) baseCost = 27000;
 
-                // Handle Addons HTML and total cost
-                let addonsHtml = "";
                 let systemCost = baseCost;
-                
                 if (orderData.addons) {
-                    if (orderData.addons.autoChangeover) {
-                        systemCost += 5000;
-                        addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: Auto Changeover DC Voltage</td><td style="padding:12px;font-size:12pt;text-align:right;">₹5,000</td></tr>`;
-                    }
-                    if (orderData.addons.ups) {
-                        systemCost += 2000;
-                        addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: UPS Support</td><td style="padding:12px;font-size:12pt;text-align:right;">₹2,000</td></tr>`;
-                    }
+                    if (orderData.addons.autoChangeover) systemCost += 5000;
+                    if (orderData.addons.ups) systemCost += 2000;
                 }
                 
                 const installCost = 2000;
@@ -3039,69 +3100,29 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
 
                 await update(ref(window.db), updates);
                 
-                // 4. Print Clean Invoice
-                const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
-                const doc = iframe.contentWindow.document; doc.open();
-                
-                let discountHtml = discount > 0 ? `
-                    <tr style="border-bottom:1px solid #ccc; color: #d93025;">
-                        <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
-                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
-                    </tr>` : '';
-
-                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;position:relative;">
-                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE</h1>
-                    
-                    <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
-                        <div>
-                            <strong>Customer Name:</strong> ${orderData.customerName}<br>
-                            <strong>Contact Phone:</strong> ${orderData.phone}<br>
+                // 4. PRINT ONLY THE MQR STICKER FOR THE BOX
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <html><head><title>MQR Box Label</title>
+                    <style>
+                        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+                        .label { text-align: center; border: 4px solid #000; padding: 20px; border-radius: 10px; width: 300px; box-sizing: border-box; }
+                        img { width: 220px; height: 220px; margin: 10px auto; display: block; }
+                        .mqr { font-size: 28px; font-weight: 900; font-family: monospace; letter-spacing: 2px; }
+                        .ord { font-size: 14px; color: #444; font-weight: bold; margin-bottom: 5px; }
+                    </style>
+                    </head><body>
+                        <div class="label">
+                            <div class="ord">ORDER: ${ordId}</div>
+                            <h2 style="margin:0; font-size: 20px;">MASTER QR</h2>
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${masterId}">
+                            <div class="mqr">${masterId}</div>
+                            <p style="font-size: 12px; margin: 10px 0 0 0; font-weight: bold;">ATTACH TO HARDWARE BOX</p>
                         </div>
-                        <div style="text-align:right;">
-                            <strong>Invoice / Order Ref:</strong> ${ordId}<br>
-                            <strong>Date:</strong> ${new Date(orderData.timestamp || Date.now()).toLocaleDateString('en-IN')}
-                        </div>
-                    </div>
-                    
-                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;">
-                        <thead>
-                            <tr style="border-bottom:3px solid #111; background:#eee;">
-                                <th style="padding:12px; font-size:12pt;">Description</th>
-                                <th style="padding:12px; font-size:12pt; text-align:right;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="border-bottom:1px solid #eee;">
-                                <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName}</td>
-                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${baseCost.toLocaleString('en-IN')}</td>
-                            </tr>
-                            ${addonsHtml}
-                            <tr style="border-bottom:1px solid #ccc;">
-                                <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
-                                <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
-                            </tr>
-                            ${discountHtml}
-                        </tbody>
-                        <tfoot>
-                            <tr style="background:#111; color:white;">
-                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
-                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;">
-                        <div style="text-align:right; width: 100%;">
-                            <h2 style="margin-top:0; font-size:16pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
-                            <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${masterId}" style="float:right; border:2px solid #111;">
-                            <div style="clear:both;"></div>
-                            <div style="font-family:monospace;font-size:18pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
-                        </div>
-                    </div>
-                </body></html>`);
-                doc.close();
-                setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
+                        <script>setTimeout(() => { window.print(); }, 500);<\/script>
+                    </body></html>
+                `);
+                printWindow.document.close();
                 
                 // 5. Reset View
                 document.getElementById("dispatchWorkspace").classList.add("hidden");
@@ -3110,9 +3131,9 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 activeDispatchBOM = [];
                 
             } catch(e) { 
-                alert("Batching & Billing Failed: " + e.message); 
+                alert("Batching Failed: " + e.message); 
             } finally {
-                btn.innerText = "Finalize & Print Invoice"; btn.disabled = false;
+                btn.innerText = "Finalize Dispatch"; btn.disabled = false;
             }
         };
         // ================= TECHNICIAN CAMERA SCANNER =================
