@@ -101,15 +101,51 @@
         <!-- Full-Width Offers Marquee Strip -->
         <div id="publicOffersGrid" class="w-full my-2"></div>
         
-        <!-- Constrained Product Catalog Section -->
+       <!-- Constrained Product Catalog Section -->
         <div class="max-w-7xl mx-auto w-full p-6 mt-4">
             <h2 class="text-3xl font-black mb-8 text-center text-gray-800">Available Security Systems</h2>
             <div id="productGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
         </div>
-        <!-- Constrained Product Catalog Section -->
-        <div class="max-w-7xl mx-auto w-full p-6 mt-4">
-            <h2 class="text-3xl font-black mb-8 text-center text-gray-800">Available Security Systems</h2>
-            <div id="productGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+        <!-- ================= NEW: TRACK ORDER SECTION ================= -->
+        <div class="max-w-7xl mx-auto w-full px-6 mt-6">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-12 relative overflow-hidden">
+                <!-- Decorative background elements -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full opacity-50 -mt-20 -mr-20 pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-40 h-40 bg-yellow-50 rounded-full opacity-50 -mb-10 -ml-10 pointer-events-none"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row gap-10 items-center">
+                    <!-- Left: Input Area -->
+                    <div class="w-full md:w-1/2">
+                        <h2 class="text-3xl font-black text-gray-800 mb-4 flex items-center"><i class="fas fa-search-location text-blue-500 mr-3 text-4xl"></i>Track Your Order</h2>
+                        <p class="text-gray-500 text-sm mb-6 leading-relaxed">Enter your secure Order ID (e.g., ORD-123456) below to check your real-time payment, dispatch, and installation status.</p>
+                        
+                        <div class="flex gap-3">
+                            <div class="relative flex-1">
+                                <i class="fas fa-hashtag absolute left-4 top-4 text-gray-400"></i>
+                                <input id="trackOrderId" type="text" placeholder="ORD-XXXXXX" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-mono font-bold outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50 transition uppercase tracking-widest shadow-inner">
+                            </div>
+                            <button onclick="trackOrder()" id="btnTrackOrder" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3.5 rounded-xl font-black uppercase tracking-wider text-sm shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] transition transform hover:-translate-y-0.5 whitespace-nowrap">
+                                Track
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Results Display Area -->
+                    <div class="w-full md:w-1/2">
+                        <!-- Initial Empty State -->
+                        <div id="trackEmptyState" class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-8 shadow-sm w-full h-full min-h-[180px] flex flex-col items-center justify-center text-gray-400 transition-all">
+                            <i class="fas fa-box-open text-5xl mb-3 opacity-50"></i>
+                            <span class="text-xs font-bold uppercase tracking-widest">Awaiting Order ID</span>
+                        </div>
+
+                        <!-- Active Tracking Result Box -->
+                        <div id="trackResultBox" class="hidden bg-white border-2 border-blue-100 rounded-xl p-6 shadow-lg w-full h-full min-h-[180px] flex flex-col justify-center transition-all relative overflow-hidden">
+                            <!-- Results injected here via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ================= NEW: CONTACT US SECTION ================= -->
