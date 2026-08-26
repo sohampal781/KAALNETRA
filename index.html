@@ -2162,8 +2162,12 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                                         </a>
                                     </div>
 
-                                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">System Payload</div>
-                                    <div class="text-sm font-bold text-indigo-700 bg-indigo-50 border-l-4 border-indigo-500 p-2 rounded-r">${v.productName}</div>
+                                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1.5">System Payload & Assigned Box</div>
+                                    <div class="text-sm font-bold text-indigo-700 bg-indigo-50 border-l-4 border-indigo-500 p-2 rounded-r mb-2">${v.productName}</div>
+                                    <div class="bg-yellow-50 border border-yellow-200 p-2 rounded-lg flex items-center justify-between shadow-sm">
+                                        <span class="text-[10px] font-bold text-yellow-800 uppercase tracking-wider"><i class="fas fa-box-open mr-1"></i> Assigned MQR:</span>
+                                        <span class="font-mono font-black text-yellow-900 text-sm tracking-widest">${v.masterQrId || 'N/A'}</span>
+                                    </div>
                                 </div>
                                 <div class="p-3 bg-gray-50 border-t border-gray-100">
                                     <button onclick="window.openTechPanel('${ordId}', '${v.masterQrId}')" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white py-4 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl transition flex justify-center items-center gap-2 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
