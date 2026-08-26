@@ -55,7 +55,7 @@
         .marquee-content {
             display: inline-flex;
             gap: 3rem;
-            animation: marqueeRTL 20s linear infinite;
+            animation: marqueeRTL 45s linear infinite; /* Changed from 20s to 45s for a nice, slow scroll */
         }
         .marquee-content:hover {
             animation-play-state: paused; /* Pauses on hover so customers can read it */
@@ -2040,7 +2040,8 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
 
                     pubOffersGrid.innerHTML = `
                         <div class="w-full h-28 bg-slate-900 flex items-center overflow-hidden marquee-wrapper border-b border-slate-800 shadow-inner">
-                            <div class="marquee-content" style="animation-direction: reverse; animation-duration: 25s;">
+                            <!-- Changed animation-duration from 25s to 55s below -->
+                            <div class="marquee-content" style="animation-direction: reverse; animation-duration: 55s;">
                                 ${offerCards}
                                 ${offerCards}
                             </div>
