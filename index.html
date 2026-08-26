@@ -1588,6 +1588,16 @@
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${data.masterId}" style="margin:0 auto;border:2px solid #111;">
                         <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${data.masterId}</div>
                     </div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;">
+                        ${signatureHtml}
+                        <div style="text-align:right; width: 50%;">
+                            <h2 style="margin-top:0; font-size:16pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
+                            <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service.</p>
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${masterId}" style="float:right; border:2px solid #111;">
+                            <div style="clear:both;"></div>
+                            <div style="font-family:monospace;font-size:18pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
+                        </div>
+                    </div>
                 </body></html>`);
                 doc.close();
                 setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
