@@ -571,6 +571,11 @@
                             <i class="fas fa-phone absolute left-4 top-4 text-gray-400"></i>
                             <input id="ordPhone" type="text" placeholder="Mobile Number" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition">
                         </div>
+                        <!-- NEW EMAIL FIELD -->
+                        <div class="relative">
+                            <i class="fas fa-envelope absolute left-4 top-4 text-gray-400"></i>
+                            <input id="ordEmail" type="email" placeholder="Email Address (For Order Tracking)" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition">
+                        </div>
                         <div class="relative">
                             <i class="fas fa-home absolute left-4 top-4 text-gray-400"></i>
                             <textarea id="ordAddress" placeholder="Complete Delivery Address" rows="2" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition resize-none"></textarea>
@@ -580,7 +585,6 @@
                     <div id="addonSection" class="hidden">
                         <h4 class="font-black text-gray-800 mb-5 border-b border-gray-100 pb-2 text-sm uppercase tracking-wider flex items-center"><i class="fas fa-microchip text-emerald-500 mr-2"></i> 2. System Upgrades</h4>
                         <div class="space-y-3">
-                            <!-- Toggle Card 1 -->
                             <label class="block relative cursor-pointer group">
                                 <input type="checkbox" id="chkAutoChangeover" value="5000" onchange="updateSliderUI()" class="peer sr-only">
                                 <div class="p-4 border-2 border-gray-100 rounded-xl bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:border-emerald-300 transition flex items-center justify-between shadow-sm">
@@ -597,7 +601,6 @@
                                 </div>
                             </label>
 
-                            <!-- Toggle Card 2 -->
                             <label class="block relative cursor-pointer group">
                                 <input type="checkbox" id="chkUPS" value="2000" onchange="updateSliderUI()" class="peer sr-only">
                                 <div class="p-4 border-2 border-gray-100 rounded-xl bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:border-emerald-300 transition flex items-center justify-between shadow-sm">
@@ -627,8 +630,9 @@
                             <h4 id="orderProdName" class="font-bold text-sm text-indigo-900 leading-snug pr-4"></h4>
                         </div>
 
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6 text-center relative mt-8">
-                            <span class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md whitespace-nowrap">Advance Payment Slider</span>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-4 text-center relative mt-8">
+                            <!-- UPDATED TO 30% MINIMUM -->
+                            <span class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md whitespace-nowrap">Advance Payment (Min 30%)</span>
                             
                             <div class="mt-4 mb-5">
                                 <input id="ordSlider" type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" oninput="updateSliderUI()">
@@ -656,6 +660,12 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- NEW PROFESSIONAL REFUND POLICY -->
+                        <div class="mb-5 bg-rose-50 border border-rose-100 rounded-lg p-3 text-[10px] text-gray-600 font-medium leading-relaxed">
+                            <b class="text-rose-700 block mb-1">Cancellation & Refund Policy:</b> 
+                            Your deposit is 100% refundable if canceled before your installation is scheduled. If the technician is already dispatched for installation, a nominal logistic fee may be deducted from your refund.
+                        </div>
                     </div>
 
                     <button id="btnSubmitOrder" onclick="submitPublicOrder()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl text-sm font-black uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
@@ -663,6 +673,34 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+    <!-- Custom Order Success Modal -->
+    <div id="successModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col text-center relative border-t-8 border-emerald-500 transform transition-all p-8">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                <i class="fas fa-check-circle text-4xl"></i>
+            </div>
+            <h2 class="text-2xl font-black text-gray-800 mb-2">Order Received!</h2>
+            <p class="text-sm text-gray-500 mb-6">Please save your secure Order ID to track your status.</p>
+            
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Your Order ID</span>
+                <span id="successOrderIdDisplay" class="text-2xl font-mono font-black text-blue-700 tracking-wider select-all"></span>
+            </div>
+            
+            <div class="text-left bg-blue-50 border border-blue-100 rounded-lg p-5 mb-8 shadow-sm">
+                <h4 class="font-black text-blue-900 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fas fa-info-circle mr-2 text-blue-500"></i> Next Steps</h4>
+                <ul class="text-xs text-blue-800 space-y-3 list-disc list-inside">
+                    <li>It takes up to <b>2 working days</b> to verify your payment and process your order.</li>
+                    <li>Once confirmed, you will receive a schedule update directly to your <b>registered Email and WhatsApp</b>.</li>
+                    <li>To track your order anytime, simply message our support team with your Order ID.</li>
+                </ul>
+            </div>
+            
+            <button onclick="document.getElementById('successModal').classList.add('hidden')" class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg transition transform hover:-translate-y-0.5">
+                I Understand, Close
+            </button>
         </div>
     </div>
     <!-- TECHNICIAN INSTALLATION PORTAL MODAL -->
@@ -1134,11 +1172,11 @@
                 if (document.getElementById("chkUPS").checked) totalPrice += 2000;
             }
             
-            // 2. Adjust Slider Rules
+            // 2. Adjust Slider Rules (30% Minimum)
             const slider = document.getElementById("ordSlider");
             slider.max = totalPrice;
             
-            const minAdv = totalPrice * 0.1; // 10% Minimum
+            const minAdv = totalPrice * 0.3; // Changed to 30% Minimum
             if (parseInt(slider.value) < minAdv || parseInt(slider.value) > totalPrice || isNaN(slider.value)) {
                 slider.value = minAdv; // Reset if out of bounds
             }
@@ -1152,11 +1190,14 @@
         window.submitPublicOrder = async () => {
             const name = document.getElementById("ordName").value;
             const phone = document.getElementById("ordPhone").value;
+            const email = document.getElementById("ordEmail").value;
             const address = document.getElementById("ordAddress").value;
             const txn = document.getElementById("ordTxn").value;
             const adv = parseInt(document.getElementById("ordSlider").value);
 
-            if(!name || !phone || !address) return alert("Please fill all delivery details.");
+            // Require email in validation
+            if(!name || !phone || !email || !address || !txn) return alert("Please fill all required delivery and payment details.");
+            
             const ordId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
             
             // Detect Addons Selected
@@ -1177,11 +1218,12 @@
                 await set(ref(window.db, `web_orders/${ordId}`), {
                     orderId: ordId, 
                     productName: currentOrderProduct.name, 
-                    addons: addons, // Save addons
-                    totalPrice: finalPrice, // Save total price
+                    addons: addons, 
+                    totalPrice: finalPrice, 
                     advancePaid: adv, 
                     balanceDue: finalPrice - adv, 
                     customerName: name, 
+                    email: email, // Saved securely in Firebase
                     address: address, 
                     phone: phone, 
                     txnIdLast5: txn, 
@@ -1189,10 +1231,16 @@
                     timestamp: Date.now()
                 });
                 
+                // Hide Checkout and Show the custom Success Modal
                 document.getElementById("publicOrderModal").classList.add("hidden");
-                alert(`Order Saved! ID: ${ordId}`);
-                btn.innerHTML = "Confirm Order"; btn.disabled = false;
-            } catch(e) { alert("Error: " + e.message); }
+                document.getElementById("successOrderIdDisplay").innerText = ordId;
+                document.getElementById("successModal").classList.remove("hidden");
+                
+                btn.innerHTML = "<i class='fas fa-lock'></i> Confirm Secure Order"; 
+                btn.disabled = false;
+            } catch(e) { 
+                alert("Error: " + e.message); 
+            }
         };
         // ================= ERP AUTH & LIVE SYNC =================
         window.openStaffLogin = () => document.getElementById("staffModal").classList.remove("hidden");
