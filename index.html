@@ -42,25 +42,25 @@
         input[type=range].swipe-slider::-webkit-slider-thumb {
             -webkit-appearance: none; appearance: none; width: 55px; height: 55px; border-radius: 50%; background: #10b981; cursor: pointer; border: 4px solid #fff; box-shadow: -1000px 0 0 1000px #34d399; z-index: 2; position: relative;
         }
+        /* --- FLAWLESS RIGHT-TO-LEFT MARQUEE --- */
         @keyframes marqueeRTL {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
         }
         .marquee-wrapper {
             display: flex;
             width: 100%;
             overflow: hidden;
-            white-space: nowrap;
+            position: relative;
         }
         .marquee-content {
-            display: inline-flex;
-            gap: 3rem;
-            animation: marqueeRTL 45s linear infinite; /* Changed from 20s to 45s for a nice, slow scroll */
+            display: flex;
+            width: max-content; /* Prevents the squishing seen in the image */
+            animation: marqueeRTL 40s linear infinite; /* Smooth, readable speed */
         }
         .marquee-content:hover {
-            animation-play-state: paused; /* Pauses on hover so customers can read it */
+            animation-play-state: paused;
         }
-
         /* iOS Style Swipe-to-Complete Slider */
         input[type=range].swipe-slider {
             -webkit-appearance: none; width: 100%; height: 55px; background: #e5e7eb; border-radius: 30px; outline: none; overflow: hidden; position: relative; z-index: 1;
@@ -2135,8 +2135,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             }
         };
         // ================= STOREFRONT LIVE SYNC & ANIMATION =================
-        
-        // Gradients for auto-generated banners/offers
         const BGT_GRADIENTS = [
             "bg-gradient-to-r from-purple-600 to-indigo-600",
             "bg-gradient-to-r from-rose-500 to-pink-600",
@@ -2145,19 +2143,19 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             "bg-gradient-to-r from-orange-500 to-red-600"
         ];
 
-        // Single Unified Live Listener for Banners & Offers (Right-to-Left Marquee)
         onValue(ref(window.db, "storefront"), (snap) => {
             const data = snap.val() || {};
             const banners = data.banners || {};
             const offers = data.offers || {};
 
-            // 1. Sync Public Banners (Smooth Right-to-Left Marquee)
+            // 1. Sync Banners
             const bannerArr = Object.values(banners).sort((a,b) => b.timestamp - a.timestamp);
             const carousel = document.getElementById("publicBannerCarousel");
             if(carousel) {
                 if (bannerArr.length > 0) {
+                    // Added flex-shrink-0 and whitespace-nowrap to prevent squishing
                     const bannerSpans = bannerArr.map(b => `
-                        <span class="inline-flex items-center px-8 py-4 ${b.gradient || 'bg-slate-800'} text-white font-black text-2xl md:text-3xl rounded-xl shadow-lg uppercase tracking-wide border border-white/20 mx-4">
+                        <span class="flex-shrink-0 inline-flex items-center px-8 py-4 ${b.gradient || 'bg-slate-800'} text-white font-black text-2xl md:text-3xl rounded-xl shadow-lg uppercase tracking-wide border border-white/20 mx-4 whitespace-nowrap">
                             ${b.text}
                         </span>
                     `).join("");
@@ -2165,36 +2163,31 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     carousel.innerHTML = `
                         <div class="w-full h-32 bg-slate-900 flex items-center overflow-hidden marquee-wrapper border-y border-slate-800 shadow-inner">
                             <div class="marquee-content">
-                                ${bannerSpans}
-                                ${bannerSpans} <!-- Seamless infinite loop duplication -->
+                                ${bannerSpans}${bannerSpans}${bannerSpans}${bannerSpans} <!-- Quadrupled for seamless loop -->
                             </div>
                         </div>
                     `;
                 } else {
-                    carousel.innerHTML = `
-                        <div class="w-full h-32 bg-gradient-to-r from-slate-900 via-gray-900 to-black flex items-center justify-center text-center text-white px-4">
-                            <h2 class="text-2xl md:text-4xl font-black text-yellow-400 tracking-wider drop-shadow-lg uppercase">The Eye That Never Sleeps</h2>
-                        </div>
-                    `;
+                    carousel.innerHTML = `<div class="w-full h-32 bg-slate-900 flex items-center justify-center"><h2 class="text-2xl font-black text-yellow-400 uppercase">The Eye That Never Sleeps</h2></div>`;
                 }
             }
 
-            // 2. Sync Public Offers Grid (Smooth Right-to-Left Sliding Cards)
+            // 2. Sync Offers
             const offerArr = Object.values(offers).sort((a,b) => b.timestamp - a.timestamp);
             const pubOffersGrid = document.getElementById("publicOffersGrid");
             if(pubOffersGrid) {
                 if (offerArr.length > 0) {
+                    // Added flex-shrink-0 and whitespace-nowrap to prevent squishing
                     const offerCards = offerArr.map(o => `
-                        <div class="${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 p-6 flex items-center justify-center text-center h-28 md:h-32 min-w-[320px] md:min-w-[380px] mx-3">
-                            <h3 class="text-white font-black text-base md:text-lg drop-shadow-md leading-snug">${o.text}</h3>
+                        <div class="flex-shrink-0 ${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 px-8 py-4 flex items-center justify-center text-center h-20 mx-4 whitespace-nowrap">
+                            <h3 class="text-white font-black text-base md:text-lg drop-shadow-md uppercase">${o.text}</h3>
                         </div>
                     `).join("");
 
                     pubOffersGrid.innerHTML = `
-                        <div class="marquee-wrapper bg-slate-100 py-4 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                            <div class="marquee-content">
-                                ${offerCards}
-                                ${offerCards} <!-- Seamless infinite loop duplication -->
+                        <div class="w-full h-28 bg-white flex items-center overflow-hidden marquee-wrapper border-b border-gray-200">
+                            <div class="marquee-content" style="animation-duration: 50s;">
+                                ${offerCards}${offerCards}${offerCards}${offerCards} <!-- Quadrupled for seamless loop -->
                             </div>
                         </div>
                     `;
@@ -2203,26 +2196,29 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 }
             }
 
-            // 3. Sync Admin Banners List (Max 10)
+            // 3. Admin UI Sync
             const adminBannerList = document.getElementById("adminBannersList");
-            const btnBanner = document.getElementById("btnUploadBanner");
             if(adminBannerList) {
                 document.getElementById("bannerCountTxt").innerText = `${bannerArr.length} / 10 Active`;
-                if (bannerArr.length >= 10) {
-                    btnBanner.disabled = true;
-                    btnBanner.className = "bg-gray-400 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm shadow-md whitespace-nowrap cursor-not-allowed self-stretch";
-                } else {
-                    btnBanner.disabled = false;
-                    btnBanner.className = "bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm transition shadow-md whitespace-nowrap self-stretch";
-                }
                 adminBannerList.innerHTML = bannerArr.map(b => `
-                    <div class="relative ${b.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-24 flex items-center justify-center p-4 text-center border-2 border-white/30">
+                    <div class="relative ${b.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-24 flex items-center justify-center p-4 text-center">
                         <span class="text-white text-xs font-bold leading-tight line-clamp-3">${b.text}</span>
-                        <button onclick="window.deleteStorefrontImage('banners', '${b.id}')" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white w-7 h-7 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition transform hover:scale-110 flex items-center justify-center"><i class="fas fa-times"></i></button>
+                        <button onclick="window.deleteStorefrontImage('banners', '${b.id}')" class="absolute top-1 right-1 bg-red-600 text-white w-7 h-7 rounded-full"><i class="fas fa-times"></i></button>
                     </div>
                 `).join("");
             }
 
+            const adminOfferList = document.getElementById("adminOffersList");
+            if(adminOfferList) {
+                document.getElementById("offerCountTxt").innerText = `${offerArr.length} / 3 Active`;
+                adminOfferList.innerHTML = offerArr.map(o => `
+                    <div class="relative ${o.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-32 flex items-center justify-center p-4 text-center">
+                        <span class="text-white text-sm font-bold leading-tight line-clamp-4">${o.text}</span>
+                        <button onclick="window.deleteStorefrontImage('offers', '${o.id}')" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full"><i class="fas fa-times"></i></button>
+                    </div>
+                `).join("");
+            }
+        });
             // 4. Sync Admin Offers List (Max 3)
             const adminOfferList = document.getElementById("adminOffersList");
             const btnOffer = document.getElementById("btnUploadOffer");
