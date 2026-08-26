@@ -2626,7 +2626,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
             document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
         };
-
+        window.trackOrder = async () => {
         // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
