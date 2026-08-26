@@ -785,6 +785,19 @@
                         <label class="block text-xs font-bold text-gray-600 mb-1">Technician Remarks / Notes</label>
                         <textarea id="techNotes" rows="2" placeholder="Installation successful..." class="w-full p-3 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500"></textarea>
                     </div>
+                    <!-- Customer Signature Section -->
+                    <div class="mt-2 bg-slate-50 border border-gray-200 rounded-lg p-3">
+                        <label class="block text-[11px] font-black text-gray-700 mb-2 uppercase tracking-wider text-center"><i class="fas fa-pen-nib text-indigo-500 mr-1"></i> Customer Authorization</label>
+                        <p class="text-[9px] text-gray-500 text-center mb-2 font-medium">"I confirm all devices are installed and working properly."</p>
+                        
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-white shadow-inner">
+                            <canvas id="sigCanvas" class="w-full h-32 touch-none cursor-crosshair"></canvas>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-[9px] text-rose-500 font-bold" id="sigWarning"></span>
+                            <button onclick="window.clearSignature()" class="text-[10px] font-bold text-gray-500 hover:text-rose-600 uppercase transition bg-white border px-2 py-1 rounded shadow-sm">Clear Drawing</button>
+                        </div>
+                    </div>
 
                     <div class="mt-4 relative">
                         <p class="absolute inset-0 flex items-center justify-center text-sm font-black text-gray-500 uppercase tracking-widest pointer-events-none z-10" style="mix-blend-mode: multiply;">Swipe To Complete <i class="fas fa-chevron-right ml-2"></i><i class="fas fa-chevron-right"></i></p>
@@ -805,7 +818,45 @@
             <button onclick="loginStaff()" class="btn-amz-yellow w-full py-3 text-sm font-bold uppercase">Sign In</button>
         </div>
     </div>
+    <!-- Payment Verification Modal -->
+    <div id="verifyPayModal" class="modal-overlay hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col relative border-t-8 border-blue-500 p-8">
+            <button onclick="document.getElementById('verifyPayModal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl z-20"><i class="fas fa-times"></i></button>
+            
+            <div class="text-center mb-6">
+                <i class="fas fa-check-double text-4xl text-blue-500 mb-2"></i>
+                <h3 class="font-black text-xl text-blue-900">Verify Transaction</h3>
+                <p class="text-xs text-gray-500 font-bold mt-1">Order: <span id="vpDisplayOrd" class="text-blue-600 uppercase"></span></p>
+            </div>
 
+            <input type="hidden" id="vpOrderId">
+            <input type="hidden" id="vpExpectedAmount">
+            <input type="hidden" id="vpExpectedTxn">
+            <input type="hidden" id="vpPhone">
+
+            <div class="mb-4 relative">
+                <label class="block text-xs font-bold text-gray-600 mb-1">Received Amount (₹)</label>
+                <i class="fas fa-rupee-sign absolute left-4 top-[34px] text-gray-400"></i>
+                <input id="vpInputAmount" type="number" placeholder="Enter Exact Amount" class="w-full pl-10 p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500 font-bold transition bg-slate-50 focus:bg-white">
+            </div>
+            
+            <div class="mb-6 relative">
+                <label class="block text-xs font-bold text-gray-600 mb-1">UTR / Ref No. (Last 4+ digits)</label>
+                <i class="fas fa-hashtag absolute left-4 top-[34px] text-gray-400"></i>
+                <input id="vpInputUtr" type="text" placeholder="Enter UTR Match" class="w-full pl-10 p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-500 font-bold uppercase tracking-widest transition bg-slate-50 focus:bg-white">
+            </div>
+
+            <!-- Warning Box -->
+            <div id="vpErrorBox" class="hidden bg-rose-50 border border-rose-200 p-4 rounded-xl text-center mb-6 shadow-sm">
+                <i class="fas fa-exclamation-triangle text-rose-500 text-3xl mb-2 drop-shadow-md"></i>
+                <h4 class="font-black text-rose-800 text-sm mb-1">Payment Mismatch!</h4>
+                <p class="text-xs text-rose-600 mb-4 font-medium leading-relaxed">The entered amount or UTR does not match the customer's claimed details.</p>
+                <a id="vpCallBtn" href="#" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-md inline-block w-full transition"><i class="fas fa-phone-alt mr-2"></i>Call Customer Immediately</a>
+            </div>
+
+            <button onclick="submitVerifyPay()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-black uppercase tracking-widest shadow-lg transition transform hover:-translate-y-0.5">Verify & Approve</button>
+        </div>
+    </div>
     <!-- Schedule Install & WhatsApp Modal -->
     <div id="scheduleModal" class="modal-overlay hidden">
         <div class="bg-white rounded-lg p-6 max-w-sm w-full relative shadow-2xl border-t-8 border-green-500">
@@ -1935,8 +1986,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 document.getElementById('cameraScannerBox').classList.add('hidden');
             }
         };
-        // ================= TECHNICIAN INSTALLATION PORTAL =================
-        // ================= TECHNICIAN INSTALLATION PORTAL =================
+        // ================= TECHNICIAN INSTALLATION PORTAL ===============
         window.openTechPanel = (ordId, mqrId) => {
             document.getElementById('techOrdId').value = ordId;
             document.getElementById('techMqrId').value = mqrId;
@@ -1953,19 +2003,23 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             document.getElementById('techModal').classList.remove('hidden');
             setTimeout(() => document.getElementById('techMqrInput').focus(), 300);
         };
-
-        // ================= SECURE INSTALLATION DONE LOGIC =================
         window.completeInstallation = async () => {
+            if (!hasSigned) {
+                document.getElementById('installSwipe').value = 0;
+                document.getElementById('sigWarning').innerText = "⚠️ Customer signature required!";
+                return; // Blocks completion until signed
+            }
+
             const ordId = document.getElementById('techOrdId').value;
             const notes = document.getElementById('techNotes').value.trim();
             const signal = document.getElementById('techSignal').value;
+            const sigBase64 = sigCanvas.toDataURL("image/png");
 
             try {
                 const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
                 if(!ordSnap.exists()) return;
                 const data = ordSnap.val();
                 
-                // SECURE ARCHIVE: Create a tiny footprint and wipe the heavy data permanently
                 await set(ref(window.db, `web_orders/${ordId}`), {
                     orderId: ordId,
                     productName: data.productName,
@@ -1976,12 +2030,13 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     techDetails: { 
                         signal: signal, 
                         notes: notes, 
+                        signature: sigBase64, // Saves the signature
                         date: Date.now() 
                     }
                 });
                 
                 document.getElementById('techModal').classList.add('hidden');
-                alert("✅ Installation successfully verified, completed, and securely archived!");
+                alert("✅ Installation successfully verified, signed, and securely archived!");
                 
             } catch(e) { 
                 alert("Archive Error: " + e.message); 
@@ -2061,9 +2116,10 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     let sClass = "bg-gray-100 text-gray-800 border-gray-200";
 
                     if (statusStr.includes("Pending")) {
-                        actionHtml = `<button onclick="window.verifyOrder('${ordId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow">Verify Pay</button>`;
+                        // REPLACED WITH NEW SECURE UTR VERIFICATION
+                        actionHtml = `<button onclick="window.openVerifyModal('${ordId}', ${advance}, '${v.txnIdLast5}', '${v.phone}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow"><i class="fas fa-shield-check mr-1"></i> Verify Pay</button>`;
                         sClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
-                    } else if (statusStr === "Verified & Ready For Dispatch" || statusStr.includes("Verified")) {
+                    }else if (statusStr === "Verified & Ready For Dispatch" || statusStr.includes("Verified")) {
                         actionHtml = `<button onclick="window.openScheduleModal('${ordId}', '${v.phone}', '${v.customerName}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-[11px] font-bold transition mb-1 w-full shadow"><i class="fab fa-whatsapp mr-1"></i>Schedule</button>`;
                         sClass = "bg-green-100 text-green-800 border-green-200";
                     } else if (statusStr.includes("Scheduled")) {
@@ -2626,7 +2682,180 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
             document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
         };
+        // ================= PUBLIC ORDER TRACKING =================
         window.trackOrder = async () => {
+            const inputEl = document.getElementById("trackOrderId");
+            const orderId = inputEl.value.trim().toUpperCase();
+            const btn = document.getElementById("btnTrackOrder");
+            const resultBox = document.getElementById("trackResultBox");
+            const emptyState = document.getElementById("trackEmptyState");
+            
+            if(!orderId) {
+                alert("Please enter a valid Order ID.");
+                inputEl.focus();
+                return;
+            }
+
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+            btn.disabled = true;
+
+            try {
+                // Fetch from Firebase
+                const snap = await get(ref(window.db, `web_orders/${orderId}`));
+                
+                emptyState.classList.add("hidden");
+                resultBox.classList.remove("hidden");
+
+                // Handle Not Found
+                if(!snap.exists()) {
+                    resultBox.innerHTML = `
+                        <div class="text-center py-4">
+                            <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3"><i class="fas fa-exclamation-triangle text-2xl"></i></div>
+                            <h4 class="font-black text-gray-800 text-lg">Order Not Found</h4>
+                            <p class="text-xs text-gray-500 mt-1">Please check your Order ID and try again.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const data = snap.val();
+                
+                // Determine Badge Color based on status
+                let statusColor = "bg-gray-100 text-gray-800 border-gray-200";
+                let statusIcon = "fa-clock";
+                
+                if (data.status.includes("Pending")) { statusColor = "bg-yellow-100 text-yellow-800 border-yellow-200"; statusIcon = "fa-hourglass-half"; }
+                else if (data.status.includes("Verified")) { statusColor = "bg-blue-100 text-blue-800 border-blue-200"; statusIcon = "fa-check-double"; }
+                else if (data.status.includes("Scheduled")) { statusColor = "bg-purple-100 text-purple-800 border-purple-200"; statusIcon = "fa-calendar-check"; }
+                else if (data.status.includes("Dispatched") || data.status.includes("Billed")) { statusColor = "bg-indigo-100 text-indigo-800 border-indigo-200"; statusIcon = "fa-truck-fast"; }
+                else if (data.status.includes("Completed")) { statusColor = "bg-emerald-100 text-emerald-800 border-emerald-200"; statusIcon = "fa-shield-check"; }
+
+                // Check if Installation date exists
+                let scheduleHtml = "";
+                if(data.installDate && data.installTime) {
+                    scheduleHtml = `
+                        <div class="mt-4 bg-slate-50 p-3 rounded-lg border border-gray-200 shadow-sm flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center shadow-inner"><i class="fas fa-calendar-alt"></i></div>
+                            <div>
+                                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Installation Scheduled</div>
+                                <div class="text-sm font-black text-gray-800">${data.installDate} at ${data.installTime}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Render Found Order
+                resultBox.innerHTML = `
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500 rounded-full opacity-5 -mt-10 -mr-10"></div>
+                    <div class="flex justify-between items-start mb-3 border-b border-gray-100 pb-3 relative z-10">
+                        <div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Ref</div>
+                            <div class="text-lg font-black text-blue-900 font-mono tracking-wider">${data.orderId}</div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-sm ${statusColor}">
+                            <i class="fas ${statusIcon} mr-1"></i> ${data.status}
+                        </span>
+                    </div>
+                    <h4 class="font-bold text-sm text-gray-800 mb-3 leading-snug relative z-10"><i class="fas fa-box text-gray-400 mr-2"></i>${data.productName}</h4>
+                    <div class="flex justify-between text-xs bg-white border border-gray-100 p-2 rounded relative z-10">
+                        <span class="text-gray-500 font-medium">Advance Paid: <b class="text-emerald-600 ml-1">₹${(data.advancePaid || 0).toLocaleString('en-IN')}</b></span>
+                        <span class="text-gray-500 font-medium">Balance Due: <b class="text-rose-600 ml-1">₹${(data.balanceDue || 0).toLocaleString('en-IN')}</b></span>
+                    </div>
+                    ${scheduleHtml}
+                `;
+
+            } catch(e) {
+                alert("Tracking Error: " + e.message);
+            } finally {
+                btn.innerHTML = "Track";
+                btn.disabled = false;
+            }
+        };
+        // ================= SIGNATURE PAD LOGIC =================
+        let sigCanvas = document.getElementById("sigCanvas");
+        let sigCtx = sigCanvas ? sigCanvas.getContext("2d") : null;
+        let isDrawing = false;
+        let hasSigned = false;
+
+        function getPos(e) {
+            let rect = sigCanvas.getBoundingClientRect();
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            }
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        if (sigCanvas) {
+            const startDraw = (e) => { e.preventDefault(); isDrawing = true; hasSigned = true; let pos = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(pos.x, pos.y); document.getElementById('sigWarning').innerText = ''; };
+            const draw = (e) => { e.preventDefault(); if(isDrawing) { let pos = getPos(e); sigCtx.lineTo(pos.x, pos.y); sigCtx.strokeStyle = "#111"; sigCtx.lineWidth = 2; sigCtx.stroke(); }};
+            const stopDraw = () => { isDrawing = false; sigCtx.closePath(); };
+
+            sigCanvas.addEventListener("mousedown", startDraw);
+            sigCanvas.addEventListener("mousemove", draw);
+            sigCanvas.addEventListener("mouseup", stopDraw);
+            sigCanvas.addEventListener("mouseleave", stopDraw);
+            
+            sigCanvas.addEventListener("touchstart", startDraw, {passive: false});
+            sigCanvas.addEventListener("touchmove", draw, {passive: false});
+            sigCanvas.addEventListener("touchend", stopDraw);
+        }
+
+        window.clearSignature = () => {
+            if(!sigCtx) return;
+            sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+            hasSigned = false;
+        };
+
+        // ================= PAYMENT VERIFICATION LOGIC =================
+        window.openVerifyModal = (ordId, advance, txnId, phone) => {
+            document.getElementById("vpOrderId").value = ordId;
+            document.getElementById("vpExpectedAmount").value = advance;
+            document.getElementById("vpExpectedTxn").value = txnId;
+            document.getElementById("vpPhone").value = phone;
+            document.getElementById("vpDisplayOrd").innerText = ordId;
+            
+            document.getElementById("vpInputAmount").value = "";
+            document.getElementById("vpInputUtr").value = "";
+            document.getElementById("vpErrorBox").classList.add("hidden");
+            
+            document.getElementById("verifyPayModal").classList.remove("hidden");
+            setTimeout(() => document.getElementById("vpInputAmount").focus(), 300);
+        };
+
+        window.submitVerifyPay = async () => {
+            const ordId = document.getElementById("vpOrderId").value;
+            const expectedAmt = parseInt(document.getElementById("vpExpectedAmount").value);
+            const expectedTxn = document.getElementById("vpExpectedTxn").value.toUpperCase();
+            const phone = document.getElementById("vpPhone").value;
+            
+            const inputAmt = parseInt(document.getElementById("vpInputAmount").value);
+            const inputUtr = document.getElementById("vpInputUtr").value.trim().toUpperCase();
+            
+            // Logic: Amount must be exactly equal. UTR must include the 4 digits customer provided.
+            const amtMatch = inputAmt === expectedAmt;
+            const utrMatch = inputUtr && (inputUtr.includes(expectedTxn) || expectedTxn.includes(inputUtr));
+            
+            if (!amtMatch || !utrMatch) {
+                document.getElementById("vpErrorBox").classList.remove("hidden");
+                
+                // Format Phone for WhatsApp/Call
+                let cleanPhone = phone.replace(/\D/g,'');
+                if(cleanPhone.length === 10) cleanPhone = "+91" + cleanPhone;
+                document.getElementById("vpCallBtn").href = "tel:" + cleanPhone;
+                return;
+            }
+            
+            try {
+                await update(ref(window.db, `web_orders/${ordId}`), { status: "Verified & Ready For Dispatch" });
+                document.getElementById("verifyPayModal").classList.add("hidden");
+                alert(`✅ Secure Match! Order ${ordId} Verified Successfully.`);
+            } catch(e) {
+                alert("Database Error: " + e.message);
+            }
+        };
         // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
@@ -2694,6 +2923,17 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
+                let signatureHtml = "";
+                if (orderData.techDetails && orderData.techDetails.signature) {
+                    signatureHtml = `
+                        <div style="margin-top: 20px; float: left; width: 45%; text-align: left;">
+                            <p style="font-size:10pt; color:#555; margin-bottom:2px; font-weight:bold;">Customer Acknowledgement:</p>
+                            <p style="font-size:8pt; color:#777; margin-top:0; margin-bottom:5px;">I confirm all devices are installed and working perfectly.</p>
+                            <img src="${orderData.techDetails.signature}" style="max-height: 80px; max-width: 100%; border-bottom: 2px solid #111;">
+                            <p style="font-size:12pt; font-weight:bold; margin-top:5px;">Customer Signature</p>
+                        </div>
+                    `;
+                }
                 
                 let discountHtml = discount > 0 ? `
                     <tr style="border-bottom:1px solid #ccc; color: #d93025;">
