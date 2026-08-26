@@ -781,7 +781,7 @@
                         <button onclick="verifyTechMQR()" class="bg-gray-800 hover:bg-black text-white w-full py-3 font-bold rounded shadow-md uppercase tracking-wider text-sm transition">Verify Box & Unlock</button>
                     </div>
                 </div>
-<!-- STEP 2: INSTALLATION WORKFLOW (Hidden until unlocked) -->
+                <!-- STEP 2: INSTALLATION WORKFLOW (Hidden until unlocked) -->
                 <div id="techStep2" class="hidden flex flex-col gap-4">
                     <div class="bg-emerald-100 text-emerald-800 p-3 rounded font-bold text-sm text-center border border-emerald-300 flex justify-center items-center gap-2 mb-2">
                         <i class="fas fa-check-circle text-xl"></i> Hardware Verified
@@ -801,6 +801,7 @@
                         <label class="block text-xs font-bold text-gray-600 mb-1">Technician Remarks / Notes</label>
                         <textarea id="techNotes" rows="2" placeholder="Installation successful..." class="w-full p-3 border rounded text-sm outline-none bg-gray-50 focus:border-indigo-500"></textarea>
                     </div>
+
                     <!-- Customer Signature Section -->
                     <div class="mt-2 bg-slate-50 border border-gray-200 rounded-lg p-3">
                         <label class="block text-[11px] font-black text-gray-700 mb-2 uppercase tracking-wider text-center"><i class="fas fa-pen-nib text-indigo-500 mr-1"></i> Customer Authorization</label>
@@ -815,11 +816,43 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 relative">
-                        <p class="absolute inset-0 flex items-center justify-center text-sm font-black text-gray-500 uppercase tracking-widest pointer-events-none z-10" style="mix-blend-mode: multiply;">Swipe To Complete <i class="fas fa-chevron-right ml-2"></i><i class="fas fa-chevron-right"></i></p>
+                    <div class="mt-2 relative">
+                        <p class="absolute inset-0 flex items-center justify-center text-sm font-black text-gray-500 uppercase tracking-widest pointer-events-none z-10" style="mix-blend-mode: multiply;">Swipe To Continue <i class="fas fa-chevron-right ml-2"></i><i class="fas fa-chevron-right"></i></p>
                         <input type="range" id="installSwipe" min="0" max="100" value="0" class="swipe-slider" oninput="handleInstallSwipe(this)" onmouseup="snapBackSwipe(this)" ontouchend="snapBackSwipe(this)">
                     </div>
                 </div>
+
+                <!-- STEP 3: PAYMENT COLLECTION (Hidden until Step 2 is Swiped) -->
+                <div id="techStep3" class="hidden flex flex-col gap-4">
+                    <div class="bg-blue-100 text-blue-800 p-5 rounded-xl font-bold text-center border border-blue-300 shadow-sm">
+                        <p class="text-[10px] uppercase tracking-widest text-blue-600 mb-1">Balance Due to Collect</p>
+                        <div class="text-4xl font-black drop-shadow-sm" id="techBalanceDisplay">₹0</div>
+                    </div>
+                    
+                    <button id="btnShowTechQr" onclick="window.showTechPaymentQr()" class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg transition transform hover:-translate-y-0.5">
+                        <i class="fas fa-qrcode mr-2"></i> Show Payment QR
+                    </button>
+
+                    <div id="techQrContainer" class="hidden bg-white p-6 rounded-xl border border-gray-200 text-center shadow-lg">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3Dsohampal781%40okhdfcbank%26pn%3DKaalnetraSecurity" class="w-40 h-40 mx-auto mb-5 border-2 border-dashed border-gray-300 p-2 rounded-xl" alt="UPI QR">
+                        <div class="relative mb-4">
+                            <i class="fas fa-hashtag absolute left-4 top-[14px] text-gray-400"></i>
+                            <input id="techFinalUtr" type="text" maxlength="4" placeholder="Last 4 Digits of UTR" class="w-full pl-10 p-3.5 bg-slate-50 border border-gray-300 rounded-lg text-sm font-mono font-bold outline-none focus:border-blue-500 uppercase tracking-widest text-center shadow-inner">
+                        </div>
+                        <button onclick="window.verifyTechFinalPayment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-lg font-black uppercase tracking-wider text-sm transition shadow-md">
+                            Verify Payment Received
+                        </button>
+                    </div>
+
+                    <div id="techFinalSwipeContainer" class="mt-2 relative hidden">
+                        <p class="absolute inset-0 flex items-center justify-center text-sm font-black text-white uppercase tracking-widest pointer-events-none z-10 drop-shadow-md">Swipe To Finish Job <i class="fas fa-chevron-right ml-2"></i><i class="fas fa-chevron-right"></i></p>
+                        <input type="range" id="finalInstallSwipe" min="0" max="100" value="0" class="swipe-slider !bg-emerald-500" style="background:#10b981;" oninput="handleFinalInstallSwipe(this)" onmouseup="snapBackSwipe(this)" ontouchend="snapBackSwipe(this)">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
             </div>
         </div>
     </div>
@@ -2012,30 +2045,84 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 document.getElementById('cameraScannerBox').classList.add('hidden');
             }
         };
-        // ================= TECHNICIAN INSTALLATION PORTAL ===============
+        // ================= SECURE INSTALLATION DONE LOGIC =================
         window.openTechPanel = (ordId, mqrId) => {
             document.getElementById('techOrdId').value = ordId;
             document.getElementById('techMqrId').value = mqrId;
             document.getElementById('techDisplayOrd').innerText = ordId;
 
-            // Reset the UI to Locked state
+            // Reset UI completely
             document.getElementById('techStep1').classList.remove('hidden');
             document.getElementById('techStep2').classList.add('hidden');
+            document.getElementById('techStep3').classList.add('hidden');
+            document.getElementById('techQrContainer').classList.add('hidden');
+            document.getElementById('techFinalSwipeContainer').classList.add('hidden');
+            document.getElementById('btnShowTechQr').classList.remove('hidden');
+            
             document.getElementById('techMqrInput').value = '';
             document.getElementById('techNotes').value = '';
             document.getElementById('techSignal').value = 'Excellent';
+            document.getElementById('techFinalUtr').value = '';
+            window.finalUtr = "";
             document.getElementById('installSwipe').value = 0;
+            document.getElementById('finalInstallSwipe').value = 0;
+            if(window.clearSignature) window.clearSignature();
 
             document.getElementById('techModal').classList.remove('hidden');
             setTimeout(() => document.getElementById('techMqrInput').focus(), 300);
         };
-        window.completeInstallation = async () => {
-            if (!hasSigned) {
-                document.getElementById('installSwipe').value = 0;
-                document.getElementById('sigWarning').innerText = "⚠️ Customer signature required!";
-                return; // Blocks completion until signed
-            }
 
+        // Swipe 1: Signature to Payment
+        window.handleInstallSwipe = async (el) => {
+            if(el.value > 95) {
+                el.value = 100;
+                if (!hasSigned) {
+                    el.value = 0;
+                    document.getElementById('sigWarning').innerText = "⚠️ Signature required!";
+                    return;
+                }
+                
+                const ordId = document.getElementById('techOrdId').value;
+                try {
+                    const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                    if(ordSnap.exists()) {
+                        const data = ordSnap.val();
+                        const bal = data.balanceDue || 0;
+                        
+                        // If fully paid in advance, skip payment collection
+                        if (bal <= 0) {
+                            window.completeInstallation();
+                        } else {
+                            document.getElementById('techBalanceDisplay').innerText = `₹${bal.toLocaleString('en-IN')}`;
+                            document.getElementById('techStep2').classList.add('hidden');
+                            document.getElementById('techStep3').classList.remove('hidden');
+                        }
+                    }
+                } catch(e) { alert("Error fetching balance: " + e.message); el.value = 0; }
+            }
+        };
+
+        // Payment Processing
+        window.showTechPaymentQr = () => {
+            document.getElementById('techQrContainer').classList.remove('hidden');
+            document.getElementById('btnShowTechQr').classList.add('hidden');
+        };
+
+        window.verifyTechFinalPayment = () => {
+            const utr = document.getElementById('techFinalUtr').value.trim();
+            if(utr.length < 4) return alert("Please enter the last 4 digits of the UTR.");
+            window.finalUtr = utr;
+            
+            document.getElementById('techQrContainer').innerHTML = `<div class="text-emerald-600 font-black text-lg py-6"><i class="fas fa-check-circle mr-2 text-2xl"></i> Payment Verified</div>`;
+            document.getElementById('techFinalSwipeContainer').classList.remove('hidden');
+        };
+
+        // Swipe 2: Finalize Job
+        window.handleFinalInstallSwipe = (el) => {
+            if(el.value > 95) { el.value = 100; window.completeInstallation(); }
+        };
+
+        window.completeInstallation = async () => {
             const ordId = document.getElementById('techOrdId').value;
             const notes = document.getElementById('techNotes').value.trim();
             const signal = document.getElementById('techSignal').value;
@@ -2046,27 +2133,25 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 if(!ordSnap.exists()) return;
                 const data = ordSnap.val();
                 
+                // Clear Balance, Add Tech Data, Archive
                 await set(ref(window.db, `web_orders/${ordId}`), {
-                    orderId: ordId,
-                    productName: data.productName,
-                    advancePaid: data.advancePaid || 0,
-                    masterQrId: data.masterQrId || "N/A",
+                    ...data,
+                    balanceDue: 0, // Balance is officially cleared!
                     status: "Installation Completed",
-                    archived: true, // Hides it from Live Orders
+                    archived: true, 
                     techDetails: { 
                         signal: signal, 
                         notes: notes, 
-                        signature: sigBase64, // Saves the signature
+                        signature: sigBase64,
+                        finalUtr: window.finalUtr || "N/A",
                         date: Date.now() 
                     }
                 });
                 
                 document.getElementById('techModal').classList.add('hidden');
-                alert("✅ Installation successfully verified, signed, and securely archived!");
+                alert("✅ Installation successfully verified, signed, paid, and securely archived!");
 
-                // ============================================
-                // NEW: AUTO-OPEN FINAL INVOICE AFTER SIGNATURE
-                // ============================================
+                // Auto-Open Final Invoice
                 if (data.masterQrId && data.masterQrId !== "N/A") {
                     window.reprintBill(ordId, data.masterQrId);
                 }
@@ -2074,9 +2159,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             } catch(e) { 
                 alert("Archive Error: " + e.message); 
                 document.getElementById('installSwipe').value = 0;
-            }catch(e) { 
-                alert("Archive Error: " + e.message); 
-                document.getElementById('installSwipe').value = 0;
+                document.getElementById('finalInstallSwipe').value = 0;
             }
         };
         window.verifyTechMQR = () => {
@@ -2090,14 +2173,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             } else {
                 alert("❌ SECURITY LOCK: MQR Mismatch!\n\nYou scanned the wrong system for this customer. Please check the Master QR on the box.");
                 document.getElementById('techMqrInput').value = '';
-            }
-        };
-
-        // Swipe slider dynamics
-        window.handleInstallSwipe = (el) => {
-            if(el.value > 95) {
-                el.value = 100;
-                window.completeInstallation();
             }
         };
         window.snapBackSwipe = (el) => {
@@ -2964,24 +3039,30 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
                 let signatureHtml = "";
-                if (orderData.techDetails && orderData.techDetails.signature) {
-                    signatureHtml = `
-                        <div style="margin-top: 20px; float: left; width: 45%; text-align: left;">
-                            <p style="font-size:10pt; color:#555; margin-bottom:2px; font-weight:bold;">Customer Acknowledgement:</p>
-                            <p style="font-size:8pt; color:#777; margin-top:0; margin-bottom:5px;">I confirm all devices are installed and working perfectly.</p>
-                            <img src="${orderData.techDetails.signature}" style="max-height: 80px; max-width: 100%; border-bottom: 2px solid #111;">
-                            <p style="font-size:12pt; font-weight:bold; margin-top:5px;">Customer Signature</p>
+                let stampHtml = "";
+                
+                // Only show signature and FULL PAID stamp if the installation was completed
+                if (orderData.status === "Installation Completed") {
+                    stampHtml = `
+                        <div style="position:fixed; top:45%; left:50%; transform:translate(-50%, -50%) rotate(-35deg); opacity:0.12; pointer-events:none; z-index:-1;">
+                            <h1 style="font-size:120px; font-weight:900; color:#10b981; margin:0; border:10px solid #10b981; padding:20px; border-radius:20px; text-transform:uppercase; font-family:sans-serif; letter-spacing: 5px; white-space:nowrap;">FULL PAID</h1>
                         </div>
                     `;
+                    
+                    if (orderData.techDetails && orderData.techDetails.signature) {
+                        signatureHtml = `
+                            <div style="margin-top: 20px; float: left; width: 45%; text-align: left;">
+                                <p style="font-size:10pt; color:#555; margin-bottom:2px; font-weight:bold;">Customer Acknowledgement:</p>
+                                <p style="font-size:8pt; color:#777; margin-top:0; margin-bottom:5px;">I confirm all devices are installed and working perfectly.</p>
+                                <img src="${orderData.techDetails.signature}" style="max-height: 80px; max-width: 100%; border-bottom: 2px solid #111;">
+                                <p style="font-size:12pt; font-weight:bold; margin-top:5px;">Customer Signature</p>
+                            </div>
+                        `;
+                    }
                 }
-                
-                let discountHtml = discount > 0 ? `
-                    <tr style="border-bottom:1px solid #ccc; color: #d93025;">
-                        <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
-                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
-                    </tr>` : '';
 
-                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;">
+                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;position:relative;">
+                    ${stampHtml}
                     <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE</h1>
                     
                     <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
@@ -2991,7 +3072,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                         </div>
                         <div style="text-align:right;">
                             <strong>Invoice / Order Ref:</strong> ${ordId}<br>
-                            <strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}
+                            <strong>Date:</strong> ${new Date(data.timestamp).toLocaleDateString('en-IN')}
                         </div>
                     </div>
                     
@@ -3022,11 +3103,15 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                         </tfoot>
                     </table>
                     
-                    <div style="text-align:center;border:3px dashed #111;padding:30px; width: 70%; margin: 0 auto;">
-                        <h2 style="margin-top:0; font-size:18pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
-                        <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${masterId}" style="margin:0 auto;border:2px solid #111;">
-                        <div style="font-family:monospace;font-size:22pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;">
+                        ${signatureHtml}
+                        <div style="text-align:right; width: ${signatureHtml ? '50%' : '100%'};">
+                            <h2 style="margin-top:0; font-size:16pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
+                            <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${masterId}" style="float:right; border:2px solid #111;">
+                            <div style="clear:both;"></div>
+                            <div style="font-family:monospace;font-size:18pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
+                        </div>
                     </div>
                 </body></html>`);
                 doc.close();
