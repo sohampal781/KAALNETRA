@@ -2971,7 +2971,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 alert("Database Error: " + e.message);
             }
         };
-        // ================= CRASH-PROOF BATCH & BILLING =================
+       // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
             if(!ordId) return alert("Select an order first.");
@@ -2988,6 +2988,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 const updates = {};
                 let hardwareLogForInternal = [];
 
+                // 1. Mark individual raw materials as Sold in Firebase
                 for(let req of activeDispatchBOM) {
                     const tagId = req.scannedTag;
                     updates[`inventory/${tagId}/status`] = "Sold";
@@ -2995,6 +2996,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     hardwareLogForInternal.push({ id: tagId, item: req.componentName });
                 }
                 
+                // 2. Base Cost Calculation
                 let baseCost = 0;
                 const pName = orderData.productName || "";
                 if (pName.includes("Version 1")) baseCost = 15000;
@@ -3023,6 +3025,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 const discount = discountInput ? (parseInt(discountInput.value) || 0) : 0;
                 const grandTotal = systemCost + installCost - discount;
 
+                // 3. Save to Firebase
                 updates[`master_warranties/${masterId}`] = { 
                     masterId: masterId, 
                     orderRef: ordId, 
@@ -3036,33 +3039,17 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
 
                 await update(ref(window.db), updates);
                 
+                // 4. Print Clean Invoice
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
-                let signatureHtml = "";
-                let stampHtml = "";
                 
-                // Only show signature and FULL PAID stamp if the installation was completed
-                if (orderData.status === "Installation Completed") {
-                    stampHtml = `
-                        <div style="position:fixed; top:45%; left:50%; transform:translate(-50%, -50%) rotate(-35deg); opacity:0.12; pointer-events:none; z-index:-1;">
-                            <h1 style="font-size:120px; font-weight:900; color:#10b981; margin:0; border:10px solid #10b981; padding:20px; border-radius:20px; text-transform:uppercase; font-family:sans-serif; letter-spacing: 5px; white-space:nowrap;">FULL PAID</h1>
-                        </div>
-                    `;
-                    
-                    if (orderData.techDetails && orderData.techDetails.signature) {
-                        signatureHtml = `
-                            <div style="margin-top: 20px; float: left; width: 45%; text-align: left;">
-                                <p style="font-size:10pt; color:#555; margin-bottom:2px; font-weight:bold;">Customer Acknowledgement:</p>
-                                <p style="font-size:8pt; color:#777; margin-top:0; margin-bottom:5px;">I confirm all devices are installed and working perfectly.</p>
-                                <img src="${orderData.techDetails.signature}" style="max-height: 80px; max-width: 100%; border-bottom: 2px solid #111;">
-                                <p style="font-size:12pt; font-weight:bold; margin-top:5px;">Customer Signature</p>
-                            </div>
-                        `;
-                    }
-                }
+                let discountHtml = discount > 0 ? `
+                    <tr style="border-bottom:1px solid #ccc; color: #d93025;">
+                        <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
+                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
+                    </tr>` : '';
 
                 doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;position:relative;">
-                    ${stampHtml}
                     <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;">KAALNETRA OFFICIAL INVOICE</h1>
                     
                     <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;">
@@ -3072,7 +3059,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                         </div>
                         <div style="text-align:right;">
                             <strong>Invoice / Order Ref:</strong> ${ordId}<br>
-                            <strong>Date:</strong> ${new Date(data.timestamp).toLocaleDateString('en-IN')}
+                            <strong>Date:</strong> ${new Date(orderData.timestamp || Date.now()).toLocaleDateString('en-IN')}
                         </div>
                     </div>
                     
@@ -3104,8 +3091,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     </table>
                     
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;">
-                        ${signatureHtml}
-                        <div style="text-align:right; width: ${signatureHtml ? '50%' : '100%'};">
+                        <div style="text-align:right; width: 100%;">
                             <h2 style="margin-top:0; font-size:16pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
                             <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${masterId}" style="float:right; border:2px solid #111;">
@@ -3117,6 +3103,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 doc.close();
                 setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
                 
+                // 5. Reset View
                 document.getElementById("dispatchWorkspace").classList.add("hidden");
                 document.getElementById("dispOrderSelect").value = "";
                 if(discountInput) discountInput.value = "0";
