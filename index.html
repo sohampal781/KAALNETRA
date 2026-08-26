@@ -221,6 +221,9 @@
                 <button onclick="switchErpTab('warranty')" id="tabbtn-warranty" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
                     <i class="fas fa-shield-alt w-6"></i> Warranty & RMA Claims
                 </button>
+                <button onclick="switchErpTab('reprint')" id="tabbtn-reprint" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
+                    <i class="fas fa-file-invoice w-6"></i> Reprint Bill
+                </button>
                 <!-- ADD THIS BELOW THE BULK TAG PRINTER BUTTON -->
                 <button onclick="switchErpTab('storefront')" id="tabbtn-storefront" class="w-full text-left px-5 py-3 font-bold border-l-4 border-transparent text-gray-600 hover:bg-gray-50 text-sm transition">
                     <i class="fas fa-images w-6"></i> Storefront & Offers
@@ -490,6 +493,25 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+            <!-- NEW TAB: Reprint Bill -->
+            <div id="erp-reprint" class="erp-panel hidden max-w-4xl mx-auto pb-10">
+                <div class="bg-white p-8 rounded-2xl border shadow-xl flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full opacity-50 -mt-10 -mr-10 pointer-events-none"></div>
+                    
+                    <h2 class="text-2xl font-black mb-2 text-gray-800"><i class="fas fa-print text-blue-500 mr-2"></i> Reprint Final Invoice</h2>
+                    <p class="text-sm text-gray-500 mb-6 font-medium">Scan or enter the Master QR (MQR) to reprint the customer's signed invoice. <b class="text-rose-600">Note: Invoices can only be reprinted within 7 days of installation.</b></p>
+                    
+                    <div class="flex gap-3 mb-6 relative z-10">
+                        <div class="relative flex-1">
+                            <i class="fas fa-qrcode absolute left-4 top-4 text-gray-400"></i>
+                            <input id="reprintMqrInput" type="text" placeholder="Scan or Type MQR-XXXXXX" class="w-full pl-11 p-3 border-2 border-gray-200 rounded-xl text-center font-mono font-bold text-lg uppercase bg-slate-50 outline-none focus:border-blue-500 transition shadow-inner" onkeypress="if(event.key === 'Enter') searchAndReprintBill()">
+                        </div>
+                        <button onclick="searchAndReprintBill()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black uppercase tracking-wider text-sm shadow-[0_8px_20px_-6px_rgba(37,99,235,0.5)] transition transform hover:-translate-y-0.5 whitespace-nowrap">Search & Reprint</button>
+                    </div>
+                    
+                    <div id="reprintFeedback" class="text-sm font-bold text-center h-6"></div>
                 </div>
             </div>
             <!-- TAB 5: Field Technician App (Amazon Delivery Style) -->
@@ -3196,6 +3218,68 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 });
             } else {
                 document.getElementById('techCameraBox').classList.add('hidden');
+            }
+        };
+        // ================= REPRINT INVOICE LOGIC (7-DAY LIMIT) =================
+        window.searchAndReprintBill = async () => {
+            const mqrInput = document.getElementById("reprintMqrInput");
+            const mqrId = mqrInput.value.trim().toUpperCase();
+            const feedback = document.getElementById("reprintFeedback");
+            
+            if (!mqrId) {
+                feedback.innerHTML = `<span class="text-rose-600">Please enter a valid Master QR (MQR) code.</span>`;
+                return;
+            }
+            
+            feedback.innerHTML = `<span class="text-blue-600"><i class="fas fa-spinner fa-spin mr-1"></i> Searching Database...</span>`;
+            
+            try {
+                // 1. Get Warranty Record to find the Order ID
+                const snap = await get(ref(window.db, `master_warranties/${mqrId}`));
+                if (!snap.exists()) {
+                    feedback.innerHTML = `<span class="text-rose-600"><i class="fas fa-times-circle mr-1"></i> MQR not found in database.</span>`;
+                    return;
+                }
+                
+                const mqrData = snap.val();
+                const ordId = mqrData.orderRef;
+                
+                // 2. Get the Actual Order to check Installation Date
+                const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
+                if (!ordSnap.exists()) {
+                    feedback.innerHTML = `<span class="text-rose-600"><i class="fas fa-times-circle mr-1"></i> Associated Order data missing.</span>`;
+                    return;
+                }
+                
+                const orderData = ordSnap.val();
+                
+                if (orderData.status !== "Installation Completed" || !orderData.techDetails || !orderData.techDetails.date) {
+                    feedback.innerHTML = `<span class="text-rose-600"><i class="fas fa-exclamation-triangle mr-1"></i> Installation not completed yet. Final invoice not ready.</span>`;
+                    return;
+                }
+                
+                // 3. 7-Day Expiry Check
+                const installTimeMs = orderData.techDetails.date;
+                const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+                
+                if ((Date.now() - installTimeMs) > sevenDaysMs) {
+                    feedback.innerHTML = `<span class="text-rose-600"><i class="fas fa-lock mr-1"></i> Reprint Denied: More than 7 days have passed since installation.</span>`;
+                    return;
+                }
+                
+                // 4. Success! Trigger the standard reprint function
+                feedback.innerHTML = `<span class="text-emerald-600"><i class="fas fa-check-circle mr-1"></i> Invoice authorized! Generating PDF...</span>`;
+                
+                window.reprintBill(ordId, mqrId);
+                
+                // Reset UI after success
+                setTimeout(() => {
+                    feedback.innerHTML = "";
+                    mqrInput.value = "";
+                }, 4000);
+                
+            } catch(e) {
+                feedback.innerHTML = `<span class="text-rose-600">Error: ${e.message}</span>`;
             }
         };
     </script>
