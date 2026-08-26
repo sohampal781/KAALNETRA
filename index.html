@@ -2148,12 +2148,14 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
             const banners = data.banners || {};
             const offers = data.offers || {};
 
-            // 1. Sync Banners
+            // --- DECLARED AT THE TOP SO ALL SECTIONS CAN SEE THEM ---
             const bannerArr = Object.values(banners).sort((a,b) => b.timestamp - a.timestamp);
+            const offerArr = Object.values(offers).sort((a,b) => b.timestamp - a.timestamp);
+
+            // 1. Sync Public Banners
             const carousel = document.getElementById("publicBannerCarousel");
             if(carousel) {
                 if (bannerArr.length > 0) {
-                    // Added flex-shrink-0 and whitespace-nowrap to prevent squishing
                     const bannerSpans = bannerArr.map(b => `
                         <span class="flex-shrink-0 inline-flex items-center px-8 py-4 ${b.gradient || 'bg-slate-800'} text-white font-black text-2xl md:text-3xl rounded-xl shadow-lg uppercase tracking-wide border border-white/20 mx-4 whitespace-nowrap">
                             ${b.text}
@@ -2172,12 +2174,10 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 }
             }
 
-            // 2. Sync Offers
-            const offerArr = Object.values(offers).sort((a,b) => b.timestamp - a.timestamp);
+            // 2. Sync Public Offers
             const pubOffersGrid = document.getElementById("publicOffersGrid");
             if(pubOffersGrid) {
                 if (offerArr.length > 0) {
-                    // Added flex-shrink-0 and whitespace-nowrap to prevent squishing
                     const offerCards = offerArr.map(o => `
                         <div class="flex-shrink-0 ${o.gradient || 'bg-amber-500'} rounded-xl shadow-lg border-2 border-white/20 px-8 py-4 flex items-center justify-center text-center h-20 mx-4 whitespace-nowrap">
                             <h3 class="text-white font-black text-base md:text-lg drop-shadow-md uppercase">${o.text}</h3>
@@ -2196,48 +2196,56 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 }
             }
 
-            // 3. Admin UI Sync
+            // 3. Admin UI Sync (Banners)
             const adminBannerList = document.getElementById("adminBannersList");
+            const btnBanner = document.getElementById("btnUploadBanner");
             if(adminBannerList) {
                 document.getElementById("bannerCountTxt").innerText = `${bannerArr.length} / 10 Active`;
+                
+                // Disable button if maxed out
+                if (btnBanner) {
+                    if (bannerArr.length >= 10) {
+                        btnBanner.disabled = true;
+                        btnBanner.className = "bg-gray-400 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm shadow-md whitespace-nowrap cursor-not-allowed self-stretch";
+                    } else {
+                        btnBanner.disabled = false;
+                        btnBanner.className = "bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm transition shadow-md whitespace-nowrap self-stretch";
+                    }
+                }
+
                 adminBannerList.innerHTML = bannerArr.map(b => `
                     <div class="relative ${b.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-24 flex items-center justify-center p-4 text-center">
-                        <span class="text-white text-xs font-bold leading-tight line-clamp-3">${b.text}</span>
-                        <button onclick="window.deleteStorefrontImage('banners', '${b.id}')" class="absolute top-1 right-1 bg-red-600 text-white w-7 h-7 rounded-full"><i class="fas fa-times"></i></button>
+                        <span class="text-white text-xs font-bold leading-tight line-clamp-3 whitespace-normal">${b.text}</span>
+                        <button onclick="window.deleteStorefrontImage('banners', '${b.id}')" class="absolute top-1 right-1 bg-red-600 text-white w-7 h-7 rounded-full shadow hover:bg-red-700"><i class="fas fa-times"></i></button>
                     </div>
                 `).join("");
             }
 
-            const adminOfferList = document.getElementById("adminOffersList");
-            if(adminOfferList) {
-                document.getElementById("offerCountTxt").innerText = `${offerArr.length} / 3 Active`;
-                adminOfferList.innerHTML = offerArr.map(o => `
-                    <div class="relative ${o.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-32 flex items-center justify-center p-4 text-center">
-                        <span class="text-white text-sm font-bold leading-tight line-clamp-4">${o.text}</span>
-                        <button onclick="window.deleteStorefrontImage('offers', '${o.id}')" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full"><i class="fas fa-times"></i></button>
-                    </div>
-                `).join("");
-            }
-        });
-            // 4. Sync Admin Offers List (Max 3)
+            // 4. Admin UI Sync (Offers)
             const adminOfferList = document.getElementById("adminOffersList");
             const btnOffer = document.getElementById("btnUploadOffer");
             if(adminOfferList) {
                 document.getElementById("offerCountTxt").innerText = `${offerArr.length} / 3 Active`;
-                if (offerArr.length >= 3) {
-                    btnOffer.disabled = true;
-                    btnOffer.className = "bg-gray-400 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm shadow-md whitespace-nowrap cursor-not-allowed self-stretch";
-                } else {
-                    btnOffer.disabled = false;
-                    btnOffer.className = "bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm transition shadow-md whitespace-nowrap self-stretch";
+                
+                // Disable button if maxed out
+                if (btnOffer) {
+                    if (offerArr.length >= 3) {
+                        btnOffer.disabled = true;
+                        btnOffer.className = "bg-gray-400 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm shadow-md whitespace-nowrap cursor-not-allowed self-stretch";
+                    } else {
+                        btnOffer.disabled = false;
+                        btnOffer.className = "bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-md font-bold uppercase tracking-wider text-sm transition shadow-md whitespace-nowrap self-stretch";
+                    }
                 }
+
                 adminOfferList.innerHTML = offerArr.map(o => `
-                    <div class="relative ${o.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-32 flex items-center justify-center p-4 text-center border-2 border-white/30">
-                        <span class="text-white text-sm font-bold leading-tight line-clamp-4">${o.text}</span>
-                        <button onclick="window.deleteStorefrontImage('offers', '${o.id}')" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition transform hover:scale-110 flex items-center justify-center"><i class="fas fa-times"></i></button>
+                    <div class="relative ${o.gradient || 'bg-gray-800'} rounded-lg overflow-hidden shadow-md group h-32 flex items-center justify-center p-4 text-center">
+                        <span class="text-white text-sm font-bold leading-tight line-clamp-4 whitespace-normal">${o.text}</span>
+                        <button onclick="window.deleteStorefrontImage('offers', '${o.id}')" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full shadow hover:bg-red-700"><i class="fas fa-times"></i></button>
                     </div>
                 `).join("");
             }
+        });
         // Publish Text to Storefront Logic
         window.publishStorefrontItem = async (type) => {
             const isBanner = type === 'banner';
