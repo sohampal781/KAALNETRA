@@ -541,49 +541,127 @@
     </section>
     <!-- Checkout Modal -->
     <div id="publicOrderModal" class="modal-overlay hidden">
-        <div class="bg-white rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col">
-            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
-                <h3 class="font-bold text-lg">Secure Checkout</h3>
-                <button onclick="document.getElementById('publicOrderModal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl transition"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="flex-1 overflow-y-auto p-6">
-                <h4 id="orderProdName" class="font-bold text-lg text-[#007185] mb-4"></h4>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <input id="ordName" type="text" placeholder="Full Name" class="p-3 border rounded text-sm outline-none">
-                    <input id="ordPhone" type="text" placeholder="Mobile Number" class="p-3 border rounded text-sm outline-none">
-                </div>
-                <textarea id="ordAddress" placeholder="Complete Address" rows="2" class="w-full p-3 mb-4 border rounded text-sm outline-none"></textarea>
-                <textarea id="ordAddress" placeholder="Complete Address" rows="2" class="w-full p-3 mb-4 border rounded text-sm outline-none"></textarea>
-                
-                <!-- NEW: OPTIONAL ADD-ONS SECTION -->
-                <div id="addonSection" class="bg-gray-50 p-4 border border-gray-200 rounded-lg text-left mb-4 hidden">
-                    <h5 class="font-bold text-sm text-gray-800 mb-2 border-b pb-1">Optional System Add-ons</h5>
-                    <label class="flex items-center gap-3 text-sm text-gray-700 mb-2 cursor-pointer hover:bg-gray-100 p-1 rounded transition">
-                        <input type="checkbox" id="chkAutoChangeover" value="5000" onchange="updateSliderUI()" class="w-4 h-4 accent-emerald-600">
-                        <span>Auto Changeover DC Voltage <b class="text-emerald-700">(+₹5,000)</b></span>
-                    </label>
-                    <label class="flex items-center gap-3 text-sm text-gray-700 cursor-pointer hover:bg-gray-100 p-1 rounded transition">
-                        <input type="checkbox" id="chkUPS" value="2000" onchange="updateSliderUI()" class="w-4 h-4 accent-emerald-600">
-                        <span>UPS Add-on <b class="text-emerald-700">(+₹2,000)</b></span>
-                    </label>
-                </div>
-                
-                <div class="bg-yellow-50 p-5 border border-yellow-200 rounded-lg text-center mb-6">
-                    <p class="text-xs text-gray-700 font-bold mb-4">Select Advance Payment (Minimum 10%)</p>
-                    <input id="ordSlider" type="range" class="w-full mb-4" oninput="updateSliderUI()">
-                    <div class="flex justify-between font-bold mb-4">
-                        <span class="text-emerald-700">Pay Now: <span id="valPayNow"></span></span>
-                        <span class="text-rose-700">Balance: <span id="valPayLater"></span></span>
+        <div class="bg-white rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[95vh] md:max-h-[85vh]">
+            
+            <!-- Sleek Header -->
+            <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 flex justify-between items-center shadow-md relative z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg"><i class="fas fa-shield-check text-xl"></i></div>
+                    <div>
+                        <h3 class="font-black text-lg leading-none tracking-wide">Secure Checkout</h3>
+                        <span class="text-[10px] text-emerald-300 font-bold uppercase tracking-widest">256-bit Encrypted</span>
                     </div>
-                    
-                    <!-- RESTORED PAYMENT QR CODE -->
-                    <p class="text-xs font-bold text-gray-600 mb-2 uppercase">Scan QR to pay advance</p>
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dsohampal781%40okhdfcbank%26pn%3DKaalnetraSecurity" class="w-32 h-32 mx-auto mb-4 border border-gray-300 p-1 bg-white shadow-sm rounded" alt="UPI QR Code">
-                    
-                   <!-- REPLACE THE PAYMENT INPUT IN THE PUBLIC CHECKOUT MODAL -->
-                    <input id="ordTxn" type="text" maxlength="4" placeholder="Enter last 4 digits of UPI" class="p-3 text-center font-mono font-bold text-sm border rounded outline-none focus:border-orange-500">
                 </div>
-                <button id="btnSubmitOrder" onclick="submitPublicOrder()" class="btn-amz-yellow w-full py-4 text-sm font-bold uppercase">Confirm Order</button>
+                <button onclick="document.getElementById('publicOrderModal').classList.add('hidden')" class="text-gray-400 hover:text-white transition bg-white/10 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Body (Two Columns on Desktop) -->
+            <div class="flex-1 overflow-y-auto p-0 flex flex-col md:flex-row bg-slate-50">
+                
+                <!-- LEFT COLUMN: Details & Upgrades -->
+                <div class="flex-1 p-6 md:p-8 bg-white border-b md:border-b-0 md:border-r border-gray-200">
+                    <h4 class="font-black text-gray-800 mb-5 border-b border-gray-100 pb-2 text-sm uppercase tracking-wider flex items-center"><i class="fas fa-map-marker-alt text-emerald-500 mr-2"></i> 1. Delivery Details</h4>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="relative">
+                            <i class="fas fa-user absolute left-4 top-4 text-gray-400"></i>
+                            <input id="ordName" type="text" placeholder="Full Name" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition">
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-phone absolute left-4 top-4 text-gray-400"></i>
+                            <input id="ordPhone" type="text" placeholder="Mobile Number" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition">
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-home absolute left-4 top-4 text-gray-400"></i>
+                            <textarea id="ordAddress" placeholder="Complete Delivery Address" rows="2" class="w-full pl-11 p-3.5 bg-slate-50 border border-gray-200 rounded-xl text-sm font-medium outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div id="addonSection" class="hidden">
+                        <h4 class="font-black text-gray-800 mb-5 border-b border-gray-100 pb-2 text-sm uppercase tracking-wider flex items-center"><i class="fas fa-microchip text-emerald-500 mr-2"></i> 2. System Upgrades</h4>
+                        <div class="space-y-3">
+                            <!-- Toggle Card 1 -->
+                            <label class="block relative cursor-pointer group">
+                                <input type="checkbox" id="chkAutoChangeover" value="5000" onchange="updateSliderUI()" class="peer sr-only">
+                                <div class="p-4 border-2 border-gray-100 rounded-xl bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:border-emerald-300 transition flex items-center justify-between shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 flex items-center justify-center transition">
+                                            <i class="fas fa-check text-white text-xs opacity-0 peer-checked:opacity-100 transition"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-gray-800 text-sm leading-none mb-1">Auto Changeover</h5>
+                                            <p class="text-[10px] text-gray-500 font-medium">Seamless DC Voltage transition</p>
+                                        </div>
+                                    </div>
+                                    <div class="font-black text-emerald-700 bg-white px-2 py-1 rounded shadow-sm border border-emerald-100 text-xs">+₹5,000</div>
+                                </div>
+                            </label>
+
+                            <!-- Toggle Card 2 -->
+                            <label class="block relative cursor-pointer group">
+                                <input type="checkbox" id="chkUPS" value="2000" onchange="updateSliderUI()" class="peer sr-only">
+                                <div class="p-4 border-2 border-gray-100 rounded-xl bg-white peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:border-emerald-300 transition flex items-center justify-between shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 flex items-center justify-center transition">
+                                            <i class="fas fa-check text-white text-xs opacity-0 peer-checked:opacity-100 transition"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-gray-800 text-sm leading-none mb-1">UPS Add-on</h5>
+                                            <p class="text-[10px] text-gray-500 font-medium">Extended battery backup support</p>
+                                        </div>
+                                    </div>
+                                    <div class="font-black text-emerald-700 bg-white px-2 py-1 rounded shadow-sm border border-emerald-100 text-xs">+₹2,000</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Payment & Summary -->
+                <div class="w-full md:w-[400px] p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                        <h4 class="font-black text-gray-800 mb-4 border-b border-gray-200 pb-2 text-sm uppercase tracking-wider flex items-center"><i class="fas fa-receipt text-emerald-500 mr-2"></i> Order Summary</h4>
+                        
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-6 relative overflow-hidden shadow-sm">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-500 rounded-full opacity-10 -mr-8 -mt-8"></div>
+                            <h4 id="orderProdName" class="font-bold text-sm text-indigo-900 leading-snug pr-4"></h4>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6 text-center relative mt-8">
+                            <span class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-md whitespace-nowrap">Advance Payment Slider</span>
+                            
+                            <div class="mt-4 mb-5">
+                                <input id="ordSlider" type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500" oninput="updateSliderUI()">
+                            </div>
+                            
+                            <div class="flex justify-between items-end border-b border-gray-100 pb-4 mb-4">
+                                <div class="text-left">
+                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Pay Now</div>
+                                    <div class="text-2xl font-black text-emerald-600 leading-none" id="valPayNow">₹0</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Balance at Door</div>
+                                    <div class="text-xl font-bold text-rose-500 leading-none opacity-80" id="valPayLater">₹0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-slate-50 p-4 rounded-xl border border-gray-100">
+                                <p class="text-[10px] font-black text-gray-700 uppercase tracking-widest mb-3"><i class="fas fa-qrcode text-emerald-500 mr-1 text-sm"></i> Scan UPI to Book</p>
+                                <div class="bg-white p-2 inline-block rounded-xl border-2 border-dashed border-gray-300 mb-4 shadow-sm">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dsohampal781%40okhdfcbank%26pn%3DKaalnetraSecurity" class="w-28 h-28" alt="UPI QR Code">
+                                </div>
+                                <div class="relative">
+                                    <i class="fas fa-hashtag absolute left-4 top-3.5 text-gray-400"></i>
+                                    <input id="ordTxn" type="text" maxlength="4" placeholder="Last 4 digits of UPI TXN" class="w-full pl-10 p-3 bg-white border border-gray-200 rounded-lg text-sm font-mono font-bold outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 transition text-center tracking-widest uppercase">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="btnSubmitOrder" onclick="submitPublicOrder()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl text-sm font-black uppercase tracking-widest shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+                        <i class="fas fa-lock"></i> Confirm Secure Order
+                    </button>
+                </div>
             </div>
         </div>
     </div>
