@@ -756,13 +756,29 @@
                 <input type="hidden" id="techMqrId">
 
                 <!-- STEP 1: MQR VERIFICATION LOCK -->
+                <!-- STEP 1: MQR VERIFICATION LOCK -->
                 <div id="techStep1" class="text-center">
                     <div class="bg-rose-50 border-2 border-rose-200 rounded-lg p-4 mb-6">
                         <i class="fas fa-shield-alt text-3xl text-rose-500 mb-2"></i>
                         <h4 class="font-bold text-rose-800 text-sm mb-1">Security Verification Required</h4>
                         <p class="text-xs text-rose-600 mb-4">Scan the Master Warranty QR on the physical hardware box to verify you have the correct system.</p>
-                        <input id="techMqrInput" type="text" placeholder="Scan MQR-XXXXXX" class="w-full p-4 border-2 border-rose-300 rounded text-center font-mono font-bold text-lg uppercase outline-none focus:border-rose-500 mb-4 shadow-inner" onkeypress="if(event.key === 'Enter') verifyTechMQR()">
-                        <button onclick="verifyTechMQR()" class="bg-rose-600 hover:bg-rose-700 text-white w-full py-3 font-bold rounded shadow-md uppercase tracking-wider text-sm transition">Verify Box & Unlock</button>
+                        
+                        <!-- NEW CAMERA BUTTON -->
+                        <div class="flex gap-2 mb-3">
+                            <button onclick="startTechCamera()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg shadow-md font-bold text-xs uppercase transition"><i class="fas fa-camera text-lg block mb-1"></i> Scan QR Box Code</button>
+                        </div>
+                        
+                        <!-- CAMERA WINDOW -->
+                        <div id="techCameraBox" class="hidden mb-4 rounded-lg overflow-hidden border-2 border-rose-500 bg-black shadow-inner">
+                            <div id="tech-qr-reader" style="width:100%; min-height: 200px;"></div>
+                            <button onclick="stopTechCamera()" class="w-full bg-red-900 hover:bg-red-800 text-white py-3 font-bold text-sm uppercase tracking-wider"><i class="fas fa-times-circle mr-2"></i>Close Camera</button>
+                        </div>
+
+                        <div class="relative mb-4">
+                            <i class="fas fa-keyboard absolute left-4 top-[14px] text-gray-400"></i>
+                            <input id="techMqrInput" type="text" placeholder="Or Type MQR-XXXXXX" class="w-full pl-10 p-3 border-2 border-rose-300 rounded text-center font-mono font-bold text-sm uppercase outline-none focus:border-rose-500 shadow-inner" onkeypress="if(event.key === 'Enter') verifyTechMQR()">
+                        </div>
+                        <button onclick="verifyTechMQR()" class="bg-gray-800 hover:bg-black text-white w-full py-3 font-bold rounded shadow-md uppercase tracking-wider text-sm transition">Verify Box & Unlock</button>
                     </div>
                 </div>
 <!-- STEP 2: INSTALLATION WORKFLOW (Hidden until unlocked) -->
@@ -2047,8 +2063,18 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 
                 document.getElementById('techModal').classList.add('hidden');
                 alert("✅ Installation successfully verified, signed, and securely archived!");
+
+                // ============================================
+                // NEW: AUTO-OPEN FINAL INVOICE AFTER SIGNATURE
+                // ============================================
+                if (data.masterQrId && data.masterQrId !== "N/A") {
+                    window.reprintBill(ordId, data.masterQrId);
+                }
                 
             } catch(e) { 
+                alert("Archive Error: " + e.message); 
+                document.getElementById('installSwipe').value = 0;
+            }catch(e) { 
                 alert("Archive Error: " + e.message); 
                 document.getElementById('installSwipe').value = 0;
             }
@@ -3015,6 +3041,48 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 alert("Batching & Billing Failed: " + e.message); 
             } finally {
                 btn.innerText = "Finalize & Print Invoice"; btn.disabled = false;
+            }
+        };
+        // ================= TECHNICIAN CAMERA SCANNER =================
+        let techHtml5QrCode;
+        let isTechProcessingScan = false;
+
+        window.startTechCamera = () => {
+            const scannerBox = document.getElementById('techCameraBox');
+            scannerBox.classList.remove('hidden');
+            techHtml5QrCode = new Html5Qrcode("tech-qr-reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            
+            techHtml5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+                if (isTechProcessingScan) return;
+                isTechProcessingScan = true;
+                
+                if (navigator.vibrate) navigator.vibrate(200); 
+                document.getElementById('techMqrInput').value = decodedText;
+                
+                window.stopTechCamera();
+                window.verifyTechMQR(); // Automatically trigger verification
+                
+                setTimeout(() => { isTechProcessingScan = false; }, 1500);
+            }, (err) => {
+                // Ignore silent background errors
+            }).catch(err => {
+                alert("Camera Error: Please grant camera permissions.");
+                window.stopTechCamera();
+            });
+        };
+
+        window.stopTechCamera = () => {
+            if (techHtml5QrCode) {
+                techHtml5QrCode.stop().then(() => {
+                    techHtml5QrCode.clear();
+                    document.getElementById('techCameraBox').classList.add('hidden');
+                    isTechProcessingScan = false;
+                }).catch(err => {
+                    document.getElementById('techCameraBox').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('techCameraBox').classList.add('hidden');
             }
         };
     </script>
