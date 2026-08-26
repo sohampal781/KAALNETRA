@@ -1095,7 +1095,11 @@
                 alert("Cancellation Error: " + e.message);
             }
         };
-        window.deleteInventory = async (id) => { if(confirm(`Delete tag ${id}?`)) await remove(ref(window.db, `inventory/${id}`)); };
+        window.deleteInventory = async (id) => { 
+            if(confirm(`Delete tag ${id}?\n\nThis will remove it from active stock, but this specific QR code will be permanently burned and can NEVER be registered again.`)) {
+                await update(ref(window.db, `inventory/${id}`), { status: "Deleted", timestamp: Date.now() });
+            }
+        };
 
         window.openScheduleModal = (orderId, phone, name) => {
             document.getElementById('schedOrderId').value = orderId;
@@ -1152,11 +1156,11 @@
                 inputField.disabled = false; inputField.focus();
                 return;
             }
-
             try {
                 const snap = await get(ref(window.db, `inventory/${tagId}`));
                 if(snap.exists()) {
-                    document.getElementById("invScanFeedback").innerText = `⚠️ Tag ${tagId} is already registered!`;
+                    const existingData = snap.val();
+                    document.getElementById("invScanFeedback").innerText = `⚠️ Blocked: Tag ${tagId} is already burned/used (Status: ${existingData.status})!`;
                     document.getElementById("invScanFeedback").className = "text-xs font-bold text-rose-600 text-right h-4 mt-1";
                 } else {
                     await set(ref(window.db, `inventory/${tagId}`), { 
@@ -1870,15 +1874,14 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     techList.innerHTML = techHtml;
                 }
             });
-
-            // Listen Inventory
+            // Listen Inventory (Hides Sold and Deleted items)
             onValue(ref(window.db, "inventory"), (snap) => {
                 const tb = document.getElementById("tblInventory");
                 let stock = 0; 
                 allInventory = [];
                 
                 if(!snap.exists()) {
-                    tb.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-400 italic">No inventory registered.</td></tr>`;
+                    tb.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">No inventory registered.</td></tr>`;
                     document.getElementById("dashStock").innerText = 0;
                     return;
                 }
@@ -1886,23 +1889,32 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 let invHtml = "";
                 snap.forEach(c => {
                     const v = c.val() || {};
-                    allInventory.push(v);
                     const s = v.status || "In Stock";
-                    if(s === "In Stock") stock++;
-                    const sClass = s === 'Sold' ? 'text-red-600 bg-red-50' : 'text-green-700 bg-green-50';
-                    invHtml += `
-                        <tr class="border-b border-gray-100 hover-row">
-                            <td class="font-mono font-bold text-gray-800 p-3">${v.barcode || 'N/A'}</td>
-                            <td class="font-bold text-xs text-gray-700 p-3">${v.item || 'N/A'}</td>
-                            <td class="p-3"><span class="font-bold text-xs px-2 py-1 rounded border ${sClass}">${s}</span></td>
-                            <td class="text-center p-3"><button onclick="window.deleteInventory('${v.barcode}')" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash"></i></button></td>
-                        </tr>`;
+                    
+                    // Push all to array for system calculations
+                    allInventory.push(v);
+                    
+                    // ONLY SHOW ITEMS THAT ARE "In Stock"
+                    if(s === "In Stock") {
+                        stock++;
+                        invHtml += `
+                            <tr class="border-b border-gray-100 hover-row">
+                                <td class="font-mono font-bold text-gray-800 p-3">${v.barcode || 'N/A'}</td>
+                                <td class="font-bold text-xs text-gray-700 p-3">${v.item || 'N/A'}</td>
+                                <td class="p-3"><span class="font-bold text-xs px-2 py-1 rounded border text-green-700 bg-green-50">${s}</span></td>
+                                <td class="text-center p-3"><button onclick="window.deleteInventory('${v.barcode}')" class="text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash"></i></button></td>
+                            </tr>`;
+                    }
                 });
+
+                if(invHtml === "") {
+                    invHtml = `<tr><td colspan="4" class="text-center py-6 text-gray-400 italic">No active components in stock.</td></tr>`;
+                }
+
                 tb.innerHTML = invHtml;
                 document.getElementById("dashStock").innerText = stock;
                 updateBuildEstimator(allInventory);
             });
-
             // Listen RMA
             onValue(ref(window.db, "warranty_claims"), (snap) => {
                 const tb = document.getElementById("rmaLogBody");
