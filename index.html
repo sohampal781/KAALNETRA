@@ -1719,36 +1719,7 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     </tr>
                 `).join("");
             });
-        // ================= NEW: FOOLPROOF BILLING CALCULATOR =================
-        window.calculateFinalBill = async () => {
-            const ordId = document.getElementById("dispOrderSelect").value;
-            if(!ordId) return;
-            
-            const snap = await get(ref(window.db, `web_orders/${ordId}`));
-            if(!snap.exists()) return;
-            
-            const orderData = snap.val();
-            
-            // CRITICAL FIX: Hardcoded Keyword Matching. Never fails.
-            let systemCost = 0;
-            const pName = orderData.productName || "";
-            if (pName.includes("Version 1")) systemCost = 15000;
-            else if (pName.includes("Version 2")) systemCost = 20000;
-            else if (pName.includes("Version 3")) systemCost = 21000;
-            else if (pName.includes("Version 4")) systemCost = 26000;
-            else if (pName.includes("Industrial")) systemCost = 27000;
-            
-            const installCost = 2000; // Fixed Installation charge
-            let discount = parseInt(document.getElementById("billDiscount").value) || 0;
-            
-            // Prevent discount from exceeding total cost
-            if (discount > (systemCost + installCost)) discount = systemCost + installCost;
-            
-            const grandTotal = systemCost + installCost - discount;
-            
-            document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
-            document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
-        };
+        
         // ================= CONTINUOUS LIVE CAMERA SCANNER =================
         let html5QrCode;
         let isProcessingScan = false;
@@ -2461,7 +2432,40 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 document.getElementById('invCameraBox').classList.add('hidden');
             }
         };
-       // ================= CRASH-PROOF BATCH & BILLING =================
+       // ================= NEW: FOOLPROOF BILLING CALCULATOR =================
+        window.calculateFinalBill = async () => {
+            const ordId = document.getElementById("dispOrderSelect").value;
+            if(!ordId) return;
+            
+            const snap = await get(ref(window.db, `web_orders/${ordId}`));
+            if(!snap.exists()) return;
+            const orderData = snap.val();
+            
+            let systemCost = 0;
+            const pName = orderData.productName || "";
+            if (pName.includes("Version 1")) systemCost = 15000;
+            else if (pName.includes("Version 2")) systemCost = 20000;
+            else if (pName.includes("Version 3")) systemCost = 21000; // Original logic applied
+            else if (pName.includes("Version 4")) systemCost = 26000;
+            else if (pName.includes("Industrial")) systemCost = 27000;
+            
+            // Add Addons Cost
+            if (orderData.addons) {
+                if (orderData.addons.autoChangeover) systemCost += 5000;
+                if (orderData.addons.ups) systemCost += 2000;
+            }
+            
+            const installCost = 2000;
+            let discount = parseInt(document.getElementById("billDiscount").value) || 0;
+            if (discount > (systemCost + installCost)) discount = systemCost + installCost;
+            
+            const grandTotal = systemCost + installCost - discount;
+            
+            document.getElementById("billSystemCost").innerText = "₹" + systemCost.toLocaleString('en-IN');
+            document.getElementById("billGrandTotal").innerText = "₹" + grandTotal.toLocaleString('en-IN');
+        };
+
+        // ================= CRASH-PROOF BATCH & BILLING =================
         window.finalizeBatchDispatch = async () => {
             const ordId = document.getElementById("dispOrderSelect").value;
             if(!ordId) return alert("Select an order first.");
@@ -2478,7 +2482,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 const updates = {};
                 let hardwareLogForInternal = [];
 
-                // 1. Mark individual raw materials as Sold in Firebase
                 for(let req of activeDispatchBOM) {
                     const tagId = req.scannedTag;
                     updates[`inventory/${tagId}/status`] = "Sold";
@@ -2486,21 +2489,34 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                     hardwareLogForInternal.push({ id: tagId, item: req.componentName });
                 }
                 
-                // 2. CRITICAL FIX: Hardcoded Keyword Matching. Never fails.
-                let systemCost = 0;
+                let baseCost = 0;
                 const pName = orderData.productName || "";
-                if (pName.includes("Version 1")) systemCost = 15000;
-                else if (pName.includes("Version 2")) systemCost = 20000;
-                else if (pName.includes("Version 3")) systemCost = 21000;
-                else if (pName.includes("Version 4")) systemCost = 26000;
-                else if (pName.includes("Industrial")) systemCost = 27000;
+                if (pName.includes("Version 1")) baseCost = 15000;
+                else if (pName.includes("Version 2")) baseCost = 20000;
+                else if (pName.includes("Version 3")) baseCost = 21000;
+                else if (pName.includes("Version 4")) baseCost = 26000;
+                else if (pName.includes("Industrial")) baseCost = 27000;
+
+                // Handle Addons HTML and total cost
+                let addonsHtml = "";
+                let systemCost = baseCost;
+                
+                if (orderData.addons) {
+                    if (orderData.addons.autoChangeover) {
+                        systemCost += 5000;
+                        addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: Auto Changeover DC Voltage</td><td style="padding:12px;font-size:12pt;text-align:right;">₹5,000</td></tr>`;
+                    }
+                    if (orderData.addons.ups) {
+                        systemCost += 2000;
+                        addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: UPS Support</td><td style="padding:12px;font-size:12pt;text-align:right;">₹2,000</td></tr>`;
+                    }
+                }
                 
                 const installCost = 2000;
                 let discountInput = document.getElementById("billDiscount");
                 const discount = discountInput ? (parseInt(discountInput.value) || 0) : 0;
                 const grandTotal = systemCost + installCost - discount;
 
-                // 3. Save to Firebase
                 updates[`master_warranties/${masterId}`] = { 
                     masterId: masterId, 
                     orderRef: ordId, 
@@ -2514,7 +2530,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
 
                 await update(ref(window.db), updates);
                 
-                // 4. Print Clean Supermarket/Retail Style Invoice
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
                 
@@ -2546,10 +2561,11 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="border-bottom:1px solid #ccc;">
+                            <tr style="border-bottom:1px solid #eee;">
                                 <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName}</td>
-                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${systemCost.toLocaleString('en-IN')}</td>
+                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${baseCost.toLocaleString('en-IN')}</td>
                             </tr>
+                            ${addonsHtml}
                             <tr style="border-bottom:1px solid #ccc;">
                                 <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
                                 <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
@@ -2574,7 +2590,6 @@ window.processRMA = async (masterId, tagId, itemName, isExpired) => {
                 doc.close();
                 setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
                 
-                // Reset View
                 document.getElementById("dispatchWorkspace").classList.add("hidden");
                 document.getElementById("dispOrderSelect").value = "";
                 if(discountInput) discountInput.value = "0";
