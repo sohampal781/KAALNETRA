@@ -1594,27 +1594,25 @@
                 inputField.disabled = false; inputField.focus(); 
             }
         };
-       // ================= FINAL INVOICE & REPRINT LOGIC =================
+       // ================= FINAL INVOICE & REPRINT LOGIC (5CM THERMAL PRINTER FORMAT) =================
         window.reprintBill = async (ordId, masterId) => {
             if(!masterId || masterId === "undefined") return alert("Master QR ID is missing.");
             
             try {
-                // Fetch Billing Data
+                // Fetch Billing & Order Data
                 const snap = await get(ref(window.db, `master_warranties/${masterId}`));
                 if(!snap.exists()) return alert("Billing record not found in database.");
                 const data = snap.val();
                 
-                // Fetch Order Data (for Signatures, Addons, and Up-to-date Status)
                 const ordSnap = await get(ref(window.db, `web_orders/${ordId}`));
                 const orderData = ordSnap.exists() ? ordSnap.val() : {}; 
                 
-                // 1. SAFEGUARD: Declare ALL HTML variables empty by default so they NEVER crash
                 let signatureHtml = "";
                 let stampHtml = "";
                 let addonsHtml = "";
                 let discountHtml = "";
 
-                // Calculate base product cost
+                // Base Cost
                 let baseCost = 0;
                 const pName = orderData.productName || "";
                 if (pName.includes("Version 1")) baseCost = 15000;
@@ -1623,10 +1621,10 @@
                 else if (pName.includes("Version 4")) baseCost = 26000;
                 else if (pName.includes("Industrial")) baseCost = 27000;
 
-                // Build Addons row
+                // Receipt-style Addons
                 if (orderData.addons) {
-                    if (orderData.addons.autoChangeover) addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: Auto Changeover DC Voltage</td><td style="padding:12px;font-size:12pt;text-align:right;">₹5,000</td></tr>`;
-                    if (orderData.addons.ups) addonsHtml += `<tr style="border-bottom:1px solid #eee;"><td style="padding:12px;font-size:12pt;color:#007185;font-weight:bold;"> + Add-on: UPS Support</td><td style="padding:12px;font-size:12pt;text-align:right;">₹2,000</td></tr>`;
+                    if (orderData.addons.autoChangeover) addonsHtml += `<tr><td colspan="2"><span class="item-name">+ Auto Changeover DC</span><span class="item-price">₹5,000</span></td></tr>`;
+                    if (orderData.addons.ups) addonsHtml += `<tr><td colspan="2"><span class="item-name">+ UPS Support</span><span class="item-price">₹2,000</span></td></tr>`;
                 }
 
                 // Billing Math
@@ -1635,92 +1633,99 @@
                 let grandTotal = data.billing ? (data.billing.grandTotal || 0) : 0;
 
                 if (discount > 0) {
-                    discountHtml = `
-                    <tr style="border-bottom:1px solid #ccc; color: #d93025;">
-                        <td style="padding:12px;font-size:12pt;font-weight:bold;">Discount Applied</td>
-                        <td style="padding:12px;font-size:12pt;text-align:right;">- ₹${discount.toLocaleString('en-IN')}</td>
-                    </tr>`;
+                    discountHtml = `<tr><td colspan="2"><span class="item-name">Discount Applied</span><span class="item-price">- ₹${discount.toLocaleString('en-IN')}</span></td></tr>`;
                 }
 
-                // STAMP & SIGNATURE (Only prints if the technician completed the job)
+                // STAMP & SIGNATURE (Receipt Style)
                 if (orderData.status === "Installation Completed") {
                     stampHtml = `
-                        <div style="position:absolute; top:35%; left:50%; transform:translate(-50%, -50%) rotate(-35deg); opacity:0.15; pointer-events:none; z-index:0;">
-                            <h1 style="font-size:120px; font-weight:900; color:#10b981; margin:0; border:15px solid #10b981; padding:20px; border-radius:30px; text-transform:uppercase; font-family:sans-serif; letter-spacing: 10px; white-space:nowrap;">FULL PAID</h1>
-                        </div>
+                        <div class="stamp">FULL PAID</div>
                     `;
                     
                     if (orderData.techDetails && orderData.techDetails.signature) {
                         signatureHtml = `
-                            <div style="margin-top: 20px; float: left; width: 45%; text-align: left;">
-                                <p style="font-size:10pt; color:#555; margin-bottom:2px; font-weight:bold;">Customer Acknowledgement:</p>
-                                <p style="font-size:8pt; color:#777; margin-top:0; margin-bottom:5px;">I confirm all devices are installed and working perfectly.</p>
-                                <img src="${orderData.techDetails.signature}" style="max-height: 80px; max-width: 100%; border-bottom: 2px solid #111;">
-                                <p style="font-size:12pt; font-weight:bold; margin-top:5px;">Customer Signature</p>
+                            <div class="sig">
+                                <p style="font-size:18px; margin-bottom:5px;">Customer Confirmation:</p>
+                                <img src="${orderData.techDetails.signature}">
                             </div>
                         `;
                     }
                 }
 
-                // Render Final PDF Document
+                // Render Final PDF Document (Configured for 5cm/58mm Mini Printer)
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
 
-                doc.write(`<html><body style="font-family:sans-serif;padding:40px;color:#111;max-width:800px;margin:0 auto;position:relative;">
-                    ${stampHtml}
-                    <h1 style="border-bottom:4px solid #111;padding-bottom:10px;text-transform:uppercase;position:relative;z-index:1;">KAALNETRA OFFICIAL INVOICE</h1>
+                doc.write(`<html>
+                <head>
+                    <style>
+                        @page { margin: 0mm; }
+                        body { 
+                            font-family: monospace, sans-serif; 
+                            padding: 10px; 
+                            color: #000; 
+                            width: 100%; 
+                            max-width: 350px; /* Constrains width to force printer to zoom text */
+                            margin: 0 auto; 
+                            box-sizing: border-box; 
+                        }
+                        h1 { font-size: 32px; text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px; line-height: 1.2; font-weight: 900;}
+                        .info-block { font-size: 20px; line-height: 1.5; margin-bottom: 15px; font-weight: bold; border-bottom: 2px dashed #000; padding-bottom: 10px; }
+                        .item-name { font-size: 20px; font-weight: bold; display: block; margin-bottom: 5px; }
+                        .item-price { font-size: 20px; text-align: right; display: block; font-weight: bold; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                        td { padding: 10px 0; border-bottom: 1px dotted #888; vertical-align: top; }
+                        .total-row td { font-size: 26px; font-weight: 900; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 15px 0; }
+                        .stamp { font-size: 40px; font-weight: 900; text-align: center; border: 4px solid #000; padding: 10px; margin: 20px auto; transform: rotate(-5deg); letter-spacing: 2px; }
+                        .sig { margin-top: 20px; text-align: center; font-weight: bold; }
+                        .sig img { max-height: 120px; max-width: 100%; border-bottom: 2px solid #000; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+                        .qr-container { text-align: center; margin-top: 20px; border-top: 2px dashed #000; padding-top: 20px; }
+                        .qr-container img { width: 220px; height: 220px; margin: 0 auto; display: block; border: 2px solid #000; padding: 5px;}
+                        .qr-text { font-size: 28px; font-weight: 900; margin-top: 10px; letter-spacing: 2px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>KAALNETRA<br>SECURITY</h1>
                     
-                    <div style="border:2px solid #ccc;padding:20px;margin-bottom:30px;font-size:12pt;background:#f9f9f9; display:flex; justify-content:space-between;position:relative;z-index:1;">
-                        <div>
-                            <strong>Customer Name:</strong> ${orderData.customerName || data.customerName}<br>
-                            <strong>Contact Phone:</strong> ${orderData.phone || 'N/A'}<br>
-                        </div>
-                        <div style="text-align:right;">
-                            <strong>Invoice / Order Ref:</strong> ${ordId}<br>
-                            <strong>Date:</strong> ${new Date(data.timestamp).toLocaleDateString('en-IN')}
-                        </div>
+                    <div class="info-block">
+                        Order: ${ordId}<br>
+                        Date: ${new Date(data.timestamp).toLocaleDateString('en-IN')}<br><br>
+                        Customer: ${orderData.customerName || data.customerName}<br>
+                        Phone: ${orderData.phone || 'N/A'}
                     </div>
                     
-                    <table style="width:100%;border-collapse:collapse;margin-bottom:30px;text-align:left;position:relative;z-index:1;">
-                        <thead>
-                            <tr style="border-bottom:3px solid #111; background:#eee;">
-                                <th style="padding:12px; font-size:12pt;">Description</th>
-                                <th style="padding:12px; font-size:12pt; text-align:right;">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style="border-bottom:1px solid #eee;">
-                                <td style="padding:15px 12px;font-size:14pt;font-weight:bold;">1. ${orderData.productName || 'Security System'}</td>
-                                <td style="padding:15px 12px;font-size:14pt;text-align:right;font-weight:bold;">₹${baseCost.toLocaleString('en-IN')}</td>
-                            </tr>
-                            ${addonsHtml}
-                            <tr style="border-bottom:1px solid #ccc;">
-                                <td style="padding:12px;font-size:12pt;font-weight:bold;">2. Professional Installation Charges</td>
-                                <td style="padding:12px;font-size:12pt;text-align:right;">₹${installCost.toLocaleString('en-IN')}</td>
-                            </tr>
-                            ${discountHtml}
-                        </tbody>
-                        <tfoot>
-                            <tr style="background:#111; color:white;">
-                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">GRAND TOTAL</td>
-                                <td style="padding:15px;font-size:16pt;font-weight:black;text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
-                            </tr>
-                        </tfoot>
+                    <table>
+                        <tr>
+                            <td colspan="2"><span class="item-name">1. ${orderData.productName || 'Security System'}</span><span class="item-price">₹${baseCost.toLocaleString('en-IN')}</span></td>
+                        </tr>
+                        ${addonsHtml}
+                        <tr>
+                            <td colspan="2"><span class="item-name">Installation Charges</span><span class="item-price">₹${installCost.toLocaleString('en-IN')}</span></td>
+                        </tr>
+                        ${discountHtml}
+                        <tr class="total-row">
+                            <td>TOTAL</td>
+                            <td style="text-align:right;">₹${grandTotal.toLocaleString('en-IN')}</td>
+                        </tr>
                     </table>
                     
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:3px dashed #111; padding:30px; margin-top: 20px;position:relative;z-index:1;">
-                        ${signatureHtml}
-                        <div style="text-align:right; width: ${signatureHtml ? '50%' : '100%'};">
-                            <h2 style="margin-top:0; font-size:16pt; margin-bottom:5px;">MASTER WARRANTY QR</h2>
-                            <p style="font-size:10pt; color:#555; margin-top:0; margin-bottom:15px;">Includes 6-Month Warranty. Scan for service authorization.</p>
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${masterId}" style="float:right; border:2px solid #111;">
-                            <div style="clear:both;"></div>
-                            <div style="font-family:monospace;font-size:18pt;font-weight:bold;letter-spacing:2px;margin-top:10px;">${masterId}</div>
-                        </div>
+                    ${stampHtml}
+                    ${signatureHtml}
+                    
+                    <div class="qr-container">
+                        <h2 style="margin:0 0 5px 0; font-size: 24px; font-weight: 900;">MASTER WARRANTY</h2>
+                        <p style="font-size:16px; margin:0 0 15px 0; font-weight:bold;">6-Month Free Warranty</p>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${masterId}">
+                        <div class="qr-text">${masterId}</div>
                     </div>
-                </body></html>`);
+                </body>
+                </html>`);
+                
                 doc.close();
-                setTimeout(() => { iframe.contentWindow.print(); setTimeout(() => document.body.removeChild(iframe), 1000); }, 1000);
+                setTimeout(() => { 
+                    iframe.contentWindow.print(); 
+                    setTimeout(() => document.body.removeChild(iframe), 1000); 
+                }, 1000);
             } catch(e) {
                 alert("Reprint Failed: " + e.message);
             }
