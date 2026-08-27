@@ -1594,7 +1594,7 @@
                 inputField.disabled = false; inputField.focus(); 
             }
         };
-       // ================= FINAL INVOICE & REPRINT LOGIC (5CM THERMAL PRINTER FORMAT) =================
+       // ================= FINAL INVOICE & REPRINT LOGIC (EXTENDED THERMAL PRINTER FORMAT) =================
         window.reprintBill = async (ordId, masterId) => {
             if(!masterId || masterId === "undefined") return alert("Master QR ID is missing.");
             
@@ -1636,23 +1636,32 @@
                     discountHtml = `<tr><td colspan="2"><span class="item-name">Discount Applied</span><span class="item-price">- ₹${discount.toLocaleString('en-IN')}</span></td></tr>`;
                 }
 
-                // STAMP & SIGNATURE (Receipt Style)
-                if (orderData.status === "Installation Completed") {
-                    stampHtml = `
-                        <div class="stamp">FULL PAID</div>
-                    `;
+                // Format Dates
+                const orderDateStr = orderData.timestamp ? new Date(orderData.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : new Date(data.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+                let installDateStr = "Pending";
+                
+                if (orderData.techDetails && orderData.techDetails.date) {
+                    installDateStr = new Date(orderData.techDetails.date).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+                } else if (orderData.installDate) {
+                    installDateStr = `${orderData.installDate} ${orderData.installTime || ''}`;
+                }
+
+                // STAMP & CUSTOMER CONFIRMATION SIGNATURE
+                if (orderData.status === "Installation Completed" || orderData.status === "Dispatched & Billed") {
+                    stampHtml = `<div class="stamp">FULL PAID</div>`;
                     
                     if (orderData.techDetails && orderData.techDetails.signature) {
                         signatureHtml = `
-                            <div class="sig">
-                                <p style="font-size:18px; margin-bottom:5px;">Customer Confirmation:</p>
-                                <img src="${orderData.techDetails.signature}">
+                            <div class="sig-container">
+                                <p class="customer-conf"><b>CUSTOMER CONFIRMATION:</b><br>I confirm that the security system has been successfully installed, configured, and tested in my presence. All components and features are working exactly as promised.</p>
+                                <img src="${orderData.techDetails.signature}" class="sig-img">
+                                <p class="sig-name">${orderData.customerName || data.customerName}</p>
                             </div>
                         `;
                     }
                 }
 
-                // Render Final PDF Document (Configured for 5cm/58mm Mini Printer)
+                // Render Final PDF Document (Configured for Long Roll Mini Printer)
                 const iframe = document.createElement('iframe'); iframe.style.display = 'none'; document.body.appendChild(iframe);
                 const doc = iframe.contentWindow.document; doc.open();
 
@@ -1665,33 +1674,58 @@
                             padding: 10px; 
                             color: #000; 
                             width: 100%; 
-                            max-width: 350px; /* Constrains width to force printer to zoom text */
+                            max-width: 360px; /* Constrains width to force printer to zoom text */
                             margin: 0 auto; 
                             box-sizing: border-box; 
                         }
                         h1 { font-size: 32px; text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px; line-height: 1.2; font-weight: 900;}
-                        .info-block { font-size: 20px; line-height: 1.5; margin-bottom: 15px; font-weight: bold; border-bottom: 2px dashed #000; padding-bottom: 10px; }
-                        .item-name { font-size: 20px; font-weight: bold; display: block; margin-bottom: 5px; }
-                        .item-price { font-size: 20px; text-align: right; display: block; font-weight: bold; }
+                        
+                        /* Extended Info Block */
+                        .info-block { font-size: 15px; line-height: 1.6; margin-bottom: 15px; border-bottom: 2px dashed #000; padding-bottom: 10px; }
+                        .info-block strong { font-size: 16px; font-weight: 900; }
+                        
+                        /* Items */
+                        .item-name { font-size: 18px; font-weight: bold; display: block; margin-bottom: 5px; }
+                        .item-price { font-size: 18px; text-align: right; display: block; font-weight: bold; }
                         table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
                         td { padding: 10px 0; border-bottom: 1px dotted #888; vertical-align: top; }
-                        .total-row td { font-size: 26px; font-weight: 900; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 15px 0; }
-                        .stamp { font-size: 40px; font-weight: 900; text-align: center; border: 4px solid #000; padding: 10px; margin: 20px auto; transform: rotate(-5deg); letter-spacing: 2px; }
-                        .sig { margin-top: 20px; text-align: center; font-weight: bold; }
-                        .sig img { max-height: 120px; max-width: 100%; border-bottom: 2px solid #000; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+                        .total-row td { font-size: 24px; font-weight: 900; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 15px 0; }
+                        
+                        /* Stamp & Sign */
+                        .text-center { text-align: center; }
+                        .stamp { font-size: 34px; font-weight: 900; text-align: center; border: 4px solid #000; padding: 5px 15px; margin: 15px auto; transform: rotate(-5deg); letter-spacing: 2px; display: inline-block; border-radius: 8px;}
+                        .sig-container { margin-top: 15px; text-align: center; border: 2px dashed #000; padding: 12px; border-radius: 8px; background-color: #f9f9f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+                        .customer-conf { font-size: 13px; text-align: justify; margin: 0 0 10px 0; font-family: sans-serif; line-height: 1.4;}
+                        .sig-img { max-height: 120px; max-width: 100%; border-bottom: 1px solid #000; display: block; margin: 0 auto; }
+                        .sig-name { margin: 5px 0 0 0; font-size: 16px; font-weight: 900; text-transform: uppercase;}
+                        
+                        /* Terms & Conditions Block */
+                        .tnc-block { margin-top: 25px; padding-top: 15px; border-top: 3px double #000; font-family: sans-serif;}
+                        .tnc-block h3 { font-size: 18px; text-align: center; margin: 0 0 15px 0; font-weight: 900; background: #000; color: #fff; padding: 5px; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+                        .tnc-block ol { padding-left: 20px; margin: 0; font-size: 11px; text-align: justify; line-height: 1.4;}
+                        .tnc-block li { margin-bottom: 8px; }
+                        .tnc-block b { font-size: 12px; }
+                        
+                        /* Footer Branding */
+                        .footer-branding { text-align: center; font-weight: 900; margin-top: 20px; font-size: 15px; text-transform: uppercase; border-top: 1px solid #000; padding-top: 10px;}
+                        .footer-sub { font-size: 11px; font-weight: bold; text-transform: none; display: block; margin-top: 3px;}
+                        
+                        /* QR Wrapper */
                         .qr-container { text-align: center; margin-top: 20px; border-top: 2px dashed #000; padding-top: 20px; }
                         .qr-container img { width: 220px; height: 220px; margin: 0 auto; display: block; border: 2px solid #000; padding: 5px;}
-                        .qr-text { font-size: 28px; font-weight: 900; margin-top: 10px; letter-spacing: 2px; }
+                        .qr-text { font-size: 26px; font-weight: 900; margin-top: 10px; letter-spacing: 2px; }
                     </style>
                 </head>
                 <body>
                     <h1>KAALNETRA<br>SECURITY</h1>
                     
                     <div class="info-block">
-                        Order: ${ordId}<br>
-                        Date: ${new Date(data.timestamp).toLocaleDateString('en-IN')}<br><br>
-                        Customer: ${orderData.customerName || data.customerName}<br>
-                        Phone: ${orderData.phone || 'N/A'}
+                        <strong>Order Ref:</strong> ${ordId}<br>
+                        <strong>Order Date:</strong> ${orderDateStr}<br>
+                        <strong>Install Date:</strong> ${installDateStr}<br><br>
+                        <strong>Customer:</strong> ${orderData.customerName || data.customerName}<br>
+                        <strong>Phone:</strong> ${orderData.phone || 'N/A'}<br>
+                        <strong>Address:</strong> ${orderData.address || 'N/A'}
                     </div>
                     
                     <table>
@@ -1709,8 +1743,28 @@
                         </tr>
                     </table>
                     
-                    ${stampHtml}
+                    <div class="text-center">${stampHtml}</div>
+                    
                     ${signatureHtml}
+                    
+                    <div class="tnc-block">
+                        <h3>TERMS & CONDITIONS</h3>
+                        <ol>
+                            <li><b>Product Purpose:</b> Our products are designed to provide additional security and theft protection. However, no security system can guarantee 100% prevention of theft, burglary, or damage.</li>
+                            <li><b>Installation & Use:</b> The customer must provide a suitable installation location and use the product according to the provided instructions.</li>
+                            <li><b>Warranty:</b> Warranty is applicable as mentioned on the invoice or warranty card. Physical damage, water damage, voltage fluctuations, misuse, and unauthorized modifications are not covered.</li>
+                            <li><b>Product Tampering & Modification:</b> Any tampering, modification, repair, alteration, or replacement of any product component without the knowledge and presence of an authorized representative of Kaalnetra Security Systems will result in the warranty being considered void.</li>
+                            <li><b>Service:</b> Service charges may apply after the warranty period. Consumable items such as batteries may have separate warranty terms.</li>
+                            <li><b>Liability:</b> Kaalnetra Security Systems shall not be responsible for losses caused by theft, burglary, power failure, network failure, misuse, or circumstances beyond our control.</li>
+                            <li><b>Payment & Cancellation:</b> Payment terms will be mentioned in the quotation or invoice. Customized, dispatched, or installed products may not be eligible for cancellation or refund.</li>
+                            <li><b>Acceptance:</b> By purchasing, installing, or using our product, the customer agrees to these Terms & Conditions.</li>
+                        </ol>
+                        
+                        <div class="footer-branding">
+                            Kaalnetra Security Systems
+                            <span class="footer-sub">Security & Theft Protection Solutions</span>
+                        </div>
+                    </div>
                     
                     <div class="qr-container">
                         <h2 style="margin:0 0 5px 0; font-size: 24px; font-weight: 900;">MASTER WARRANTY</h2>
