@@ -1653,9 +1653,12 @@
                     if (orderData.techDetails && orderData.techDetails.signature) {
                         signatureHtml = `
                             <div class="sig-container">
-                                <p class="customer-conf"><b>CUSTOMER CONFIRMATION:</b><br>I confirm that the security system has been successfully installed, configured, and tested in my presence. All components and features are working exactly as promised.</p>
-                                <img src="${orderData.techDetails.signature}" class="sig-img">
-                                <p class="sig-name">${orderData.customerName || data.customerName}</p>
+                                <p class="customer-conf"><b>CUSTOMER CONFIRMATION:</b><br>I confirm that the security system has been successfully installed, configured, and tested in my presence. All components and features are working exactly as promised. I have read and accepted the Terms & Conditions.</p>
+                                <div class="sig-box">
+                                    <img src="${orderData.techDetails.signature}" class="sig-img">
+                                    <p class="sig-title">Customer Signature</p>
+                                    <p class="sig-name">(${orderData.customerName || data.customerName})</p>
+                                </div>
                             </div>
                         `;
                     }
@@ -1694,11 +1697,15 @@
                         /* Stamp & Sign */
                         .text-center { text-align: center; }
                         .stamp { font-size: 34px; font-weight: 900; text-align: center; border: 4px solid #000; padding: 5px 15px; margin: 15px auto; transform: rotate(-5deg); letter-spacing: 2px; display: inline-block; border-radius: 8px;}
-                        .sig-container { margin-top: 15px; text-align: center; border: 2px dashed #000; padding: 12px; border-radius: 8px; background-color: #f9f9f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
-                        .customer-conf { font-size: 13px; text-align: justify; margin: 0 0 10px 0; font-family: sans-serif; line-height: 1.4;}
-                        .sig-img { max-height: 120px; max-width: 100%; border-bottom: 1px solid #000; display: block; margin: 0 auto; }
-                        .sig-name { margin: 5px 0 0 0; font-size: 16px; font-weight: 900; text-transform: uppercase;}
                         
+                        /* Customer Signature Area */
+                        .sig-container { margin-top: 15px; text-align: center; border: 2px dashed #000; padding: 12px; border-radius: 8px; background-color: #f9f9f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+                        .customer-conf { font-size: 13px; text-align: justify; margin: 0 0 15px 0; font-family: sans-serif; line-height: 1.4;}
+                        .sig-box { display: inline-block; text-align: center; }
+                        .sig-img { max-height: 100px; max-width: 100%; border-bottom: 1px solid #000; display: block; margin: 0 auto; }
+                        .sig-title { margin: 5px 0 2px 0; font-size: 16px; font-weight: 900; text-transform: uppercase;}
+                        .sig-name { margin: 0; font-size: 14px; font-weight: bold; color: #333; }
+
                         /* Terms & Conditions Block */
                         .tnc-block { margin-top: 25px; padding-top: 15px; border-top: 3px double #000; font-family: sans-serif;}
                         .tnc-block h3 { font-size: 18px; text-align: center; margin: 0 0 15px 0; font-weight: 900; background: #000; color: #fff; padding: 5px; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
@@ -1706,8 +1713,13 @@
                         .tnc-block li { margin-bottom: 8px; }
                         .tnc-block b { font-size: 12px; }
                         
+                        /* Company Authorized Signatory */
+                        .auth-sign-box { margin-top: 30px; text-align: right; padding-top: 40px; border-top: 1px dashed #ccc; }
+                        .auth-sign-title { font-size: 14px; font-weight: 900; margin: 0; }
+                        .auth-sign-sub { font-size: 12px; font-weight: bold; margin: 2px 0 0 0; color: #555; }
+                        
                         /* Footer Branding */
-                        .footer-branding { text-align: center; font-weight: 900; margin-top: 20px; font-size: 15px; text-transform: uppercase; border-top: 1px solid #000; padding-top: 10px;}
+                        .footer-branding { text-align: center; font-weight: 900; margin-top: 25px; font-size: 15px; text-transform: uppercase; border-top: 2px solid #000; padding-top: 10px;}
                         .footer-sub { font-size: 11px; font-weight: bold; text-transform: none; display: block; margin-top: 3px;}
                         
                         /* QR Wrapper */
@@ -1759,6 +1771,11 @@
                             <li><b>Payment & Cancellation:</b> Payment terms will be mentioned in the quotation or invoice. Customized, dispatched, or installed products may not be eligible for cancellation or refund.</li>
                             <li><b>Acceptance:</b> By purchasing, installing, or using our product, the customer agrees to these Terms & Conditions.</li>
                         </ol>
+
+                        <div class="auth-sign-box">
+                            <p class="auth-sign-title">Authorized Signatory</p>
+                            <p class="auth-sign-sub">For Kaalnetra Security Systems</p>
+                        </div>
                         
                         <div class="footer-branding">
                             Kaalnetra Security Systems
